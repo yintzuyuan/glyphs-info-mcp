@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "glyphs-info-mcp"
-version = "1.0.0rc2"
+version = "1.0.0"
 description = "Unified MCP server for Glyphs handbook and API queries"
 authors = [
     {name = "Glyphs info MCP Contributors", email = "glyphs-info-mcp@example.com"}
@@ -13,7 +13,7 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
