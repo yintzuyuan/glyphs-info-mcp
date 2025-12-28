@@ -3,12 +3,13 @@
 Shared Base Module Class - Unified foundation for all MCP modules
 """
 
-# mypy: ignore-errors
-
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from glyphs_info_mcp.shared.core.search_engine import SearchEngine
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +23,12 @@ class BaseMCPModule(ABC):
     3. Backward compatible tool interface
     """
 
-    def __init__(self, name: str, data_path: Path | None = None):
+    def __init__(self, name: str, data_path: Path | None = None) -> None:
         self.name = name
         self.data_path = data_path or Path(__file__).parent.parent / "data"
         self.tools: list[dict[str, Any]] = []
         self.is_initialized = False
-        self.search_engine = None  # Unified search engine (injected by server.py)
+        self.search_engine: "SearchEngine | None" = None
 
     @abstractmethod
     def initialize(self) -> bool:
@@ -39,7 +40,7 @@ class BaseMCPModule(ABC):
         """Get tools provided by module"""
         pass
 
-    def set_search_engine(self, search_engine):
+    def set_search_engine(self, search_engine: "SearchEngine") -> None:
         """Set unified search engine (called by server.py)
 
         Args:
@@ -49,7 +50,7 @@ class BaseMCPModule(ABC):
         logger.debug(f"Unified search engine injected into {self.name} module")
 
     def core_search(
-        self, query: str, max_results: int = 5, **kwargs
+        self, query: str, max_results: int = 5, **kwargs: Any
     ) -> list[dict[str, Any]]:
         """Core search functionality - Standardized search interface
 
@@ -89,5 +90,5 @@ class BaseMCPModule(ABC):
         """Get data file path"""
         return self.data_path / filename
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name})"
