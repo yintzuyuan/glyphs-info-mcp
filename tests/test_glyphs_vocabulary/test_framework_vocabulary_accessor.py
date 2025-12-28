@@ -6,6 +6,8 @@ Tests for FrameworkVocabularyAccessor
 - 多語系詞彙讀取
 - 搜尋功能
 - Custom Parameters 詞彙驗證
+
+注意：此模組需要本地安裝 Glyphs 3 app 才能執行測試。
 """
 
 import pytest
@@ -14,6 +16,10 @@ from pathlib import Path
 from glyphs_info_mcp.modules.glyphs_vocabulary.accessors.framework_vocabulary_accessor import (
     FrameworkVocabularyAccessor,
 )
+
+
+# 整個模組需要 Glyphs 3 app
+pytestmark = pytest.mark.requires_glyphs_app
 
 
 class TestFrameworkVocabularyAccessor:

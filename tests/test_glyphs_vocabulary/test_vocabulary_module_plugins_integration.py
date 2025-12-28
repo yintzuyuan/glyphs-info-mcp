@@ -5,6 +5,8 @@ Tests for VocabularyModule integration with PluginsVocabularyAccessor
 - 「選取工具」搜尋驗證
 - 外掛詞彙翻譯
 - 反向索引整合
+
+注意：此模組需要本地安裝 Glyphs 3 app 才能執行測試。
 """
 
 import pytest
@@ -12,6 +14,10 @@ import pytest
 from glyphs_info_mcp.modules.glyphs_vocabulary.vocabulary.vocabulary_module import (
     VocabularyModule,
 )
+
+
+# 整個模組需要 Glyphs 3 app（VocabularyModule 依賴 framework 詞彙）
+pytestmark = pytest.mark.requires_glyphs_app
 
 
 class TestVocabularyModulePluginsIntegration:

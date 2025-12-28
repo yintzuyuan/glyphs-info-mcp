@@ -107,3 +107,8 @@ minversion = "8.0"
 addopts = ["--strict-markers", "--cov=src"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "requires_glyphs_app: Tests that require Glyphs 3 app installed",
+    "requires_repositories: Tests that require Glyphs Repositories directory",
+    "requires_network: Tests that require network access",
+]
