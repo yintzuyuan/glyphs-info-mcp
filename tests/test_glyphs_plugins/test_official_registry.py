@@ -95,7 +95,7 @@ class TestOfficialRegistry:
         return OfficialRegistry(cache_dir=cache_dir)
 
     # ===== 測試：基本初始化 =====
-    def test_initialization(self, registry: OfficialRegistry):
+    def test_initialization(self, registry: OfficialRegistry) -> None:
         """測試：正確初始化 OfficialRegistry"""
         # 驗證類別常數
         assert (
@@ -115,7 +115,7 @@ class TestOfficialRegistry:
         mock_subprocess: Mock,
         registry: OfficialRegistry,
         mock_xml_plist_bytes: bytes,
-    ):
+    ) -> None:
         """測試：從網路下載並解析 packages.plist"""
         # 模擬 HTTP 回應
         mock_response = Mock()
@@ -140,7 +140,7 @@ class TestOfficialRegistry:
     # ===== 測試：快取機制 =====
     def test_cache_is_created_after_fetch(
         self, registry: OfficialRegistry, mock_xml_plist_bytes: bytes
-    ):
+    ) -> None:
         """測試：fetch 後建立快取檔案"""
         with patch("glyphs_info_mcp.modules.glyphs_plugins.accessors.official_registry.httpx.get") as mock_get, \
              patch("glyphs_info_mcp.modules.glyphs_plugins.accessors.official_registry.subprocess.run") as mock_subprocess:
@@ -161,8 +161,8 @@ class TestOfficialRegistry:
             assert registry.cache_path.exists()
 
     def test_use_cache_if_valid(
-        self, registry: OfficialRegistry, mock_packages_data: list
-    ):
+        self, registry: OfficialRegistry, mock_packages_data: list[dict[str, str]]
+    ) -> None:
         """測試：快取有效時使用快取，不發起網路請求"""
         # 建立有效的快取（使用正確的快取格式）
         cache_data = {
@@ -182,9 +182,9 @@ class TestOfficialRegistry:
     def test_refresh_cache_if_expired(
         self,
         registry: OfficialRegistry,
-        mock_packages_data: list,
+        mock_packages_data: list[dict[str, str]],
         mock_xml_plist_bytes: bytes,
-    ):
+    ) -> None:
         """測試：快取過期時重新下載"""
         # 建立過期的快取（25 小時前）
         expired_time = datetime.now() - timedelta(hours=25)
@@ -215,7 +215,7 @@ class TestOfficialRegistry:
             assert len(packages) == 3
 
     # ===== 測試：搜尋功能 =====
-    def test_search_by_name(self, registry: OfficialRegistry, mock_packages_data: list):
+    def test_search_by_name(self, registry: OfficialRegistry, mock_packages_data: list) -> None:
         """測試：按名稱搜尋外掛"""
         # 建立快取
         cache_data = {
@@ -233,8 +233,8 @@ class TestOfficialRegistry:
         assert results[0]["title"] == "ShowCrosshair"
 
     def test_search_by_description(
-        self, registry: OfficialRegistry, mock_packages_data: list
-    ):
+        self, registry: OfficialRegistry, mock_packages_data: list[dict[str, str]]
+    ) -> None:
         """測試：按描述搜尋外掛"""
         cache_data = {
             "cache_version": "2.0",
@@ -251,8 +251,8 @@ class TestOfficialRegistry:
         assert results[0]["title"] == "Insert-Glyph-to-Background"
 
     def test_search_case_insensitive(
-        self, registry: OfficialRegistry, mock_packages_data: list
-    ):
+        self, registry: OfficialRegistry, mock_packages_data: list[dict[str, str]]
+    ) -> None:
         """測試：搜尋不區分大小寫"""
         cache_data = {
             "cache_version": "2.0",
@@ -269,8 +269,8 @@ class TestOfficialRegistry:
         assert results[0]["title"] == "ShowCrosshair"
 
     def test_search_returns_empty_if_no_match(
-        self, registry: OfficialRegistry, mock_packages_data: list
-    ):
+        self, registry: OfficialRegistry, mock_packages_data: list[dict[str, str]]
+    ) -> None:
         """測試：搜尋無結果時返回空列表"""
         cache_data = {
             "cache_version": "2.0",
@@ -288,7 +288,7 @@ class TestOfficialRegistry:
     # ===== 測試：錯誤處理 =====
     def test_corrupted_cache_triggers_refetch(
         self, registry: OfficialRegistry, mock_xml_plist_bytes: bytes
-    ):
+    ) -> None:
         """測試：快取檔案損壞時觸發重新下載"""
         # 建立損壞的快取檔案（無效 JSON）
         registry.cache_path.write_text("{ invalid json content }")
@@ -314,7 +314,7 @@ class TestOfficialRegistry:
             assert len(packages) == 3
 
     @patch("glyphs_info_mcp.modules.glyphs_plugins.accessors.official_registry.httpx.get")
-    def test_handle_network_error(self, mock_get: Mock, registry: OfficialRegistry):
+    def test_handle_network_error(self, mock_get: Mock, registry: OfficialRegistry) -> None:
         """測試：處理網路錯誤"""
         mock_get.side_effect = Exception("Network error")
 
@@ -325,7 +325,7 @@ class TestOfficialRegistry:
     @patch("glyphs_info_mcp.modules.glyphs_plugins.accessors.official_registry.httpx.get")
     def test_handle_invalid_plist_format(
         self, mock_get: Mock, mock_subprocess: Mock, registry: OfficialRegistry
-    ):
+    ) -> None:
         """測試：處理無效的 plist 格式（拋出例外）"""
         # 模擬 HTTP 回應
         mock_response = Mock()
@@ -344,7 +344,7 @@ class TestOfficialRegistry:
     @patch("glyphs_info_mcp.modules.glyphs_plugins.accessors.official_registry.httpx.get")
     def test_title_field_priority(
         self, mock_get: Mock, mock_subprocess: Mock, registry: OfficialRegistry
-    ):
+    ) -> None:
         """測試：title 欄位處理邏輯（titles.en 優先於 path）"""
         # 建立測試資料：使用官方 plist 格式
         plist_data = {

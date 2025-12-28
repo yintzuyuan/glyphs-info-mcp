@@ -6,8 +6,11 @@
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
+from _pytest.config import Config
+from _pytest.nodes import Item
 
 # 添加 src/shared 到 Python 路徑
 project_root = Path(__file__).parent.parent
@@ -38,14 +41,14 @@ SKIP_CONDITIONS = [
 ]
 
 
-def pytest_configure(config):
+def pytest_configure(config: Config) -> None:
     """檢測本地資源可用性（支援環境變數覆蓋）"""
     for marker, env_var, default_path, _ in SKIP_CONDITIONS:
         path = os.getenv(env_var, default_path)
         setattr(config, f"{marker}_available", Path(path).exists())
 
 
-def pytest_collection_modifyitems(config, items):
+def pytest_collection_modifyitems(config: Config, items: list[Item]) -> None:
     """根據資源可用性自動跳過測試"""
     for item in items:
         for marker, _, _, reason in SKIP_CONDITIONS:

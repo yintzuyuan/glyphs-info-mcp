@@ -53,7 +53,7 @@ Enable proper cursive attachment in Arabic typesetting by adding `exit` and `ent
 class TestExtractIntroOnly:
     """測試 _extract_intro_only() - 第一層：標題匹配"""
 
-    def test_returns_first_paragraph(self):
+    def test_returns_first_paragraph(self) -> None:
         """應返回檔案開頭的第一段說明"""
         # 建立 mock 搜尋器
         searcher = EnhancedHandbookSearcher.__new__(EnhancedHandbookSearcher)
@@ -68,7 +68,7 @@ class TestExtractIntroOnly:
         # 長度限制
         assert len(intro.split('\n')) <= 3
 
-    def test_handles_empty_content(self):
+    def test_handles_empty_content(self) -> None:
         """空內容應返回空字串"""
         searcher = EnhancedHandbookSearcher.__new__(EnhancedHandbookSearcher)
         searcher.section_parser = MagicMock()
@@ -80,7 +80,7 @@ class TestExtractIntroOnly:
 class TestExtractSectionSummary:
     """測試 _extract_section_summary() - 第二層：段落匹配"""
 
-    def test_returns_matched_section_title_and_summary(self):
+    def test_returns_matched_section_title_and_summary(self) -> None:
         """應返回匹配的子章節標題 + 簡短摘要"""
         searcher = EnhancedHandbookSearcher.__new__(EnhancedHandbookSearcher)
         searcher.section_parser = MagicMock()
@@ -96,7 +96,7 @@ class TestExtractSectionSummary:
         # 長度限制（標題 + 3 行摘要）
         assert len(summary.split('\n')) <= 5
 
-    def test_returns_empty_if_no_section_match(self):
+    def test_returns_empty_if_no_section_match(self) -> None:
         """如果沒有匹配的子章節，應返回空字串"""
         searcher = EnhancedHandbookSearcher.__new__(EnhancedHandbookSearcher)
         searcher.section_parser = MagicMock()
@@ -111,12 +111,12 @@ class TestExtractSectionSummary:
 class TestExtractExcerptsByLayer:
     """測試 _extract_excerpts_by_layer() - 分層截取主入口"""
 
-    def test_title_match_returns_intro_only(self):
+    def test_title_match_returns_intro_only(self) -> None:
         """title 匹配應返回簡介"""
         searcher = EnhancedHandbookSearcher.__new__(EnhancedHandbookSearcher)
         searcher.section_parser = MagicMock()
         # Mock _extract_intro_only
-        searcher._extract_intro_only = MagicMock(return_value="Intro content")
+        searcher._extract_intro_only = MagicMock(return_value="Intro content")  # type: ignore[method-assign]
 
         excerpts = searcher._extract_excerpts_by_layer(
             SAMPLE_HANDBOOK_CONTENT, "anchor", "title"
@@ -125,11 +125,11 @@ class TestExtractExcerptsByLayer:
         searcher._extract_intro_only.assert_called_once()
         assert "Intro content" in excerpts
 
-    def test_section_match_returns_section_summary(self):
+    def test_section_match_returns_section_summary(self) -> None:
         """section 匹配應返回子章節摘要"""
         searcher = EnhancedHandbookSearcher.__new__(EnhancedHandbookSearcher)
         searcher.section_parser = MagicMock()
-        searcher._extract_section_summary = MagicMock(return_value="Section summary")
+        searcher._extract_section_summary = MagicMock(return_value="Section summary")  # type: ignore[method-assign]
 
         excerpts = searcher._extract_excerpts_by_layer(
             SAMPLE_HANDBOOK_CONTENT, "mark", "section"
@@ -138,11 +138,11 @@ class TestExtractExcerptsByLayer:
         searcher._extract_section_summary.assert_called_once()
         assert "Section summary" in excerpts
 
-    def test_content_match_returns_full_excerpt(self):
+    def test_content_match_returns_full_excerpt(self) -> None:
         """content 匹配應返回完整截取"""
         searcher = EnhancedHandbookSearcher.__new__(EnhancedHandbookSearcher)
         searcher.section_parser = MagicMock()
-        searcher._extract_excerpts = MagicMock(return_value=["Full excerpt"])
+        searcher._extract_excerpts = MagicMock(return_value=["Full excerpt"])  # type: ignore[method-assign]
 
         excerpts = searcher._extract_excerpts_by_layer(
             SAMPLE_HANDBOOK_CONTENT, "exit", "content"
@@ -159,13 +159,13 @@ class TestExtractExcerptsByLayer:
 class TestLayeredSearchIntegration:
     """分層搜尋整合測試"""
 
-    def test_search_result_format_varies_by_match_type(self):
+    def test_search_result_format_varies_by_match_type(self) -> None:
         """搜尋結果格式應根據 match_type 變化"""
         # 這個測試需要完整的 searcher 實例
         # 先跳過，等實作完成後再測試
         pass
 
-    def test_output_length_varies_by_match_type(self):
+    def test_output_length_varies_by_match_type(self) -> None:
         """輸出長度應根據 match_type 變化"""
         # title 匹配的輸出應最短
         # content 匹配的輸出應最長

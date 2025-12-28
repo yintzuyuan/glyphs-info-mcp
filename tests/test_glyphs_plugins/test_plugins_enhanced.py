@@ -88,13 +88,16 @@ class ShowCrosshair(ReporterPlugin):
         module.plugins_accessor.scan_all_tools()  # 掃描外掛
         return module
 
-    def test_list_plugin_files(self, module_with_mock_plugin: GlyphsPluginsModule):
+    def test_list_plugin_files(self, module_with_mock_plugin: GlyphsPluginsModule) -> None:
         """測試列出外掛檔案清單"""
         # Arrange
         module = module_with_mock_plugin
+        assert module.plugins_accessor is not None
 
         # Act
-        plugin_path = module.plugins_accessor.get_plugin_info("ShowCrosshair").path
+        plugin_info = module.plugins_accessor.get_plugin_info("ShowCrosshair")
+        assert plugin_info is not None
+        plugin_path = plugin_info.path
         result = module._list_plugin_files(plugin_path)
 
         # Assert
@@ -104,13 +107,16 @@ class ShowCrosshair(ReporterPlugin):
         assert "LICENSE" in result
         assert ".git" not in result  # 應排除 .git 目錄
 
-    def test_get_plugin_source(self, module_with_mock_plugin: GlyphsPluginsModule):
+    def test_get_plugin_source(self, module_with_mock_plugin: GlyphsPluginsModule) -> None:
         """測試讀取外掛原始碼"""
         # Arrange
         module = module_with_mock_plugin
+        assert module.plugins_accessor is not None
 
         # Act
-        plugin_path = module.plugins_accessor.get_plugin_info("ShowCrosshair").path
+        plugin_info = module.plugins_accessor.get_plugin_info("ShowCrosshair")
+        assert plugin_info is not None
+        plugin_path = plugin_info.path
         result = module._get_plugin_source(plugin_path)
 
         # Assert
@@ -121,7 +127,7 @@ class ShowCrosshair(ReporterPlugin):
 
     def test_get_plugin_source_not_found(
         self, module_with_mock_plugin: GlyphsPluginsModule, tmp_path: Path
-    ):
+    ) -> None:
         """測試當 plugin.py 不存在時的處理"""
         # Arrange
         module = module_with_mock_plugin
@@ -134,7 +140,7 @@ class ShowCrosshair(ReporterPlugin):
         # Assert - accepts "not found" or "No source files found"
         assert "未找到" in result or "found" in result.lower()
 
-    def test_get_info_with_files(self, module_with_mock_plugin: GlyphsPluginsModule):
+    def test_get_info_with_files(self, module_with_mock_plugin: GlyphsPluginsModule) -> None:
         """測試 _get_info_tool 的 include_files 參數"""
         # Arrange
         module = module_with_mock_plugin
@@ -147,7 +153,7 @@ class ShowCrosshair(ReporterPlugin):
         assert "plugin.py" in result
         assert "README.md" in result
 
-    def test_get_info_with_source(self, module_with_mock_plugin: GlyphsPluginsModule):
+    def test_get_info_with_source(self, module_with_mock_plugin: GlyphsPluginsModule) -> None:
         """測試 _get_info_tool 的 include_source 參數"""
         # Arrange
         module = module_with_mock_plugin
@@ -162,7 +168,7 @@ class ShowCrosshair(ReporterPlugin):
 
     def test_get_info_with_both_options(
         self, module_with_mock_plugin: GlyphsPluginsModule
-    ):
+    ) -> None:
         """測試同時啟用 include_files 和 include_source"""
         # Arrange
         module = module_with_mock_plugin
@@ -180,7 +186,7 @@ class ShowCrosshair(ReporterPlugin):
 
     def test_get_info_backward_compatible(
         self, module_with_mock_plugin: GlyphsPluginsModule
-    ):
+    ) -> None:
         """測試向後相容性（不傳入新參數）"""
         # Arrange
         module = module_with_mock_plugin
@@ -285,7 +291,7 @@ class TestMultiFileSourceSupport:
 
         return repos
 
-    def test_objc_plugin_source_extraction(self, objc_plugin: Path):
+    def test_objc_plugin_source_extraction(self, objc_plugin: Path) -> None:
         """測試 Objective-C 外掛原始碼提取"""
         from glyphs_info_mcp.modules.glyphs_plugins.accessors.plugins_accessor import PluginsAccessor
 
@@ -296,6 +302,7 @@ class TestMultiFileSourceSupport:
         module.plugins_accessor.scan_all_tools()
 
         plugin_info = module.plugins_accessor.get_plugin_info("ObjCPlugin")
+        assert plugin_info is not None
         result = module._get_plugin_source(plugin_info.path)
 
         # 應該包含 Objective-C 原始碼
@@ -305,7 +312,7 @@ class TestMultiFileSourceSupport:
         assert "@implementation ObjCPlugin" in result
         assert "```objc" in result
 
-    def test_mixed_plugin_source_extraction(self, mixed_plugin: Path):
+    def test_mixed_plugin_source_extraction(self, mixed_plugin: Path) -> None:
         """測試混合外掛原始碼提取"""
         from glyphs_info_mcp.modules.glyphs_plugins.accessors.plugins_accessor import PluginsAccessor
 
@@ -316,6 +323,7 @@ class TestMultiFileSourceSupport:
         module.plugins_accessor.scan_all_tools()
 
         plugin_info = module.plugins_accessor.get_plugin_info("MixedPlugin")
+        assert plugin_info is not None
         result = module._get_plugin_source(plugin_info.path)
 
         # Should contain both Python and Objective-C
@@ -327,7 +335,7 @@ class TestMultiFileSourceSupport:
         assert "```python" in result
         assert "```objc" in result
 
-    def test_multiple_python_files(self, mixed_plugin: Path):
+    def test_multiple_python_files(self, mixed_plugin: Path) -> None:
         """測試多個 Python 檔案"""
         from glyphs_info_mcp.modules.glyphs_plugins.accessors.plugins_accessor import PluginsAccessor
 
@@ -338,6 +346,7 @@ class TestMultiFileSourceSupport:
         module.plugins_accessor.scan_all_tools()
 
         plugin_info = module.plugins_accessor.get_plugin_info("MixedPlugin")
+        assert plugin_info is not None
         result = module._get_plugin_source(plugin_info.path)
 
         # 應該包含兩個 Python 檔案
@@ -346,7 +355,7 @@ class TestMultiFileSourceSupport:
         assert "class MixedPlugin" in result
         assert "def helper()" in result
 
-    def test_binary_file_detection(self, mixed_plugin: Path):
+    def test_binary_file_detection(self, mixed_plugin: Path) -> None:
         """測試二進位檔案識別"""
         from glyphs_info_mcp.modules.glyphs_plugins.accessors.plugins_accessor import PluginsAccessor
 
@@ -357,6 +366,7 @@ class TestMultiFileSourceSupport:
         module.plugins_accessor.scan_all_tools()
 
         plugin_info = module.plugins_accessor.get_plugin_info("MixedPlugin")
+        assert plugin_info is not None
         result = module._get_plugin_source(plugin_info.path)
 
         # Should identify binary files
@@ -364,7 +374,7 @@ class TestMultiFileSourceSupport:
         assert "MixedPlugin" in result
         assert "bytes" in result
 
-    def test_statistics_summary(self, mixed_plugin: Path):
+    def test_statistics_summary(self, mixed_plugin: Path) -> None:
         """測試統計資訊"""
         from glyphs_info_mcp.modules.glyphs_plugins.accessors.plugins_accessor import PluginsAccessor
 
@@ -375,6 +385,7 @@ class TestMultiFileSourceSupport:
         module.plugins_accessor.scan_all_tools()
 
         plugin_info = module.plugins_accessor.get_plugin_info("MixedPlugin")
+        assert plugin_info is not None
         result = module._get_plugin_source(plugin_info.path)
 
         # Should include statistics info

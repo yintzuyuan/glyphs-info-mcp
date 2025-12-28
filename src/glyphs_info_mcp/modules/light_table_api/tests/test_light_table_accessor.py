@@ -5,7 +5,9 @@ Test LightTableNativeAccessor API parsing functionality
 
 import sys
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -24,7 +26,7 @@ class TestLightTableNativeAccessor:
     """Test Light Table Native Accessor"""
 
     @pytest.fixture
-    def temp_fallback_paths(self):
+    def temp_fallback_paths(self) -> Generator[dict[str, Path], None, None]:
         """Create temporary Submodule fallback paths"""
         with tempfile.TemporaryDirectory() as tmpdir:
             submodule_base = Path(tmpdir) / "data" / "official"
@@ -48,7 +50,7 @@ class DocumentState(Enum):
                 "light-table": submodule_base / "light-table",
             }
 
-    def test_detect_lighttable_submodule(self, temp_fallback_paths):
+    def test_detect_lighttable_submodule(self, temp_fallback_paths: dict[str, Path]) -> None:
         """Test Submodule fallback path detection"""
         # Use nonexistent local path
         nonexistent_repo = Path("/nonexistent/plugins")
@@ -63,7 +65,7 @@ class DocumentState(Enum):
         assert accessor.api_path is not None
         assert "light-table" in str(accessor.api_path)
 
-    def test_parse_enums(self, temp_fallback_paths):
+    def test_parse_enums(self, temp_fallback_paths: dict[str, Path]) -> None:
         """Test parsing enum types"""
         nonexistent_repo = Path("/nonexistent/plugins")
         scanner = RepositoryScanner(nonexistent_repo, temp_fallback_paths)
@@ -81,7 +83,7 @@ class DocumentState(Enum):
         assert "UNKNOWN" in doc_state["values"]
         assert "NO_FILE" in doc_state["values"]
 
-    def test_search_api_methods(self, temp_fallback_paths):
+    def test_search_api_methods(self, temp_fallback_paths: dict[str, Path]) -> None:
         """Test searching API methods"""
         nonexistent_repo = Path("/nonexistent/plugins")
         scanner = RepositoryScanner(nonexistent_repo, temp_fallback_paths)
@@ -95,7 +97,7 @@ class DocumentState(Enum):
         assert len(results) > 0
         assert any("DocumentState" in r["name"] for r in results)
 
-    def test_get_enum_details(self, temp_fallback_paths):
+    def test_get_enum_details(self, temp_fallback_paths: dict[str, Path]) -> None:
         """Test getting enum detailed information"""
         nonexistent_repo = Path("/nonexistent/plugins")
         scanner = RepositoryScanner(nonexistent_repo, temp_fallback_paths)
@@ -111,7 +113,7 @@ class DocumentState(Enum):
         assert "values" in details
         assert len(details["values"]) >= 2  # At least UNKNOWN and NO_FILE
 
-    def test_list_all_api_items(self, temp_fallback_paths):
+    def test_list_all_api_items(self, temp_fallback_paths: dict[str, Path]) -> None:
         """Test listing all API items"""
         nonexistent_repo = Path("/nonexistent/plugins")
         scanner = RepositoryScanner(nonexistent_repo, temp_fallback_paths)

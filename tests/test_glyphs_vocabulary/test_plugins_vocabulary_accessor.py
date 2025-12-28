@@ -26,11 +26,11 @@ class TestPluginsVocabularyAccessor:
     """PluginsVocabularyAccessor 測試類別"""
 
     @pytest.fixture
-    def accessor(self):
+    def accessor(self) -> PluginsVocabularyAccessor:
         """建立測試用的 accessor"""
         return PluginsVocabularyAccessor()
 
-    def test_discover_plugins(self, accessor):
+    def test_discover_plugins(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試外掛發現功能"""
         plugins = accessor.get_plugin_names()
 
@@ -40,7 +40,7 @@ class TestPluginsVocabularyAccessor:
         # 應該包含 SelectTool
         assert "SelectTool.glyphsTool" in plugins
 
-    def test_get_plugin_terms_english(self, accessor):
+    def test_get_plugin_terms_english(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試取得外掛英文詞彙"""
         terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "en")
 
@@ -51,7 +51,7 @@ class TestPluginsVocabularyAccessor:
         assert "Select" in terms
         assert terms["Select"] == "Select"
 
-    def test_get_plugin_terms_chinese(self, accessor):
+    def test_get_plugin_terms_chinese(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試取得外掛繁體中文詞彙"""
         terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "zh-Hant")
 
@@ -62,7 +62,7 @@ class TestPluginsVocabularyAccessor:
         assert "Select" in terms
         assert terms["Select"] == "選取工具"
 
-    def test_get_all_terms_with_prefix(self, accessor):
+    def test_get_all_terms_with_prefix(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試取得所有詞彙（含外掛前綴）"""
         all_terms = accessor.get_all_terms("en")
 
@@ -73,7 +73,7 @@ class TestPluginsVocabularyAccessor:
         select_key = "SelectTool.glyphsTool/Select"
         assert select_key in all_terms
 
-    def test_get_all_terms_flat(self, accessor):
+    def test_get_all_terms_flat(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試取得所有詞彙（扁平化）"""
         all_terms = accessor.get_all_terms_flat("en")
 
@@ -83,7 +83,7 @@ class TestPluginsVocabularyAccessor:
         # Key 不應該包含外掛前綴
         assert "Select" in all_terms
 
-    def test_search_term_english(self, accessor):
+    def test_search_term_english(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試英文搜尋"""
         results = accessor.search_term("Select", locale="en")
 
@@ -96,7 +96,7 @@ class TestPluginsVocabularyAccessor:
         assert "value" in first_result
         assert "plugin" in first_result
 
-    def test_search_term_chinese(self, accessor):
+    def test_search_term_chinese(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試繁體中文搜尋"""
         results = accessor.search_term("選取工具", locale="zh-Hant")
 
@@ -111,7 +111,7 @@ class TestPluginsVocabularyAccessor:
                 break
         assert found_select_tool
 
-    def test_get_statistics(self, accessor):
+    def test_get_statistics(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試詞彙統計"""
         stats = accessor.get_statistics()
 
@@ -124,21 +124,21 @@ class TestPluginsVocabularyAccessor:
         assert stats["plugin_count"] > 0
         assert stats["total_terms"] > 0
 
-    def test_nonexistent_plugin(self, accessor):
+    def test_nonexistent_plugin(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試不存在的外掛"""
         terms = accessor.get_plugin_terms("NonExistent.glyphsTool", "en")
 
         # 應該返回空字典
         assert terms == {}
 
-    def test_nonexistent_locale(self, accessor):
+    def test_nonexistent_locale(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試不存在的語系"""
         terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "xx-XX")
 
         # 應該返回空字典
         assert terms == {}
 
-    def test_cache_functionality(self, accessor):
+    def test_cache_functionality(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試快取功能"""
         # 第一次取得
         terms1 = accessor.get_all_terms("en")
@@ -154,11 +154,11 @@ class TestSelectToolTranslation:
     """專門測試「選取工具」翻譯的測試類別"""
 
     @pytest.fixture
-    def accessor(self):
+    def accessor(self) -> PluginsVocabularyAccessor:
         """建立測試用的 accessor"""
         return PluginsVocabularyAccessor()
 
-    def test_select_tool_en_to_zh(self, accessor):
+    def test_select_tool_en_to_zh(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試 Select → 選取工具 翻譯"""
         en_terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "en")
         zh_terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "zh-Hant")
@@ -169,7 +169,7 @@ class TestSelectToolTranslation:
         # 繁中翻譯為「選取工具」
         assert zh_terms.get("Select") == "選取工具"
 
-    def test_select_all_layers_translation(self, accessor):
+    def test_select_all_layers_translation(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試 Select All Layers → 選取所有圖層工具 翻譯"""
         en_terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "en")
         zh_terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "zh-Hant")
@@ -180,7 +180,7 @@ class TestSelectToolTranslation:
         # 繁中翻譯
         assert zh_terms.get("Select All Layers") == "選取所有圖層工具"
 
-    def test_lasso_tool_translation(self, accessor):
+    def test_lasso_tool_translation(self, accessor: PluginsVocabularyAccessor) -> None:
         """測試 Lasso 翻譯"""
         en_terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "en")
         zh_terms = accessor.get_plugin_terms("SelectTool.glyphsTool", "zh-Hant")

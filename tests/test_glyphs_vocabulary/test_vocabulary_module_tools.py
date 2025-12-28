@@ -108,14 +108,14 @@ class TestVocabularyModuleTools:
 
     def test_get_tools_includes_translate_term(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試 get_tools() 包含 vocab_translate_term"""
         tools = vocabulary_module.get_tools()
 
         assert "vocab_translate_term" in tools
         assert callable(tools["vocab_translate_term"])
 
-    def test_get_tools_count(self, vocabulary_module: VocabularyModule):
+    def test_get_tools_count(self, vocabulary_module: VocabularyModule) -> None:
         """測試工具數量（應該是 4 個）"""
         tools = vocabulary_module.get_tools()
 
@@ -129,7 +129,7 @@ class TestVocabularyModuleTools:
         for tool_name in expected_tools:
             assert tool_name in tools
 
-    def test_translate_term_tool_zh_to_en(self, vocabulary_module: VocabularyModule):
+    def test_translate_term_tool_zh_to_en(self, vocabulary_module: VocabularyModule) -> None:
         """測試翻譯工具：中文到英文（auto 模式）"""
         result = vocabulary_module.translate_term_tool("取消")
 
@@ -138,7 +138,7 @@ class TestVocabularyModuleTools:
         assert ("**翻譯:**" in result or "**Translation:**" in result) and "Cancel" in result
         assert "**目標語系:**" in result or "**Target Locale:**" in result
 
-    def test_translate_term_tool_en_to_ja(self, vocabulary_module: VocabularyModule):
+    def test_translate_term_tool_en_to_ja(self, vocabulary_module: VocabularyModule) -> None:
         """測試翻譯工具：英文到日文"""
         result = vocabulary_module.translate_term_tool("Cancel", target_locale="ja")
 
@@ -147,7 +147,7 @@ class TestVocabularyModuleTools:
         assert ("**翻譯:**" in result or "**Translation:**" in result) and "キャンセル" in result
         assert "ja" in result
 
-    def test_translate_term_tool_ja_to_en(self, vocabulary_module: VocabularyModule):
+    def test_translate_term_tool_ja_to_en(self, vocabulary_module: VocabularyModule) -> None:
         """測試翻譯工具：日文到英文（auto 模式）"""
         result = vocabulary_module.translate_term_tool("キャンセル")
 
@@ -155,7 +155,7 @@ class TestVocabularyModuleTools:
         assert ("**原文:**" in result or "**Original:**" in result) and "キャンセル" in result
         assert ("**翻譯:**" in result or "**Translation:**" in result) and "Cancel" in result
 
-    def test_translate_term_tool_en_to_zh(self, vocabulary_module: VocabularyModule):
+    def test_translate_term_tool_en_to_zh(self, vocabulary_module: VocabularyModule) -> None:
         """測試翻譯工具：英文到繁體中文"""
         result = vocabulary_module.translate_term_tool(
             "Cancel", target_locale="zh-Hant"
@@ -166,7 +166,7 @@ class TestVocabularyModuleTools:
         assert ("**翻譯:**" in result or "**Translation:**" in result) and "取消" in result
         assert "zh-Hant" in result
 
-    def test_translate_term_tool_not_found(self, vocabulary_module: VocabularyModule):
+    def test_translate_term_tool_not_found(self, vocabulary_module: VocabularyModule) -> None:
         """測試翻譯工具：找不到詞彙"""
         result = vocabulary_module.translate_term_tool("NonExistentTerm")
 
@@ -174,7 +174,7 @@ class TestVocabularyModuleTools:
         assert "is not in Glyphs UI vocabulary" in result
         assert "not a general text translator" in result
 
-    def test_translate_term_tool_empty_input(self, vocabulary_module: VocabularyModule):
+    def test_translate_term_tool_empty_input(self, vocabulary_module: VocabularyModule) -> None:
         """測試翻譯工具：空輸入"""
         result = vocabulary_module.translate_term_tool("")
 
@@ -182,13 +182,13 @@ class TestVocabularyModuleTools:
 
     def test_translate_term_tool_whitespace_input(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試翻譯工具：只有空白的輸入"""
         result = vocabulary_module.translate_term_tool("   ")
 
         assert "## ⚠️" in result and ("請提供要翻譯的詞彙" in result or "Please provide a term" in result)
 
-    def test_module_info_includes_new_tool(self, vocabulary_module: VocabularyModule):
+    def test_module_info_includes_new_tool(self, vocabulary_module: VocabularyModule) -> None:
         """測試 get_module_info() 包含新工具"""
         info = vocabulary_module.get_module_info()
 
@@ -242,7 +242,7 @@ class TestVocabularyModuleBackwardCompatibility:
 
     def test_translate_term_internal_still_works(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試內部 translate_term 方法仍然正常工作"""
         # 這個方法供搜尋引擎使用，必須保持向後相容
         result = vocabulary_module.translate_term("測試")
@@ -250,19 +250,19 @@ class TestVocabularyModuleBackwardCompatibility:
 
     def test_translate_to_english_still_works(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試 translate_to_english 方法仍然正常工作"""
         result = vocabulary_module.translate_to_english("測試")
         assert result == "Test"
 
     def test_translate_to_chinese_still_works(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試 translate_to_chinese 方法仍然正常工作"""
         result = vocabulary_module.translate_to_chinese("Test")
         assert result == "測試"
 
-    def test_en_to_zh_property_still_works(self, vocabulary_module: VocabularyModule):
+    def test_en_to_zh_property_still_works(self, vocabulary_module: VocabularyModule) -> None:
         """測試 en_to_zh 屬性仍然正常工作"""
         mapping = vocabulary_module.en_to_zh
         assert isinstance(mapping, dict)
@@ -343,7 +343,7 @@ class TestVocabularyModuleFuzzySearch:
         module.initialize()
         return module
 
-    def test_fuzzy_find_term_returns_list(self, vocabulary_module: VocabularyModule):
+    def test_fuzzy_find_term_returns_list(self, vocabulary_module: VocabularyModule) -> None:
         """測試 _fuzzy_find_term 返回列表"""
         results = vocabulary_module._fuzzy_find_term("錨點")
 
@@ -352,7 +352,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_fuzzy_find_term_result_structure(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試 _fuzzy_find_term 返回結果結構"""
         results = vocabulary_module._fuzzy_find_term("Anchors")
 
@@ -368,7 +368,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_fuzzy_find_term_exact_match_first(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試精確匹配排在第一位"""
         results = vocabulary_module._fuzzy_find_term("Anchors")
 
@@ -380,7 +380,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_fuzzy_find_term_partial_match_zh(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試中文部分匹配：搜尋「錨點」應找到相關詞彙"""
         results = vocabulary_module._fuzzy_find_term("錨點")
 
@@ -394,7 +394,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_fuzzy_find_term_partial_match_en(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試英文部分匹配：搜尋「Anchor」應找到相關詞彙"""
         results = vocabulary_module._fuzzy_find_term("Anchor")
 
@@ -408,7 +408,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_fuzzy_find_term_sorted_by_score(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試結果按相關性分數排序"""
         results = vocabulary_module._fuzzy_find_term("Anchor")
 
@@ -416,7 +416,7 @@ class TestVocabularyModuleFuzzySearch:
         scores = [r["score"] for r in results]
         assert scores == sorted(scores, reverse=True)
 
-    def test_fuzzy_find_term_max_results(self, vocabulary_module: VocabularyModule):
+    def test_fuzzy_find_term_max_results(self, vocabulary_module: VocabularyModule) -> None:
         """測試 max_results 參數限制結果數量"""
         results = vocabulary_module._fuzzy_find_term("Anchor", max_results=2)
 
@@ -424,7 +424,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_translate_term_tool_fuzzy_match_zh(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試翻譯工具：中文模糊匹配「錨點」"""
         result = vocabulary_module.translate_term_tool("錨點")
 
@@ -434,7 +434,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_translate_term_tool_fuzzy_match_partial_zh(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試翻譯工具：中文模糊匹配「包含」（只是部分詞彙）"""
         result = vocabulary_module.translate_term_tool("包含")
 
@@ -446,7 +446,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_translate_term_tool_shows_suggestions(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試翻譯工具：模糊匹配時顯示其他建議"""
         result = vocabulary_module.translate_term_tool("Anchor")
 
@@ -457,7 +457,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_translate_term_tool_zh_to_en_translation(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試翻譯工具：中文精確匹配應正確翻譯到英文"""
         # 輸入中文「匯出」，應翻譯為英文「Export」
         result = vocabulary_module.translate_term_tool("匯出")
@@ -467,7 +467,7 @@ class TestVocabularyModuleFuzzySearch:
 
     def test_translate_term_tool_zh_partial_to_en(
         self, vocabulary_module: VocabularyModule
-    ):
+    ) -> None:
         """測試翻譯工具：中文部分匹配應正確翻譯到英文"""
         # 輸入中文「全部」（部分匹配「全部匯出」），應翻譯為英文
         result = vocabulary_module.translate_term_tool("全部")
@@ -578,7 +578,7 @@ class TestHubAndSpokeArchitecture:
 
     def test_export_to_chinese_not_liru(
         self, vocabulary_module_with_cs: VocabularyModule
-    ):
+    ) -> None:
         """測試 Export 翻譯到中文：不應是「例如：」
 
         這是 Hub-and-Spoke 架構的核心測試案例。
@@ -597,7 +597,7 @@ class TestHubAndSpokeArchitecture:
 
     def test_chinese_to_english_via_hub(
         self, vocabulary_module_with_cs: VocabularyModule
-    ):
+    ) -> None:
         """測試中文翻譯到英文：透過英文中介"""
         result = vocabulary_module_with_cs.translate_term_tool("匯出")
 
@@ -606,7 +606,7 @@ class TestHubAndSpokeArchitecture:
 
     def test_cross_language_translation_ja_to_zh(
         self, vocabulary_module_with_cs: VocabularyModule
-    ):
+    ) -> None:
         """測試跨語言翻譯：日文→中文（透過英文中介）"""
         result = vocabulary_module_with_cs.translate_term_tool(
             "キャンセル", target_locale="zh-Hant"
@@ -617,7 +617,7 @@ class TestHubAndSpokeArchitecture:
 
     def test_find_english_key_prioritizes_english(
         self, vocabulary_module_with_cs: VocabularyModule
-    ):
+    ) -> None:
         """測試 _find_english_key 優先搜尋英文"""
         # 搜尋 "Export" 應該在英文中找到，而非捷克語
         key, locale, source = vocabulary_module_with_cs._find_english_key("Export")
@@ -628,7 +628,7 @@ class TestHubAndSpokeArchitecture:
 
     def test_find_english_key_with_non_english_input(
         self, vocabulary_module_with_cs: VocabularyModule
-    ):
+    ) -> None:
         """測試 _find_english_key 處理非英文輸入"""
         # 搜尋中文「匯出」，應該找到對應的英文 key
         key, locale, source = vocabulary_module_with_cs._find_english_key("匯出")
@@ -639,7 +639,7 @@ class TestHubAndSpokeArchitecture:
 
     def test_fuzzy_find_term_prioritizes_english(
         self, vocabulary_module_with_cs: VocabularyModule
-    ):
+    ) -> None:
         """測試 _fuzzy_find_term 優先搜尋英文"""
         results = vocabulary_module_with_cs._fuzzy_find_term("Export")
 
@@ -650,7 +650,7 @@ class TestHubAndSpokeArchitecture:
 
     def test_translate_term_method_uses_hub(
         self, vocabulary_module_with_cs: VocabularyModule
-    ):
+    ) -> None:
         """測試內部 translate_term 方法使用英文中介"""
         # 中文到英文
         result = vocabulary_module_with_cs.translate_term("匯出")
@@ -718,7 +718,7 @@ class TestBaseNibFallback:
 
         return resources_dir
 
-    def test_translate_term_with_nib_fallback_real_glyphs(self):
+    def test_translate_term_with_nib_fallback_real_glyphs(self) -> None:
         """測試使用真實 Glyphs 3.app 的 nib 回退"""
         # 這個測試需要真實的 Glyphs 3.app
         glyphs_path = Path("/Applications/Glyphs 3.app/Contents/Resources")
@@ -736,7 +736,7 @@ class TestBaseNibFallback:
 
         assert result == "View" or result == "Show"
 
-    def test_translate_xianshi_to_english_real_glyphs(self):
+    def test_translate_xianshi_to_english_real_glyphs(self) -> None:
         """測試「顯示」翻譯為英文（使用真實 Glyphs）"""
         glyphs_path = Path("/Applications/Glyphs 3.app/Contents/Resources")
         if not glyphs_path.exists():
@@ -760,7 +760,7 @@ class TestBaseNibFallback:
         # 不應該是中文回退
         assert "View" in result or "Show" in result
 
-    def test_translate_chuangkou_to_english_real_glyphs(self):
+    def test_translate_chuangkou_to_english_real_glyphs(self) -> None:
         """測試「視窗」翻譯為英文（使用真實 Glyphs）"""
         glyphs_path = Path("/Applications/Glyphs 3.app/Contents/Resources")
         if not glyphs_path.exists():
@@ -893,7 +893,7 @@ class TestChineseToEnglishTranslation:
 
     def test_translate_xianshi_maodian_to_english(
         self, vocabulary_module_with_ib_id_keys: VocabularyModule
-    ):
+    ) -> None:
         """測試「顯示錨點」翻譯為英文
 
         這是核心 Bug 測試。修復前的問題：
@@ -917,7 +917,7 @@ class TestChineseToEnglishTranslation:
 
     def test_translate_maodian_to_english(
         self, vocabulary_module_with_ib_id_keys: VocabularyModule
-    ):
+    ) -> None:
         """測試「錨點」翻譯為英文"""
         result = vocabulary_module_with_ib_id_keys.translate_term_tool(
             "錨點", target_locale="en"
@@ -931,7 +931,7 @@ class TestChineseToEnglishTranslation:
 
     def test_fuzzy_find_term_uses_ib_id_keys(
         self, vocabulary_module_with_ib_id_keys: VocabularyModule
-    ):
+    ) -> None:
         """測試 _fuzzy_find_term 使用 IB ID 格式的 key"""
         results = vocabulary_module_with_ib_id_keys._fuzzy_find_term("顯示錨點")
 
@@ -1028,7 +1028,7 @@ class TestGetUiTranslationCaseInsensitive:
 
     def test_get_ui_translation_case_insensitive_uppercase(
         self, vocabulary_module_with_case_variants: VocabularyModule
-    ):
+    ) -> None:
         """測試大小寫不敏感：查詢小寫可匹配大寫詞彙"""
         result = vocabulary_module_with_case_variants.get_ui_translation(
             "uppercase_term", target_locales="zh-Hant"
@@ -1039,7 +1039,7 @@ class TestGetUiTranslationCaseInsensitive:
 
     def test_get_ui_translation_case_insensitive_lowercase(
         self, vocabulary_module_with_case_variants: VocabularyModule
-    ):
+    ) -> None:
         """測試大小寫不敏感：查詢大寫可匹配小寫詞彙"""
         result = vocabulary_module_with_case_variants.get_ui_translation(
             "LOWERCASE TERM", target_locales="zh-Hant"
@@ -1050,7 +1050,7 @@ class TestGetUiTranslationCaseInsensitive:
 
     def test_get_ui_translation_case_insensitive_mixed(
         self, vocabulary_module_with_case_variants: VocabularyModule
-    ):
+    ) -> None:
         """測試大小寫不敏感：查詢混合大小寫"""
         result = vocabulary_module_with_case_variants.get_ui_translation(
             "mixedcase", target_locales="zh-Hant"
@@ -1061,7 +1061,7 @@ class TestGetUiTranslationCaseInsensitive:
 
     def test_get_ui_translation_searches_framework(
         self, vocabulary_module_with_case_variants: VocabularyModule
-    ):
+    ) -> None:
         """測試搜尋範圍：可找到 Framework 詞彙"""
         result = vocabulary_module_with_case_variants.get_ui_translation(
             "CATEGORIES", target_locales="zh-Hant"
@@ -1073,7 +1073,7 @@ class TestGetUiTranslationCaseInsensitive:
 
     def test_get_ui_translation_searches_framework_case_insensitive(
         self, vocabulary_module_with_case_variants: VocabularyModule
-    ):
+    ) -> None:
         """測試搜尋範圍：Framework 詞彙也支援大小寫不敏感"""
         result = vocabulary_module_with_case_variants.get_ui_translation(
             "Categories", target_locales="zh-Hant"
@@ -1084,7 +1084,7 @@ class TestGetUiTranslationCaseInsensitive:
 
     def test_get_ui_translation_searches_framework_languages(
         self, vocabulary_module_with_case_variants: VocabularyModule
-    ):
+    ) -> None:
         """測試搜尋範圍：可找到 Framework 的 LANGUAGES 詞彙"""
         result = vocabulary_module_with_case_variants.get_ui_translation(
             "Languages", target_locales="zh-Hant"

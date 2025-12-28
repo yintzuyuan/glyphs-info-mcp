@@ -10,7 +10,7 @@ from glyphs_info_mcp.modules.sdk_searcher import SDKSearcher
 class TestSDKSearcher:
     """Test SDK searcher"""
 
-    def test_should_create_searcher_with_index(self):
+    def test_should_create_searcher_with_index(self) -> None:
         """Should create searcher with index"""
         # Arrange
         index = {
@@ -24,7 +24,7 @@ class TestSDKSearcher:
         # Assert
         assert searcher.index == index
 
-    def test_should_search_guides_by_keyword(self):
+    def test_should_search_guides_by_keyword(self) -> None:
         """Should search guides by keyword"""
         # Arrange
         index = {
@@ -49,7 +49,7 @@ class TestSDKSearcher:
         assert results[0]["type"] == "guide"
         assert "Filter" in results[0]["content"]
 
-    def test_should_search_implementation_by_keyword(self):
+    def test_should_search_implementation_by_keyword(self) -> None:
         """Should search implementation code by keyword"""
         # Arrange
         index = {
@@ -74,7 +74,7 @@ class TestSDKSearcher:
         assert results[0]["type"] == "implementation"
         assert "FilterWithDialog" in results[0]["content"]
 
-    def test_should_return_formatted_results(self):
+    def test_should_return_formatted_results(self) -> None:
         """Should return formatted search results"""
         # Arrange
         index = {
@@ -102,7 +102,7 @@ class TestSDKSearcher:
         assert "content" in result
         assert "relevance_score" in result
 
-    def test_should_search_across_multiple_categories(self):
+    def test_should_search_across_multiple_categories(self) -> None:
         """Should search across multiple categories"""
         # Arrange
         index = {

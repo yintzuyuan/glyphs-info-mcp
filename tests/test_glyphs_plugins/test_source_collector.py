@@ -173,7 +173,7 @@ class TestSourceCollector:
 
         return plugin_dir
 
-    def test_collect_python_plugin_sources(self, python_plugin: Path):
+    def test_collect_python_plugin_sources(self, python_plugin: Path) -> None:
         """測試收集 Python 外掛原始碼"""
         classifier = FileClassifier()
         collector = SourceCollector(classifier)
@@ -192,7 +192,7 @@ class TestSourceCollector:
         assert "resource" in result
         assert any("README.md" in str(f) for f in result["resource"])
 
-    def test_collect_objc_plugin_sources(self, objc_plugin: Path):
+    def test_collect_objc_plugin_sources(self, objc_plugin: Path) -> None:
         """測試收集 Objective-C 外掛原始碼"""
         classifier = FileClassifier()
         collector = SourceCollector(classifier)
@@ -208,7 +208,7 @@ class TestSourceCollector:
         # 應該包含資源檔案
         assert "resource" in result
 
-    def test_collect_mixed_plugin_sources(self, mixed_plugin: Path):
+    def test_collect_mixed_plugin_sources(self, mixed_plugin: Path) -> None:
         """測試收集混合外掛原始碼"""
         classifier = FileClassifier()
         collector = SourceCollector(classifier)
@@ -224,7 +224,7 @@ class TestSourceCollector:
         assert "ui_xib" in result
         assert len(result["ui_xib"]) == 1
 
-    def test_collect_respects_file_size_limit(self, tmp_path: Path):
+    def test_collect_respects_file_size_limit(self, tmp_path: Path) -> None:
         """測試檔案大小限制"""
         plugin_dir = tmp_path / "LargePlugin"
         plugin_dir.mkdir()
@@ -247,7 +247,7 @@ class TestSourceCollector:
         assert len(result["python_source"]) == 1
         assert result["python_source"][0].name == "normal.py"
 
-    def test_collect_respects_total_size_limit(self, tmp_path: Path):
+    def test_collect_respects_total_size_limit(self, tmp_path: Path) -> None:
         """測試總大小限制"""
         plugin_dir = tmp_path / "ManyFilesPlugin"
         plugin_dir.mkdir()
@@ -271,7 +271,7 @@ class TestSourceCollector:
         assert total_files < 10  # 不會全部收集
         assert total_files >= 8  # 至少收集 8 個 (480KB < 500KB)
 
-    def test_collect_excludes_hidden_files(self, tmp_path: Path):
+    def test_collect_excludes_hidden_files(self, tmp_path: Path) -> None:
         """測試排除隱藏檔案"""
         plugin_dir = tmp_path / "HiddenFilesPlugin"
         plugin_dir.mkdir()
@@ -297,7 +297,7 @@ class TestSourceCollector:
         assert len(result["python_source"]) == 1
         assert result["python_source"][0].name == "visible.py"
 
-    def test_collect_excludes_pycache(self, tmp_path: Path):
+    def test_collect_excludes_pycache(self, tmp_path: Path) -> None:
         """測試排除 __pycache__ 目錄"""
         plugin_dir = tmp_path / "PyCachePlugin"
         plugin_dir.mkdir()
@@ -322,7 +322,7 @@ class TestSourceCollector:
         assert len(result["python_source"]) == 1
         assert "__pycache__" not in str(result["python_source"][0])
 
-    def test_collect_binary_only_plugin(self, binary_only_plugin: Path):
+    def test_collect_binary_only_plugin(self, binary_only_plugin: Path) -> None:
         """測試純二進位外掛（無原始碼）"""
         classifier = FileClassifier()
         collector = SourceCollector(classifier)
@@ -337,7 +337,7 @@ class TestSourceCollector:
         assert "binary_stub" in result
         assert len(result["binary_stub"]) >= 1
 
-    def test_collect_empty_directory(self, tmp_path: Path):
+    def test_collect_empty_directory(self, tmp_path: Path) -> None:
         """測試空目錄"""
         empty_dir = tmp_path / "EmptyPlugin"
         empty_dir.mkdir()
@@ -350,7 +350,7 @@ class TestSourceCollector:
         # 應該返回空字典
         assert result == {}
 
-    def test_collect_nonexistent_directory(self, tmp_path: Path):
+    def test_collect_nonexistent_directory(self, tmp_path: Path) -> None:
         """測試不存在的目錄"""
         classifier = FileClassifier()
         collector = SourceCollector(classifier)
@@ -360,7 +360,7 @@ class TestSourceCollector:
         # 應該返回空字典
         assert result == {}
 
-    def test_collect_with_ui_files_excluded(self, mixed_plugin: Path):
+    def test_collect_with_ui_files_excluded(self, mixed_plugin: Path) -> None:
         """測試排除 UI 檔案選項"""
         classifier = FileClassifier()
         collector = SourceCollector(classifier, include_ui_files=False)
@@ -374,7 +374,7 @@ class TestSourceCollector:
         assert "python_source" in result
         assert "objc_header" in result
 
-    def test_collect_returns_sorted_files(self, tmp_path: Path):
+    def test_collect_returns_sorted_files(self, tmp_path: Path) -> None:
         """測試返回的檔案已排序"""
         plugin_dir = tmp_path / "SortedPlugin"
         plugin_dir.mkdir()

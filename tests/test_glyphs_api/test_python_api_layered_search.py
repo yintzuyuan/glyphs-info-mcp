@@ -11,14 +11,17 @@ Issue #70: 參考 #72/#73 的 match_type 機制，讓 AI 能夠主動選擇搜�
 """
 
 import pytest
+from typing import Generator
 from unittest.mock import Mock, patch
+
+from glyphs_info_mcp.modules.glyphs_api.api.python_api_native import PythonAPIManager
 
 
 class TestLayeredSearchBothLayers:
     """測試分層搜尋同時返回兩層結果"""
 
     @pytest.fixture
-    def mock_accessor(self):
+    def mock_accessor(self) -> Mock:
         """建立模擬的 accessor"""
         accessor = Mock()
         accessor.symbols = {
@@ -29,24 +32,24 @@ class TestLayeredSearchBothLayers:
         return accessor
 
     @pytest.fixture
-    def manager(self, mock_accessor):
+    def manager(self, mock_accessor: Mock) -> Generator[PythonAPIManager, None, None]:
         """建立 PythonAPIManager 實例"""
-        from glyphs_info_mcp.modules.glyphs_api.api.python_api_native import PythonAPIManager
-
         with patch.object(PythonAPIManager, '__init__', lambda self, init_file: None):
             manager = PythonAPIManager.__new__(PythonAPIManager)
             manager.accessor = mock_accessor
-            return manager
+            yield manager
 
-    def test_search_returns_both_symbol_and_member_layers(self, manager):
+    def test_search_returns_both_symbol_and_member_layers(
+        self, manager: PythonAPIManager
+    ) -> None:
         """測試搜尋同時返回符號層和成員層結果"""
         # 符號層找到 STROKEWIDTH 常數
-        manager.accessor.search.return_value = [
+        manager.accessor.search.return_value = [  # type: ignore[attr-defined]
             {'type': 'constant', 'name': 'STROKEWIDTH', 'score': 0.7}
         ]
 
         # 成員層找到 width 屬性
-        manager.accessor.get_class.return_value = {
+        manager.accessor.get_class.return_value = {  # type: ignore[attr-defined]
             'properties': ['width', 'height', 'bounds'],
             'methods': ['setWidth']
         }
@@ -59,12 +62,12 @@ class TestLayeredSearchBothLayers:
         assert 'Symbol Layer' in result or 'symbol' in result.lower()
         assert 'Member Layer' in result or 'member' in result.lower()
 
-    def test_search_shows_match_type_in_output(self, manager):
+    def test_search_shows_match_type_in_output(self, manager: PythonAPIManager) -> None:
         """測試輸出格式標示匹配層級"""
-        manager.accessor.search.return_value = [
+        manager.accessor.search.return_value = [  # type: ignore[attr-defined]
             {'type': 'class', 'name': 'GSFont', 'score': 1.0}
         ]
-        manager.accessor.get_class.return_value = {
+        manager.accessor.get_class.return_value = {  # type: ignore[attr-defined]
             'properties': ['fonts'],
             'methods': []
         }
@@ -75,12 +78,14 @@ class TestLayeredSearchBothLayers:
         assert 'Symbol Layer' in result or 'symbol' in result.lower()
         assert 'Member Layer' in result or 'member' in result.lower()
 
-    def test_search_all_scope_searches_both_layers(self, manager):
+    def test_search_all_scope_searches_both_layers(
+        self, manager: PythonAPIManager
+    ) -> None:
         """測試 scope='all' 搜尋兩層"""
-        manager.accessor.search.return_value = [
+        manager.accessor.search.return_value = [  # type: ignore[attr-defined]
             {'type': 'constant', 'name': 'STROKEWIDTH', 'score': 0.7}
         ]
-        manager.accessor.get_class.return_value = {
+        manager.accessor.get_class.return_value = {  # type: ignore[attr-defined]
             'properties': ['width'],
             'methods': []
         }
@@ -88,7 +93,7 @@ class TestLayeredSearchBothLayers:
         result = manager.search('width', search_scope='all')
 
         # 應該呼叫 accessor.search
-        manager.accessor.search.assert_called()
+        manager.accessor.search.assert_called()  # type: ignore[attr-defined]
         # 應該有兩層結果
         assert 'STROKEWIDTH' in result
         assert 'width' in result
@@ -98,7 +103,7 @@ class TestScopeParameterEnhancement:
     """測試 scope 參數增強功能"""
 
     @pytest.fixture
-    def mock_accessor(self):
+    def mock_accessor(self) -> Mock:
         accessor = Mock()
         accessor.symbols = {
             'classes': ['GSFont', 'GSLayer'],
@@ -108,20 +113,18 @@ class TestScopeParameterEnhancement:
         return accessor
 
     @pytest.fixture
-    def manager(self, mock_accessor):
-        from glyphs_info_mcp.modules.glyphs_api.api.python_api_native import PythonAPIManager
-
+    def manager(self, mock_accessor: Mock) -> Generator[PythonAPIManager, None, None]:
         with patch.object(PythonAPIManager, '__init__', lambda self, init_file: None):
             manager = PythonAPIManager.__new__(PythonAPIManager)
             manager.accessor = mock_accessor
-            return manager
+            yield manager
 
-    def test_scope_members_skips_symbol_layer(self, manager):
+    def test_scope_members_skips_symbol_layer(self, manager: PythonAPIManager) -> None:
         """測試 scope='members' 跳過符號層"""
-        manager.accessor.search.return_value = [
+        manager.accessor.search.return_value = [  # type: ignore[attr-defined]
             {'type': 'constant', 'name': 'STROKEWIDTH', 'score': 0.7}
         ]
-        manager.accessor.get_class.return_value = {
+        manager.accessor.get_class.return_value = {  # type: ignore[attr-defined]
             'properties': ['width', 'height'],
             'methods': ['setWidth']
         }
@@ -133,9 +136,11 @@ class TestScopeParameterEnhancement:
         # 應該包含成員層結果
         assert 'width' in result
 
-    def test_scope_properties_only_returns_properties(self, manager):
+    def test_scope_properties_only_returns_properties(
+        self, manager: PythonAPIManager
+    ) -> None:
         """測試 scope='properties' 只返回屬性"""
-        manager.accessor.get_class.return_value = {
+        manager.accessor.get_class.return_value = {  # type: ignore[attr-defined]
             'properties': ['width', 'height'],
             'methods': ['setWidth', 'calculateWidth']
         }
@@ -149,9 +154,9 @@ class TestScopeParameterEnhancement:
         # 不應該包含方法（視實作而定，方法名稱中可能包含 width）
         # 但如果是嚴格篩選，setWidth 不應該出現在 properties scope
 
-    def test_scope_methods_only_returns_methods(self, manager):
+    def test_scope_methods_only_returns_methods(self, manager: PythonAPIManager) -> None:
         """測試 scope='methods' 只返回方法"""
-        manager.accessor.get_class.return_value = {
+        manager.accessor.get_class.return_value = {  # type: ignore[attr-defined]
             'properties': ['width'],
             'methods': ['setWidth', 'calculateWidth']
         }
@@ -163,27 +168,27 @@ class TestScopeParameterEnhancement:
         # 應該包含方法
         assert 'setWidth' in result or 'calculateWidth' in result
 
-    def test_scope_classes_still_works(self, manager):
+    def test_scope_classes_still_works(self, manager: PythonAPIManager) -> None:
         """測試 scope='classes' 仍正常運作（向後相容）"""
-        manager.accessor.search.return_value = [
+        manager.accessor.search.return_value = [  # type: ignore[attr-defined]
             {'type': 'class', 'name': 'GSLayer', 'score': 1.0}
         ]
 
         result = manager.search('layer', search_scope='classes')
 
         # 應該呼叫 accessor.search 並傳入正確的 symbol_type
-        manager.accessor.search.assert_called_with('layer', symbol_type='classes')
+        manager.accessor.search.assert_called_with('layer', symbol_type='classes')  # type: ignore[attr-defined]
         assert 'GSLayer' in result
 
-    def test_scope_constants_still_works(self, manager):
+    def test_scope_constants_still_works(self, manager: PythonAPIManager) -> None:
         """測試 scope='constants' 仍正常運作（向後相容）"""
-        manager.accessor.search.return_value = [
+        manager.accessor.search.return_value = [  # type: ignore[attr-defined]
             {'type': 'constant', 'name': 'STROKEWIDTH', 'score': 1.0}
         ]
 
         result = manager.search('stroke', search_scope='constants')
 
-        manager.accessor.search.assert_called_with('stroke', symbol_type='constants')
+        manager.accessor.search.assert_called_with('stroke', symbol_type='constants')  # type: ignore[attr-defined]
         assert 'STROKEWIDTH' in result
 
 
@@ -191,14 +196,14 @@ class TestLayeredOutputFormat:
     """測試分層輸出格式"""
 
     @pytest.fixture
-    def manager(self):
-        from glyphs_info_mcp.modules.glyphs_api.api.python_api_native import PythonAPIManager
-
+    def manager(self) -> Generator[PythonAPIManager, None, None]:
         with patch.object(PythonAPIManager, '__init__', lambda self, init_file: None):
             manager = PythonAPIManager.__new__(PythonAPIManager)
-            return manager
+            yield manager
 
-    def test_format_layered_results_groups_by_match_type(self, manager):
+    def test_format_layered_results_groups_by_match_type(
+        self, manager: PythonAPIManager
+    ) -> None:
         """測試 _format_layered_results 按匹配層級分組"""
         results = [
             {'type': 'constant', 'name': 'STROKEWIDTH', 'score': 0.7, 'match_type': 'symbol'},
@@ -216,7 +221,9 @@ class TestLayeredOutputFormat:
         assert 'GSLayer' in output
         assert 'width' in output
 
-    def test_format_layered_results_shows_usage_hints(self, manager):
+    def test_format_layered_results_shows_usage_hints(
+        self, manager: PythonAPIManager
+    ) -> None:
         """測試格式化輸出包含使用提示"""
         results = [
             {'type': 'property', 'class': 'GSLayer', 'name': 'width', 'score': 0.8, 'match_type': 'member'},
@@ -227,7 +234,9 @@ class TestLayeredOutputFormat:
         # 應該包含使用提示
         assert 'api_get_python_member' in output or '查看詳情' in output
 
-    def test_format_layered_results_empty_symbol_layer(self, manager):
+    def test_format_layered_results_empty_symbol_layer(
+        self, manager: PythonAPIManager
+    ) -> None:
         """測試符號層無結果時的輸出"""
         results = [
             {'type': 'property', 'class': 'GSFont', 'name': 'userData', 'score': 0.8, 'match_type': 'member'},
@@ -239,7 +248,9 @@ class TestLayeredOutputFormat:
         assert 'Member Layer' in output or 'member' in output.lower()
         assert 'userData' in output
 
-    def test_format_layered_results_empty_member_layer(self, manager):
+    def test_format_layered_results_empty_member_layer(
+        self, manager: PythonAPIManager
+    ) -> None:
         """測試成員層無結果時的輸出"""
         results = [
             {'type': 'class', 'name': 'GSFont', 'score': 1.0, 'match_type': 'symbol'},
@@ -256,14 +267,12 @@ class TestDeduplicationAndSorting:
     """測試去重和排序邏輯"""
 
     @pytest.fixture
-    def manager(self):
-        from glyphs_info_mcp.modules.glyphs_api.api.python_api_native import PythonAPIManager
-
+    def manager(self) -> Generator[PythonAPIManager, None, None]:
         with patch.object(PythonAPIManager, '__init__', lambda self, init_file: None):
             manager = PythonAPIManager.__new__(PythonAPIManager)
-            return manager
+            yield manager
 
-    def test_deduplicate_removes_duplicates(self, manager):
+    def test_deduplicate_removes_duplicates(self, manager: PythonAPIManager) -> None:
         """測試去重功能"""
         results = [
             {'type': 'property', 'class': 'GSLayer', 'name': 'width', 'score': 0.8, 'match_type': 'member'},
@@ -275,7 +284,7 @@ class TestDeduplicationAndSorting:
         # 應該只有一個結果
         assert len(deduplicated) == 1
 
-    def test_sort_by_score_descending(self, manager):
+    def test_sort_by_score_descending(self, manager: PythonAPIManager) -> None:
         """測試按評分降序排列"""
         results = [
             {'type': 'property', 'name': 'lowScore', 'score': 0.3, 'match_type': 'member'},
@@ -290,7 +299,9 @@ class TestDeduplicationAndSorting:
         assert sorted_results[1]['name'] == 'midScore'
         assert sorted_results[2]['name'] == 'lowScore'
 
-    def test_symbol_layer_before_member_layer_at_same_score(self, manager):
+    def test_symbol_layer_before_member_layer_at_same_score(
+        self, manager: PythonAPIManager
+    ) -> None:
         """測試相同評分時，符號層優先於成員層"""
         results = [
             {'type': 'property', 'class': 'GSLayer', 'name': 'width', 'score': 0.8, 'match_type': 'member'},

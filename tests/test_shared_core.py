@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
-def test_shared_base_module_interface():
+def test_shared_base_module_interface() -> None:
     """測試共享基底模組介面"""
     # 這個測試會失敗，因為還沒有實作
     # 這是 TDD 的紅燈階段
@@ -21,7 +21,7 @@ def test_shared_base_module_interface():
     assert hasattr(BaseMCPModule, "get_module_info")
 
 
-def test_module_independence():
+def test_module_independence() -> None:
     """測試模組間無直接依賴"""
     # 確保共享基底類不依賴特定模組
     from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
@@ -34,7 +34,7 @@ def test_module_independence():
     assert "api_data" not in class_attrs
 
 
-def test_shared_interfaces():
+def test_shared_interfaces() -> None:
     """測試共享介面定義"""
     from glyphs_info_mcp.shared.core.interfaces import ModuleInterface, ToolInterface
 

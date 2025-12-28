@@ -28,7 +28,7 @@ from glyphs_info_mcp.shared.core.error_handling import (
 class TestMCPError:
     """測試 MCPError 基本功能"""
 
-    def test_basic_error_creation(self):
+    def test_basic_error_creation(self) -> None:
         """測試基本錯誤建立"""
         error = MCPError(
             message="Test error",
@@ -39,7 +39,7 @@ class TestMCPError:
         assert error.suggestions == []
         assert error.context == {}
 
-    def test_error_with_suggestions(self):
+    def test_error_with_suggestions(self) -> None:
         """測試帶建議的錯誤"""
         error = MCPError(
             message="Parameter error",
@@ -52,7 +52,7 @@ class TestMCPError:
         assert "1. Suggestion 1" in message
         assert "2. Suggestion 2" in message
 
-    def test_error_with_context(self):
+    def test_error_with_context(self) -> None:
         """測試帶上下文的錯誤"""
         error = MCPError(
             message="Resource not found",
@@ -68,7 +68,7 @@ class TestMCPError:
 class TestErrorHandler:
     """測試 ErrorHandler 標準化錯誤處理"""
 
-    def test_handle_not_found_basic(self):
+    def test_handle_not_found_basic(self) -> None:
         """測試基本的未找到錯誤"""
         error = ErrorHandler.handle_not_found(
             resource_type="class",
@@ -78,7 +78,7 @@ class TestErrorHandler:
         assert len(error.suggestions) > 0
         assert "NonExistentClass" in error.context["searched_id"]
 
-    def test_handle_not_found_with_alternatives(self):
+    def test_handle_not_found_with_alternatives(self) -> None:
         """測試帶替代選項的未找到錯誤"""
         error = ErrorHandler.handle_not_found(
             resource_type="method",
@@ -91,7 +91,7 @@ class TestErrorHandler:
         assert "api_search" in message
         assert error.context["alternatives_count"] == 3
 
-    def test_handle_invalid_parameter(self):
+    def test_handle_invalid_parameter(self) -> None:
         """測試無效參數錯誤"""
         error = ErrorHandler.handle_invalid_parameter(
             parameter_name="max_results",
@@ -102,7 +102,7 @@ class TestErrorHandler:
         assert "1000" in error.message
         assert "1-100" in error.to_user_message()
 
-    def test_handle_invalid_parameter_with_options(self):
+    def test_handle_invalid_parameter_with_options(self) -> None:
         """測試帶選項列表的無效參數錯誤"""
         error = ErrorHandler.handle_invalid_parameter(
             parameter_name="format",
@@ -115,7 +115,7 @@ class TestErrorHandler:
         assert "json" in message
         assert "markdown" in message
 
-    def test_handle_too_many_results(self):
+    def test_handle_too_many_results(self) -> None:
         """測試結果過多錯誤"""
         error = ErrorHandler.handle_too_many_results(
             result_count=1000,
@@ -127,7 +127,7 @@ class TestErrorHandler:
         assert "category" in error.to_user_message()
         assert error.context["result_count"] == 1000
 
-    def test_handle_network_error(self):
+    def test_handle_network_error(self) -> None:
         """測試網路錯誤"""
         error = ErrorHandler.handle_network_error(
             operation="Search Glyphs tutorials",
@@ -138,7 +138,7 @@ class TestErrorHandler:
         # URL 不應該完整顯示在上下文中（安全考量）
         assert "https://glyphsapp.com/tutorials" not in error.to_user_message()
 
-    def test_handle_initialization_error(self):
+    def test_handle_initialization_error(self) -> None:
         """測試初始化錯誤"""
         error = ErrorHandler.handle_initialization_error(
             module_name="handbook",
@@ -149,7 +149,7 @@ class TestErrorHandler:
         assert "Data file not found" in error.message
         assert "download_data.sh" in error.to_user_message()
 
-    def test_handle_timeout(self):
+    def test_handle_timeout(self) -> None:
         """測試逾時錯誤"""
         error = ErrorHandler.handle_timeout(
             operation="Search large database",
@@ -164,26 +164,26 @@ class TestErrorHandler:
 class TestShortcutFunctions:
     """測試快捷方法"""
 
-    def test_not_found_error_shortcut(self):
+    def test_not_found_error_shortcut(self) -> None:
         """測試 not_found_error 快捷方法"""
         error = not_found_error("script", "MyScript.py")
         assert isinstance(error, MCPError)
         assert error.category == ErrorCategory.RESOURCE_NOT_FOUND
         assert "MyScript.py" in error.message
 
-    def test_invalid_param_error_shortcut(self):
+    def test_invalid_param_error_shortcut(self) -> None:
         """測試 invalid_param_error 快捷方法"""
         error = invalid_param_error("query", "")
         assert isinstance(error, MCPError)
         assert error.category == ErrorCategory.INVALID_INPUT
 
-    def test_too_many_results_error_shortcut(self):
+    def test_too_many_results_error_shortcut(self) -> None:
         """測試 too_many_results_error 快捷方法"""
         error = too_many_results_error(500, 100)
         assert isinstance(error, MCPError)
         assert error.category == ErrorCategory.RESOURCE_EXHAUSTED
 
-    def test_network_error_shortcut(self):
+    def test_network_error_shortcut(self) -> None:
         """測試 network_error 快捷方法"""
         error = network_error("Fetch tutorial")
         assert isinstance(error, MCPError)
@@ -193,14 +193,14 @@ class TestShortcutFunctions:
 class TestSafeErrorMessage:
     """測試安全錯誤訊息轉換"""
 
-    def test_mcp_error_passthrough(self):
+    def test_mcp_error_passthrough(self) -> None:
         """測試 MCPError 直接傳遞"""
         original_error = not_found_error("file", "test.txt")
         message = safe_error_message(original_error, "Read file")
         assert "test.txt" in message
         assert "❌" in message
 
-    def test_generic_exception_handling(self):
+    def test_generic_exception_handling(self) -> None:
         """測試通用異常處理"""
         generic_error = ValueError("Some internal error")
         message = safe_error_message(generic_error, "Process data")
@@ -211,7 +211,7 @@ class TestSafeErrorMessage:
         assert "❌" in message
 
 
-def test_error_message_formatting():
+def test_error_message_formatting() -> None:
     """測試錯誤訊息格式化的完整性"""
     error = ErrorHandler.handle_not_found(
         resource_type="API method",
