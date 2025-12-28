@@ -26,7 +26,7 @@ class PluginToolsModule(BaseMCPModule):
 
     def __init__(self, name: str, data_path: Path | None = None):
         super().__init__(name, data_path)
-        self.plugin_manager = None
+        self.plugin_manager: PluginToolsManager | None = None
 
     def initialize(self) -> bool:
         """Initialize the plugin tools module"""
@@ -51,11 +51,11 @@ class PluginToolsModule(BaseMCPModule):
             logger.error(f"Failed to initialize plugin tools module: {e}")
             return False
 
-    def register_tools(self, mcp_instance) -> None:
+    def register_tools(self, mcp_instance: Any) -> None:
         """Register MCP tools for plugin functionality"""
 
         @mcp_instance.tool()
-        def search_plugins(query: str, plugin_type: str = None) -> str:
+        def search_plugins(query: str, plugin_type: str | None = None) -> str:
             """
             Search for Glyphs.app plugins by name, type, or functionality
 
@@ -66,7 +66,7 @@ class PluginToolsModule(BaseMCPModule):
             Returns:
                 Search results for plugins matching the query
             """
-            if not self.is_initialized:
+            if not self.is_initialized or self.plugin_manager is None:
                 return "Plugin tools module not initialized"
 
             return self.plugin_manager.search_plugins(query, plugin_type)
@@ -82,7 +82,7 @@ class PluginToolsModule(BaseMCPModule):
             Returns:
                 Detailed information about the plugin including methods and usage
             """
-            if not self.is_initialized:
+            if not self.is_initialized or self.plugin_manager is None:
                 return "Plugin tools module not initialized"
 
             return self.plugin_manager.get_plugin_details(plugin_name)
@@ -98,7 +98,7 @@ class PluginToolsModule(BaseMCPModule):
             Returns:
                 Detailed information about the method across all plugins
             """
-            if not self.is_initialized:
+            if not self.is_initialized or self.plugin_manager is None:
                 return "Plugin tools module not initialized"
 
             return self.plugin_manager.get_method_details(method_name)
@@ -115,7 +115,7 @@ class PluginToolsModule(BaseMCPModule):
             Returns:
                 Generated Python code template for the plugin
             """
-            if not self.is_initialized:
+            if not self.is_initialized or self.plugin_manager is None:
                 return "Plugin tools module not initialized"
 
             return self.plugin_manager.generate_plugin_code(plugin_type, plugin_name)
@@ -128,7 +128,7 @@ class PluginToolsModule(BaseMCPModule):
             Returns:
                 List of all available plugin types and their purposes
             """
-            if not self.is_initialized:
+            if not self.is_initialized or self.plugin_manager is None:
                 return "Plugin tools module not initialized"
 
             return self.plugin_manager.list_available_plugins()
@@ -141,7 +141,7 @@ class PluginToolsModule(BaseMCPModule):
             Returns:
                 Information about plugin class inheritance relationships
             """
-            if not self.is_initialized:
+            if not self.is_initialized or self.plugin_manager is None:
                 return "Plugin tools module not initialized"
 
             return self.plugin_manager.get_inheritance_info()
@@ -185,7 +185,7 @@ class PluginToolsModule(BaseMCPModule):
 class PluginToolsManager:
     """Plugin tools manager for handling plugin data using SDK Native Accessor"""
 
-    def __init__(self, plugins_resource_dir: str, sdk_accessor=None):
+    def __init__(self, plugins_resource_dir: str, sdk_accessor: Any = None):
         """
         Initialize plugin tools manager
 
@@ -200,16 +200,16 @@ class PluginToolsManager:
         self.guides_dir = self.resource_dir / "guides"
 
         # SDK Native Accessor (preferred)
-        self.sdk_accessor = sdk_accessor
+        self.sdk_accessor: Any = sdk_accessor
 
         # Plugin templates cache (loaded from accessor or JSON)
-        self.plugin_registry = {}
-        self.method_index = {}
-        self.inheritance_map = {}
+        self.plugin_registry: dict[str, Any] = {}
+        self.method_index: dict[str, Any] = {}
+        self.inheritance_map: dict[str, Any] = {}
 
         self._load_metadata()
 
-    def _load_metadata(self):
+    def _load_metadata(self) -> None:
         """Load metadata from SDK Native Accessor or fallback to JSON"""
         try:
             # Prefer SDK Native Accessor
@@ -224,7 +224,7 @@ class PluginToolsManager:
         except Exception as e:
             logger.error(f"Failed to load metadata: {e}")
 
-    def _load_from_accessor(self):
+    def _load_from_accessor(self) -> None:
         """Load template data from SDK Native Accessor"""
         templates = self.sdk_accessor.list_plugin_templates()
 
@@ -244,7 +244,7 @@ class PluginToolsManager:
 
         logger.info(f"Loaded {len(templates)} plugin templates from SDK Native Accessor")
 
-    def _load_from_json(self):
+    def _load_from_json(self) -> None:
         """Load from JSON files (legacy support)"""
         # Load plugin registry
         registry_file = self.metadata_dir / "plugin_registry.json"

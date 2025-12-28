@@ -92,7 +92,7 @@ class SDKSearcher:
         # Tokenized matching (already filtered short words via tokenize_query)
         word_matches = 0
         for word in query_words:
-            word_score = 0
+            word_score: float = 0.0
 
             if word in content:
                 word_score += FieldWeights.OWNER  # 0.4

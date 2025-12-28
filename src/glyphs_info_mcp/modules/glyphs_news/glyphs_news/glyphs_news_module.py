@@ -37,7 +37,7 @@ class GlyphsNewsModule(BaseMCPModule):
         self.web_fetcher = WebFetcher()
         self.search_engine = None  # Will be injected by server.py unified search engine
 
-    def set_search_engine(self, search_engine):
+    def set_search_engine(self, search_engine: Any) -> None:
         """Set unified search engine (called by server.py)"""
         self.search_engine = search_engine
 
@@ -55,7 +55,7 @@ class GlyphsNewsModule(BaseMCPModule):
             logger.error(f"Failed to initialize Glyphs News module: {e}")
             return False
 
-    def core_search(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:
+    def core_search(self, query: str, max_results: int = 5, **kwargs: Any) -> list[dict[str, Any]]:
         """Core search function - for unified search engine use only
 
         Returns structured search results without vocabulary processing or formatting

@@ -15,7 +15,7 @@ import plistlib
 import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 import httpx
 
 from glyphs_info_mcp.shared.core.scoring_weights import (
@@ -399,8 +399,8 @@ class OfficialRegistry:
         self,
         query: str,
         max_results: int = 10,
-        **kwargs
-    ) -> list[dict]:
+        **kwargs: Any
+    ) -> list[dict[str, Any]]:
         """Core search function - exclusively for unified search engine
 
         Args:

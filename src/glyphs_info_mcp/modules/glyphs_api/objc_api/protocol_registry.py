@@ -7,7 +7,7 @@ providing zero-maintenance Protocol method query service.
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 from glyphs_info_mcp.modules.glyphs_api.api.objc_header_parser import HeaderParser
 from glyphs_info_mcp.modules.glyphs_api.objc_api.pyobjc_converter import PyObjCConverter
 
@@ -143,7 +143,7 @@ class ProtocolRegistry:
         self,
         protocol_name: str,
         manual_set: set[str]
-    ) -> dict[str, any]:
+    ) -> dict[str, Any]:
         """
         Validate differences between manual list and auto-loaded methods
 
@@ -231,7 +231,7 @@ class ProtocolRegistry:
         if not protocol_def:
             return {"required": [], "optional": []}
 
-        result = {"required": [], "optional": []}
+        result: dict[str, list[str]] = {"required": [], "optional": []}
 
         # Process required methods
         for method in protocol_def.get('required_methods', []):

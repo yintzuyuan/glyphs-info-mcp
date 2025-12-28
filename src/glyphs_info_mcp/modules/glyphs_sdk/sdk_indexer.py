@@ -100,7 +100,7 @@ class SDKIndexer:
         Returns:
             Index dictionary containing all content categories
         """
-        index = {
+        index: dict[str, list[dict[str, Any]]] = {
             "guides": [],
             "implementation": [],
             "examples": [],

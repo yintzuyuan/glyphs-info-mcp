@@ -10,7 +10,8 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any
+from types import ModuleType
+from typing import Any, Callable
 
 # Use shared core library
 project_root = Path(__file__).parent.parent.parent.parent
@@ -25,10 +26,14 @@ logger = logging.getLogger(__name__)
 # Dynamically import APIModule
 import importlib.util
 
-def import_api_module(module_path: str, class_name: str):
+def import_api_module(module_path: str, class_name: str) -> Any:
     """Dynamically import API module"""
     spec = importlib.util.spec_from_file_location(class_name.lower(), module_path)
-    module = importlib.util.module_from_spec(spec)
+    if spec is None:
+        raise ImportError(f"Cannot find module spec for {module_path}")
+    module: ModuleType = importlib.util.module_from_spec(spec)
+    if spec.loader is None:
+        raise ImportError(f"Module spec has no loader for {module_path}")
     spec.loader.exec_module(module)
     return getattr(module, class_name)
 
@@ -58,7 +63,7 @@ class ObjectiveCAPIModule(BaseMCPModule):
         self.api_module = APIModule("api-headers", data_path)
         self.search_engine = None
 
-    def set_search_engine(self, search_engine):
+    def set_search_engine(self, search_engine: Any) -> None:
         """Set unified search engine (called by server.py)"""
         self.search_engine = search_engine
         # Sync to underlying API module
@@ -90,7 +95,7 @@ class ObjectiveCAPIModule(BaseMCPModule):
             logger.error(f"Failed to initialize Objective-C API module: {e}")
             return False
 
-    def core_search(self, query: str, max_results: int = 5, scope: str = "auto") -> list[dict[str, Any]]:
+    def core_search(self, query: str, max_results: int = 5, **kwargs: Any) -> list[dict[str, Any]]:
         """Core search function - exclusively for unified search engine
 
         Returns structured search results without vocabulary processing or formatting
@@ -98,7 +103,7 @@ class ObjectiveCAPIModule(BaseMCPModule):
         Args:
             query: Search query (preprocessed)
             max_results: Maximum number of results
-            scope: Search scope
+            **kwargs: Additional search parameters (e.g., scope)
 
         Returns:
             List of structured search results
@@ -108,11 +113,12 @@ class ObjectiveCAPIModule(BaseMCPModule):
 
         # Delegate to underlying API module's core search
         if hasattr(self.api_module, 'core_search'):
+            scope = kwargs.get('scope', 'auto')
             return self.api_module.core_search(query, max_results, scope)
 
         return []
 
-    def get_tools(self) -> dict[str, callable]:
+    def get_tools(self) -> dict[str, Callable[..., Any]]:
         """Get available tools dictionary - Objective-C Headers + naming conversion tools"""
         return {
             # Headers query tools

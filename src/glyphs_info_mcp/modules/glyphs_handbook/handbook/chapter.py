@@ -5,6 +5,7 @@ Chapter Finder (revised) - Resolves file mapping issues
 import logging
 import re
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +18,10 @@ class ChapterFinder:
         self.index_file = data_path / "index.md"
         self._load_toc()
 
-    def _load_toc(self):
+    def _load_toc(self) -> None:
         """Load table of contents"""
-        self.toc = {}
-        self.file_mapping = {}
+        self.toc: dict[str, dict[str, Any]] = {}
+        self.file_mapping: dict[str, str] = {}
 
         if self.index_file.exists():
             try:
@@ -30,7 +31,7 @@ class ChapterFinder:
             except Exception as e:
                 logger.error(f"Failed to load table of contents: {e}")
 
-    def _parse_toc(self, content: str):
+    def _parse_toc(self, content: str) -> None:
         """Parse table of contents structure"""
         lines = content.split('\n')
 
@@ -59,7 +60,7 @@ class ChapterFinder:
                     }
                     break
 
-    def _build_smart_file_mapping(self):
+    def _build_smart_file_mapping(self) -> None:
         """Smart file mapping algorithm"""
         # Step 1: Collect and analyze all available files
         available_files = {}
@@ -316,7 +317,7 @@ class ChapterFinder:
         output = ["# 📚 Glyphs Handbook Complete Table of Contents\n"]
 
         # Smart sorting
-        def sort_key(chapter_num):
+        def sort_key(chapter_num: str) -> list[int]:
             parts = [int(x) for x in chapter_num.split('.')]
             return parts + [0] * (10 - len(parts))
 

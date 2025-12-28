@@ -37,7 +37,7 @@ class WebSearchAPIModule(BaseMCPModule):
         self._vanilla_search_index: dict[str, Any] = {}  # Vanilla UI search index data
         self.search_engine = None  # Will be injected by server.py
 
-    def set_search_engine(self, search_engine):
+    def set_search_engine(self, search_engine: Any) -> None:
         """Set search engine (called by server.py)"""
         self.search_engine = search_engine
 
@@ -443,7 +443,7 @@ Suggestions:
         # Fetch summaries in parallel
         import asyncio
 
-        async def fetch_match_with_summary(match):
+        async def fetch_match_with_summary(match: dict[str, Any]) -> dict[str, Any]:
             summary = await self._fetch_component_summary(match)
             match['summary'] = summary
             return match
@@ -452,7 +452,7 @@ Suggestions:
             # Limit concurrency to avoid overload
             semaphore = asyncio.Semaphore(5)
 
-            async def fetch_with_semaphore(match):
+            async def fetch_with_semaphore(match: dict[str, Any]) -> dict[str, Any]:
                 async with semaphore:
                     return await fetch_match_with_summary(match)
 
@@ -463,13 +463,13 @@ Suggestions:
             )
 
             # Filter exception results
-            processed_matches = []
-            for result in matches_with_summaries:
-                if isinstance(result, dict):
-                    processed_matches.append(result)
+            processed_matches: list[dict[str, Any]] = []
+            for gather_result in matches_with_summaries:
+                if isinstance(gather_result, dict):
+                    processed_matches.append(gather_result)
                 else:
                     # If summary fetch failed, use original match with default summary
-                    match_index = matches_with_summaries.index(result)
+                    match_index = matches_with_summaries.index(gather_result)
                     if match_index < len(matches):
                         matches[match_index]['summary'] = "Description not available."
                         processed_matches.append(matches[match_index])
@@ -563,7 +563,9 @@ Source: {vanilla_url}
             # Use term processor for postprocessing
             if self.search_engine and self.search_engine.query_processor:
                 # Detect user language (infer from ui_item, or default to Chinese)
-                user_language = self.search_engine.query_processor.detect_user_language(ui_item)
+                user_language = self.search_engine.query_processor.detect_user_language(  # type: ignore[attr-defined]
+                    ui_item
+                )
                 return self.search_engine.query_processor.postprocess_output(response, user_language)
             else:
                 return response

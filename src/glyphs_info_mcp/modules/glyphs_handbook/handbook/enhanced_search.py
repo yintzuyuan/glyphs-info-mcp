@@ -26,12 +26,12 @@ class EnhancedHandbookSearcher:
     def __init__(self, data_path: Path):
         self.data_path = data_path
         self.index_file = data_path / "index.md"
-        self.files = []
-        self.file_cache = {}  # File content cache
+        self.files: list[str] = []
+        self.file_cache: dict[str, str] = {}  # File content cache
         self.section_parser = MarkdownSectionParser()  # Section parser
         self._load_files()
 
-    def _load_files(self):
+    def _load_files(self) -> None:
         """Load file list"""
         try:
             if self.data_path.exists():
@@ -101,9 +101,9 @@ class EnhancedHandbookSearcher:
 
         return results
 
-    def _search_in_file(self, filename: str, query_lower: str, query_words: list, search_scope: str) -> list[dict]:
+    def _search_in_file(self, filename: str, query_lower: str, query_words: list[str], search_scope: str) -> list[dict[str, Any]]:
         """Search within a file"""
-        results = []
+        results: list[dict[str, Any]] = []
 
         # Get file content
         content = self._get_file_content(filename)
@@ -286,8 +286,8 @@ class EnhancedHandbookSearcher:
             return 0.0, 0.0
 
         found_words = 0
-        total_importance = 0
-        found_importance = 0
+        total_importance = 0.0
+        found_importance = 0.0
 
         # Assign importance weight to each word (longer words are more important)
         word_importance = {}
@@ -450,7 +450,7 @@ class EnhancedHandbookSearcher:
             return ""
 
         lines = content.split('\n')
-        intro_lines = []
+        intro_lines: list[str] = []
         found_header = False
 
         for line in lines:
