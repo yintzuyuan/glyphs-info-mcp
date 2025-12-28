@@ -21,31 +21,34 @@ if str(shared_path) not in sys.path:
 # 條件式測試跳過邏輯
 # =============================================================================
 
+# 跳過條件定義：(marker 名稱, 環境變數, 預設路徑, 跳過原因)
+SKIP_CONDITIONS = [
+    (
+        "requires_glyphs_app",
+        "GLYPHS_APP_PATH",
+        "/Applications/Glyphs 3.app",
+        "Glyphs 3 app not installed",
+    ),
+    (
+        "requires_repositories",
+        "GLYPHS_REPOSITORIES_PATH",
+        str(Path.home() / "Library" / "Application Support" / "Glyphs 3" / "Repositories"),
+        "Glyphs Repositories directory not found",
+    ),
+]
+
+
 def pytest_configure(config):
-    """檢測本地資源可用性"""
-    # 檢測 Glyphs 3 app
-    config.glyphs_app_available = Path("/Applications/Glyphs 3.app").exists()
-
-    # 檢測 Repositories 目錄
-    config.repositories_available = (
-        Path.home() / "Library" / "Application Support" / "Glyphs 3" / "Repositories"
-    ).exists()
-
-    # 檢測 CI 環境
-    config.is_ci = os.getenv("CI") == "true"
+    """檢測本地資源可用性（支援環境變數覆蓋）"""
+    for marker, env_var, default_path, _ in SKIP_CONDITIONS:
+        path = os.getenv(env_var, default_path)
+        setattr(config, f"{marker}_available", Path(path).exists())
 
 
 def pytest_collection_modifyitems(config, items):
     """根據資源可用性自動跳過測試"""
     for item in items:
-        # 需要 Glyphs 3 app 的測試
-        if "requires_glyphs_app" in item.keywords and not config.glyphs_app_available:
-            item.add_marker(
-                pytest.mark.skip(reason="Glyphs 3 app not installed")
-            )
-
-        # 需要 Repositories 目錄的測試
-        if "requires_repositories" in item.keywords and not config.repositories_available:
-            item.add_marker(
-                pytest.mark.skip(reason="Glyphs Repositories directory not found")
-            )
+        for marker, _, _, reason in SKIP_CONDITIONS:
+            if marker in item.keywords and not getattr(config, f"{marker}_available"):
+                item.add_marker(pytest.mark.skip(reason=reason))
+                break
