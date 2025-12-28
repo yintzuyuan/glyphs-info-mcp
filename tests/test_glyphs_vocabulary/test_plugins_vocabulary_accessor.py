@@ -6,6 +6,8 @@ Tests for PluginsVocabularyAccessor
 - 詞彙解析
 - 搜尋功能
 - 「選取工具」翻譯驗證
+
+注意：此模組需要本地 Repositories 目錄才能執行測試。
 """
 
 import pytest
@@ -14,6 +16,10 @@ from pathlib import Path
 from glyphs_info_mcp.modules.glyphs_vocabulary.accessors.plugins_vocabulary_accessor import (
     PluginsVocabularyAccessor,
 )
+
+
+# 整個模組需要 Repositories 目錄
+pytestmark = pytest.mark.requires_repositories
 
 
 class TestPluginsVocabularyAccessor:
