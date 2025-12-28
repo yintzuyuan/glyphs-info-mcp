@@ -103,6 +103,10 @@ check_untyped_defs = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
 show_error_codes = true
+exclude = [
+    "GlyphsSDK/",  # Exclude official Glyphs SDK files
+    "data/official/",  # Exclude all official data files
+]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
