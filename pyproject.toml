@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "glyphs-info-mcp"
-version = "1.0.0rc1"
+version = "1.0.0rc2"
 description = "Unified MCP server for Glyphs handbook and API queries"
 authors = [
     {name = "Glyphs info MCP Contributors", email = "glyphs-info-mcp@example.com"}
