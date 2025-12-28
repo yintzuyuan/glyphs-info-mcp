@@ -31,10 +31,10 @@ class TestMCPError:
     def test_basic_error_creation(self):
         """測試基本錯誤建立"""
         error = MCPError(
-            message="測試錯誤",
+            message="Test error",
             category=ErrorCategory.INVALID_INPUT,
         )
-        assert error.message == "測試錯誤"
+        assert error.message == "Test error"
         assert error.category == ErrorCategory.INVALID_INPUT
         assert error.suggestions == []
         assert error.context == {}
@@ -42,25 +42,25 @@ class TestMCPError:
     def test_error_with_suggestions(self):
         """測試帶建議的錯誤"""
         error = MCPError(
-            message="參數錯誤",
+            message="Parameter error",
             category=ErrorCategory.INVALID_INPUT,
-            suggestions=["建議 1", "建議 2"],
+            suggestions=["Suggestion 1", "Suggestion 2"],
         )
         message = error.to_user_message()
-        assert "❌ 參數錯誤" in message
-        assert "💡 建議操作:" in message
-        assert "1. 建議 1" in message
-        assert "2. 建議 2" in message
+        assert "❌ Parameter error" in message
+        assert "💡 Suggested actions:" in message
+        assert "1. Suggestion 1" in message
+        assert "2. Suggestion 2" in message
 
     def test_error_with_context(self):
         """測試帶上下文的錯誤"""
         error = MCPError(
-            message="資源未找到",
+            message="Resource not found",
             category=ErrorCategory.RESOURCE_NOT_FOUND,
             context={"resource": "test.py", "location": "/tmp"},
         )
         message = error.to_user_message()
-        assert "📋 相關資訊:" in message
+        assert "📋 Related information:" in message
         assert "resource: test.py" in message
         assert "location: /tmp" in message
 
@@ -74,7 +74,7 @@ class TestErrorHandler:
             resource_type="class",
             resource_id="NonExistentClass",
         )
-        assert "找不到 class: 'NonExistentClass'" in error.message
+        assert "class not found: 'NonExistentClass'" in error.message
         assert len(error.suggestions) > 0
         assert "NonExistentClass" in error.context["searched_id"]
 
@@ -120,7 +120,7 @@ class TestErrorHandler:
         error = ErrorHandler.handle_too_many_results(
             result_count=1000,
             limit=100,
-            filter_suggestions=["使用 category 參數過濾"],
+            filter_suggestions=["Use category parameter to filter"],
         )
         assert "1000" in error.message
         assert "100" in error.message
@@ -130,10 +130,10 @@ class TestErrorHandler:
     def test_handle_network_error(self):
         """測試網路錯誤"""
         error = ErrorHandler.handle_network_error(
-            operation="搜尋 Glyphs 教學",
+            operation="Search Glyphs tutorials",
             url="https://glyphsapp.com/tutorials",
         )
-        assert "網路請求失敗" in error.message
+        assert "Network request failed" in error.message
         assert "glyphsapp.com" in error.context["domain"]
         # URL 不應該完整顯示在上下文中（安全考量）
         assert "https://glyphsapp.com/tutorials" not in error.to_user_message()
@@ -142,22 +142,22 @@ class TestErrorHandler:
         """測試初始化錯誤"""
         error = ErrorHandler.handle_initialization_error(
             module_name="handbook",
-            reason="找不到資料檔案",
-            fix_suggestions=["執行 download_data.sh 下載資料"],
+            reason="Data file not found",
+            fix_suggestions=["Run download_data.sh to download data"],
         )
         assert "handbook" in error.message
-        assert "找不到資料檔案" in error.message
+        assert "Data file not found" in error.message
         assert "download_data.sh" in error.to_user_message()
 
     def test_handle_timeout(self):
         """測試逾時錯誤"""
         error = ErrorHandler.handle_timeout(
-            operation="搜尋大型資料庫",
+            operation="Search large database",
             timeout_seconds=30,
-            reduce_scope_tips=["使用 limit 參數限制結果數量"],
+            reduce_scope_tips=["Use limit parameter to restrict results"],
         )
-        assert "逾時" in error.message
-        assert "30 秒" in error.message
+        assert "timed out" in error.message
+        assert "30 seconds" in error.message
         assert "limit" in error.to_user_message()
 
 
@@ -196,18 +196,18 @@ class TestSafeErrorMessage:
     def test_mcp_error_passthrough(self):
         """測試 MCPError 直接傳遞"""
         original_error = not_found_error("file", "test.txt")
-        message = safe_error_message(original_error, "讀取檔案")
+        message = safe_error_message(original_error, "Read file")
         assert "test.txt" in message
         assert "❌" in message
 
     def test_generic_exception_handling(self):
         """測試通用異常處理"""
         generic_error = ValueError("Some internal error")
-        message = safe_error_message(generic_error, "處理資料")
+        message = safe_error_message(generic_error, "Process data")
         # 不應該洩漏內部錯誤訊息
         assert "Some internal error" not in message
         # 應該提供通用建議
-        assert "建議操作" in message
+        assert "Suggested actions" in message
         assert "❌" in message
 
 

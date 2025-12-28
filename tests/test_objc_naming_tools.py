@@ -25,20 +25,20 @@ class TestConvertObjCToPython:
         """測試無參數方法轉換"""
         result = module.convert_objc_to_python("interfaceVersion")
         assert "interfaceVersion" in result
-        assert "轉換結果" in result
+        assert "Conversion Result" in result
 
     def test_convert_single_param_method(self, module):
         """測試單參數方法轉換"""
         result = module.convert_objc_to_python("setValue:(id)value")
         assert "setValue_" in result
-        assert "轉換結果" in result
+        assert "Conversion Result" in result
 
     def test_convert_full_signature(self, module):
         """測試完整 Objective-C 簽名轉換"""
         signature = "- (void)drawForegroundForLayer:(GSLayer *)layer options:(NSDictionary *)options;"
         result = module.convert_objc_to_python(signature)
         assert "drawForegroundForLayer_options_" in result
-        assert "轉換結果" in result
+        assert "Conversion Result" in result
 
 
 class TestConvertPythonToObjC:
@@ -48,19 +48,19 @@ class TestConvertPythonToObjC:
         """測試無參數方法轉換"""
         result = module.convert_python_to_objc("interfaceVersion")
         assert "interfaceVersion" in result
-        assert "轉換結果" in result
+        assert "Conversion Result" in result
 
     def test_convert_single_param_method(self, module):
         """測試單參數方法轉換"""
         result = module.convert_python_to_objc("setValue_")
         assert "setValue:" in result
-        assert "轉換結果" in result
+        assert "Conversion Result" in result
 
     def test_convert_multiple_params_method(self, module):
         """測試多參數方法轉換"""
         result = module.convert_python_to_objc("drawForegroundForLayer_options_")
         assert "drawForegroundForLayer:options:" in result
-        assert "轉換結果" in result
+        assert "Conversion Result" in result
 
     def test_convert_with_param_count_validation(self, module):
         """測試帶參數數量驗證的轉換"""
@@ -70,7 +70,7 @@ class TestConvertPythonToObjC:
     def test_convert_param_count_mismatch(self, module):
         """測試參數數量不匹配"""
         result = module.convert_python_to_objc("drawForegroundForLayer_options_", param_count=3)
-        assert "轉換失敗" in result or "參數數量不匹配" in result
+        assert "Conversion failed" in result or "Parameter count mismatch" in result
 
 
 class TestIdentifyMethodType:
@@ -79,28 +79,28 @@ class TestIdentifyMethodType:
     def test_identify_protocol_method(self, module):
         """測試識別 Protocol 方法"""
         result = module.identify_method_type("interfaceVersion")
-        assert "方法分析" in result
+        assert "Method Analysis" in result
         assert "protocol" in result
-        assert "✅ 是" in result  # 需要 PyObjC 轉換
+        assert "✅ Yes" in result  # 需要 PyObjC 轉換
 
     def test_identify_python_helper_method(self, module):
         """測試識別 Python 輔助方法"""
         result = module.identify_method_type("drawTextAtPoint")
-        assert "方法分析" in result
+        assert "Method Analysis" in result
         assert "python_helper" in result
-        assert "❌ 否" in result  # 不需要 PyObjC 轉換
+        assert "❌ No" in result  # 不需要 PyObjC 轉換
 
     def test_identify_python_wrapped_method(self, module):
         """測試識別 Python 包裝方法"""
         result = module.identify_method_type("logToConsole")
-        assert "方法分析" in result
+        assert "Method Analysis" in result
         assert "python_wrapped" in result
-        assert "❌ 否" in result
+        assert "❌ No" in result
 
     def test_identify_unknown_method(self, module):
         """測試識別未知方法"""
         result = module.identify_method_type("unknownMethod")
-        assert "方法分析" in result
+        assert "Method Analysis" in result
         assert "unknown" in result
 
 
@@ -110,33 +110,33 @@ class TestGetMethodTemplate:
     def test_get_protocol_method_template(self, module):
         """測試取得 Protocol 方法範本"""
         result = module.get_method_template("interfaceVersion")
-        assert "實作範本" in result
+        assert "Implementation Template" in result
         assert "def interfaceVersion(self):" in result
         assert "```python" in result
 
     def test_get_protocol_method_with_params_template(self, module):
         """測試取得帶參數 Protocol 方法範本"""
         result = module.get_method_template("drawForegroundForLayer_options_")
-        assert "實作範本" in result
+        assert "Implementation Template" in result
         assert "def drawForegroundForLayer_options_" in result
 
     def test_get_python_helper_template(self, module):
         """測試取得 Python 輔助方法範本"""
         result = module.get_method_template("drawTextAtPoint")
-        assert "實作範本" in result
+        assert "Implementation Template" in result
         assert "@objc.python_method" in result
         assert "def drawTextAtPoint" in result
 
     def test_get_python_wrapped_template(self, module):
         """測試取得 Python 包裝方法範本"""
         result = module.get_method_template("logToConsole")
-        assert "實作範本" in result
-        assert "已由 SDK 預先定義" in result
+        assert "Implementation Template" in result
+        assert "predefined by SDK" in result
 
     def test_get_unknown_method_template(self, module):
         """測試取得未知方法範本"""
         result = module.get_method_template("unknownMethod")
-        assert "無法生成範本" in result
+        assert "Cannot generate template" in result
 
 
 class TestModuleIntegration:
@@ -154,7 +154,7 @@ class TestModuleIntegration:
         """測試模組資訊已更新"""
         info = module.get_module_info()
         assert info['tools_count'] == 8  # 4 個原有 + 4 個新增
-        assert "命名轉換" in info['description']
+        assert "naming conversion" in info['description'].lower()
 
     def test_all_tools_callable(self, module):
         """測試所有工具可呼叫"""
@@ -178,7 +178,7 @@ class TestRealWorldWorkflow:
         # 3. 識別方法類型
         type_result = module.identify_method_type("drawForegroundForLayer_options_")
         assert "protocol" in type_result
-        assert "✅ 是" in type_result
+        assert "✅ Yes" in type_result
 
         # 4. 取得實作範本
         template_result = module.get_method_template("drawForegroundForLayer_options_")
@@ -192,7 +192,7 @@ class TestRealWorldWorkflow:
         # 2. 識別方法類型
         type_result = module.identify_method_type(method_name)
         assert "python_helper" in type_result
-        assert "❌ 否" in type_result  # 不需要 PyObjC 轉換
+        assert "❌ No" in type_result  # 不需要 PyObjC 轉換
 
         # 3. 取得實作範本
         template_result = module.get_method_template(method_name)

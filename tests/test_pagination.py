@@ -163,9 +163,9 @@ class TestPaginationInfo:
         )
         summary = pagination.to_markdown_summary()
 
-        assert "第 2/5 頁" in summary  # 實際格式沒有空格
+        assert "2/5" in summary  # Page number
         assert "21-40" in summary  # 項目範圍
-        assert "100 項" in summary  # 總數
+        assert "100" in summary  # 總數
         assert "offset=40" in summary  # 下一頁提示
 
     def test_to_markdown_summary_last_page(self):
@@ -175,7 +175,7 @@ class TestPaginationInfo:
         )
         summary = pagination.to_markdown_summary()
 
-        assert "第 5/5 頁" in summary  # 實際格式沒有空格
+        assert "5/5" in summary  # Page number
         assert "81-100" in summary  # 項目範圍
         assert "offset=40" not in summary  # 最後一頁沒有下一頁提示
 
@@ -300,7 +300,7 @@ class TestValidatePaginationParams:
         assert offset == 0
         assert limit == 20
         assert error is not None
-        assert "offset 必須 >= 0" in error
+        assert "offset must be >= 0" in error
 
     def test_validate_zero_limit(self):
         """測試 limit 為 0"""
@@ -309,7 +309,7 @@ class TestValidatePaginationParams:
         assert offset == 0
         assert limit == DEFAULT_LIMIT
         assert error is not None
-        assert "limit 必須 >= 1" in error
+        assert "limit must be >= 1" in error
 
     def test_validate_negative_limit(self):
         """測試負數 limit"""
@@ -318,7 +318,7 @@ class TestValidatePaginationParams:
         assert offset == 0
         assert limit == DEFAULT_LIMIT
         assert error is not None
-        assert "limit 必須 >= 1" in error
+        assert "limit must be >= 1" in error
 
     def test_validate_limit_exceeds_max(self):
         """測試 limit 超過最大值"""
@@ -327,7 +327,7 @@ class TestValidatePaginationParams:
         assert offset == 0
         assert limit == MAX_LIMIT
         assert error is not None
-        assert f"limit 不能超過 {MAX_LIMIT}" in error
+        assert f"limit cannot exceed {MAX_LIMIT}" in error
 
     def test_validate_limit_at_max(self):
         """測試 limit 等於最大值"""

@@ -41,12 +41,12 @@ class TestExtractTitle:
         """無任何標題時，返回預設值"""
         content = "Just some content without headings"
         title = EnhancedHandbookSearcher._extract_title(content)
-        assert title == "未命名章節"
+        assert title == "Unnamed chapter"
 
     def test_handles_empty_content(self):
         """空內容應返回預設值"""
         title = EnhancedHandbookSearcher._extract_title("")
-        assert title == "未命名章節"
+        assert title == "Unnamed chapter"
 
     def test_handles_h2_without_link_syntax(self):
         """應處理不含連結語法的二級標題"""
