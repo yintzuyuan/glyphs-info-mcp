@@ -211,12 +211,16 @@ If you encounter issues with the server not starting, check:
 After configuration, you can use the following features directly in Claude Desktop:
 
 ```python
-# Query using MCP tools
-search_glyphs("GSFont")          # API class query
-search_glyphs("4.1")             # Handbook chapter query
-search_glyphs("edit view")       # Feature query
-get_class_overview("GSFont")     # Detailed class information
-get_handbook_toc()               # Handbook table of contents
+# Handbook queries
+handbook_search_content("kerning")           # Search handbook content
+handbook_get_content("anchors")              # Get specific chapter
+
+# API queries
+api_search_python("GSFont")                  # Search Python API
+api_get_python_class("GSGlyph")              # Get class details
+
+# UI terminology
+vocab_translate_term("Cancel", "zh-Hant")    # Translate UI term
 ```
 
 ### 🛠️ Installation Verification
@@ -274,15 +278,75 @@ uv run python -m pytest tests/ -v
 
 ### MCP Tools
 
-| Tool | Description | Purpose |
-|------|-------------|---------|
-| `search_glyphs` | Unified search entry | Auto-routes queries to appropriate modules |
-| `get_handbook_toc` | Handbook TOC | Browse complete chapter structure |
-| `find_chapter_content` | Chapter query | Get specific chapter content |
-| `search_handbook` | Handbook search | Search keywords in the handbook |
-| `search_api` | API search | Query API classes and methods |
-| `get_class_overview` | Class information | Get detailed class documentation |
-| `get_api_statistics` | API statistics | Display API coverage statistics |
+The server provides **53 tools** across **8 modules**:
+
+#### Handbook Module
+
+| Tool | Description |
+|------|-------------|
+| `handbook_search_content` | Search handbook content |
+| `handbook_get_content` | Get specific chapter content |
+| `handbook_get_custom_parameter` | Get Custom Parameter details |
+| `handbook_list_parameters` | List all parameters |
+
+#### Vocabulary Module
+
+| Tool | Description |
+|------|-------------|
+| `vocab_search_ui_term` | Search UI terms |
+| `vocab_get_translation` | Get term translation |
+| `vocab_translate_term` | Translate UI term |
+| `vocab_list_ui_categories` | List UI term categories |
+
+#### API Module - Python API
+
+| Tool | Description |
+|------|-------------|
+| `api_search_python` | Search Python API |
+| `api_get_python_class` | Get Python class info |
+| `api_get_python_member` | Get Python member info |
+
+#### API Module - Objective-C API
+
+| Tool | Description |
+|------|-------------|
+| `api_search_objc_headers` | Search Obj-C headers |
+| `api_get_objc_header` | Get Obj-C header content |
+| `api_list_plugin_protocols` | List plugin protocols |
+| `api_get_protocol_methods` | Get protocol methods |
+
+#### SDK Module
+
+| Tool | Description |
+|------|-------------|
+| `sdk_search_content` | Search SDK content |
+| `sdk_get_content` | Get SDK content |
+| `sdk_list_xcode_templates` | List Xcode templates |
+| `sdk_get_xcode_template` | Get Xcode template |
+
+#### Plugins Module
+
+| Tool | Description |
+|------|-------------|
+| `plugins_search_local` | Search local plugins |
+| `plugins_search_official` | Search official plugins |
+| `plugins_get_info` | Get plugin info |
+
+#### Scripts Module (mekkablue)
+
+| Tool | Description |
+|------|-------------|
+| `scripts_search` | Search scripts |
+| `scripts_get` | Get script content |
+| `scripts_list_categories` | List script categories |
+
+#### News Module
+
+| Tool | Description |
+|------|-------------|
+| `news_search_forum` | Search forum |
+| `news_search_tutorials` | Search tutorials |
+| `news_fetch_tutorial` | Fetch tutorial content |
 
 ## 📖 User Guide
 
@@ -294,17 +358,18 @@ uv run python -m pytest tests/ -v
 - Refer to the terminology reference for translations
 
 #### Common Query Patterns
+
 ```bash
 # API development
-search_glyphs("GSFont")              # Query font class
-get_class_overview("GSGlyph")        # Get glyph class details
+api_search_python("GSFont")              # Search Python API for font class
+api_get_python_class("GSGlyph")          # Get glyph class details
 
 # Feature learning
-search_glyphs("kerning")             # Query kerning feature
-find_chapter_content("4.1")          # View specific chapter
+handbook_search_content("kerning")       # Search handbook for kerning
+handbook_get_content("anchors")          # Get anchors chapter content
 
-# Combined queries
-search_glyphs("export")              # Mixed search for export-related content
+# Script reference
+scripts_search("anchor")                 # Search mekkablue scripts for examples
 ```
 
 ## 🏗️ Project Structure
@@ -317,6 +382,7 @@ glyphs-info-mcp/
 │       ├── __main__.py                      # CLI entry point
 │       ├── server.py                        # MCP server main program
 │       ├── config.py                        # Configuration management
+│       ├── modules_config.yaml              # Module configuration file
 │       ├── modules/                         # Feature modules
 │       │   ├── glyphs_handbook/             # Handbook query module
 │       │   ├── glyphs_api/                  # API query module
@@ -326,18 +392,24 @@ glyphs-info-mcp/
 │       │   ├── glyphs_sdk/                  # SDK documentation module
 │       │   ├── light_table_api/             # Light Table API module
 │       │   └── mekkablue_scripts/           # Mekkablue scripts module
+│       ├── shared/                          # Shared modules
+│       │   ├── core/                        # Core utilities
+│       │   └── fetch/                       # Network fetch utilities
 │       └── data/                            # Data files
-│           ├── handbook/                    # Handbook Markdown files
-│           ├── api/                         # API JSON files
-│           ├── vocab/                       # Terminology reference files
-│           └── plugins/                     # Plugin cache data
+│           ├── api_structure.json           # API structure definition
+│           ├── handbook-cache/              # Handbook cache
+│           │   ├── fresh/                   # Fresh cache
+│           │   └── stable/                  # Stable cache
+│           └── official/                    # Official resources
+│               └── GlyphsSDK/               # Glyphs SDK
 ├── tests/                                   # 🧪 Test files
-│   ├── test_glyphs_handbook/                # Handbook module tests
+│   ├── conftest.py                          # Test configuration
 │   ├── test_glyphs_api/                     # API module tests
-│   ├── test_glyphs_vocabulary/              # Vocabulary module tests
+│   ├── test_glyphs_handbook/                # Handbook module tests
 │   ├── test_glyphs_plugins/                 # Plugin module tests
-│   └── test_integration/                    # Integration tests
-├── modules_config.yaml                      # Module configuration file
+│   ├── test_glyphs_vocabulary/              # Vocabulary module tests
+│   ├── test_shared_core/                    # Shared core tests
+│   └── test_*.py                            # Other test files
 ├── pyproject.toml                           # ⚙️ Project configuration
 ├── README.md                                # 📝 Project documentation
 └── uv.lock                                  # 🔒 Dependency lock
@@ -407,17 +479,17 @@ uv run pytest --cov=src/glyphs_info_mcp
 
 ### Environment Variables
 
+All paths are auto-detected and usually don't need configuration. Only set these if using non-standard locations:
+
 ```bash
-# Data path configuration
-export GLYPHS_MCP_DATA_PATH=/custom/path/to/data
+# Glyphs application path (auto-detected)
+# export GLYPHS_APP_PATH=/Applications/Glyphs 3.app
 
-# Performance tuning
-export GLYPHS_MCP_MAX_SEARCH_RESULTS=100
-export GLYPHS_MCP_SEARCH_TIMEOUT=60
-export GLYPHS_MCP_ENABLE_CACHE=true
+# Glyphs Objective-C headers path (auto-detected)
+# export GLYPHS_APP_HEADERS_PATH=/Applications/Glyphs\ 3.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/Headers
 
-# Logging settings
-export GLYPHS_MCP_LOG_LEVEL=INFO
+# Glyphs Repositories path (auto-detected)
+# export GLYPHS_REPOSITORIES_PATH=~/Library/Application\ Support/Glyphs\ 3/Repositories
 ```
 
 ## 📊 Project Status
@@ -431,6 +503,7 @@ export GLYPHS_MCP_LOG_LEVEL=INFO
 
 - [Glyphs Official Website](https://glyphsapp.com/)
 - [Glyphs Official Documentation](https://handbook.glyphsapp.com/)
+- [Glyphs Official Forum](https://forum.glyphsapp.com/)
 - [Glyphs Learning Center](https://glyphsapp.com/learn)
 - [MCP Protocol Documentation](https://modelcontextprotocol.io/)
 - [Report Issues](https://github.com/yintzuyuan/glyphs-info-mcp/issues)

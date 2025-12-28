@@ -211,12 +211,16 @@ uv run glyphs-info-mcp
 配置完成後，你可以在 Claude Desktop 中直接使用以下功能：
 
 ```python
-# 使用 MCP 工具進行查詢
-search_glyphs("GSFont")          # API 類別查詢
-search_glyphs("4.1")            # 手冊章節查詢
-search_glyphs("edit view")      # 功能查詢
-get_class_overview("GSFont")    # 類別詳細資訊
-get_handbook_toc()              # 手冊目錄
+# 手冊查詢
+handbook_search_content("kerning")           # 搜尋手冊內容
+handbook_get_content("anchors")              # 取得特定章節
+
+# API 查詢
+api_search_python("GSFont")                  # 搜尋 Python API
+api_get_python_class("GSGlyph")              # 取得類別詳情
+
+# UI 術語翻譯
+vocab_translate_term("Cancel", "zh-Hant")    # 翻譯 UI 術語
 ```
 
 ### 🛠️ 安裝驗證
@@ -274,15 +278,75 @@ uv run python -m pytest tests/ -v
 
 ### MCP 工具
 
-| 工具 | 描述 | 用途 |
-|------|------|------|
-| `search_glyphs` | 統一搜尋入口 | 自動路由查詢到適當模組 |
-| `get_handbook_toc` | 手冊目錄 | 瀏覽完整章節結構 |
-| `find_chapter_content` | 章節查詢 | 取得特定章節內容 |
-| `search_handbook` | 手冊搜尋 | 在手冊中搜尋關鍵字 |
-| `search_api` | API 搜尋 | 查詢 API 類別和方法 |
-| `get_class_overview` | 類別資訊 | 取得詳細的類別文件 |
-| `get_api_statistics` | API 統計 | 顯示 API 覆蓋範圍統計 |
+伺服器提供 **53 個工具**，分布於 **8 個模組**：
+
+#### Handbook 模組
+
+| 工具 | 描述 |
+|------|------|
+| `handbook_search_content` | 搜尋手冊內容 |
+| `handbook_get_content` | 取得特定章節內容 |
+| `handbook_get_custom_parameter` | 取得 Custom Parameter 詳情 |
+| `handbook_list_parameters` | 列出所有參數 |
+
+#### Vocabulary 模組
+
+| 工具 | 描述 |
+|------|------|
+| `vocab_search_ui_term` | 搜尋 UI 術語 |
+| `vocab_get_translation` | 取得術語翻譯 |
+| `vocab_translate_term` | 翻譯 UI 術語 |
+| `vocab_list_ui_categories` | 列出 UI 術語分類 |
+
+#### API 模組 - Python API
+
+| 工具 | 描述 |
+|------|------|
+| `api_search_python` | 搜尋 Python API |
+| `api_get_python_class` | 取得 Python 類別資訊 |
+| `api_get_python_member` | 取得 Python 成員資訊 |
+
+#### API 模組 - Objective-C API
+
+| 工具 | 描述 |
+|------|------|
+| `api_search_objc_headers` | 搜尋 Obj-C Headers |
+| `api_get_objc_header` | 取得 Obj-C Header 內容 |
+| `api_list_plugin_protocols` | 列出外掛協定 |
+| `api_get_protocol_methods` | 取得協定方法 |
+
+#### SDK 模組
+
+| 工具 | 描述 |
+|------|------|
+| `sdk_search_content` | 搜尋 SDK 內容 |
+| `sdk_get_content` | 取得 SDK 內容 |
+| `sdk_list_xcode_templates` | 列出 Xcode 模板 |
+| `sdk_get_xcode_template` | 取得 Xcode 模板 |
+
+#### Plugins 模組
+
+| 工具 | 描述 |
+|------|------|
+| `plugins_search_local` | 搜尋本地外掛 |
+| `plugins_search_official` | 搜尋官方外掛 |
+| `plugins_get_info` | 取得外掛資訊 |
+
+#### Scripts 模組 (mekkablue)
+
+| 工具 | 描述 |
+|------|------|
+| `scripts_search` | 搜尋腳本 |
+| `scripts_get` | 取得腳本內容 |
+| `scripts_list_categories` | 列出腳本分類 |
+
+#### News 模組
+
+| 工具 | 描述 |
+|------|------|
+| `news_search_forum` | 搜尋論壇 |
+| `news_search_tutorials` | 搜尋教學文章 |
+| `news_fetch_tutorial` | 取得教學內容 |
 
 ## 📖 使用指南
 
@@ -294,17 +358,18 @@ uv run python -m pytest tests/ -v
 - 參考術語對照表進行中英轉換
 
 #### 常用查詢模式
+
 ```bash
 # API 開發
-search_glyphs("GSFont")          # 查詢字型類別
-get_class_overview("GSGlyph")        # 取得字元類別詳情
+api_search_python("GSFont")              # 搜尋 Python API 字型類別
+api_get_python_class("GSGlyph")          # 取得字元類別詳情
 
 # 功能學習
-search_glyphs("kerning")         # 查詢字距功能
-find_chapter_content("4.1")     # 查看特定章節
+handbook_search_content("kerning")       # 搜尋手冊字距功能
+handbook_get_content("anchors")          # 取得錨點章節內容
 
-# 綜合查詢
-search_glyphs("export")          # 混合搜尋匯出相關內容
+# 腳本參考
+scripts_search("anchor")                 # 搜尋 mekkablue 腳本範例
 ```
 
 ## 🏗️ 專案結構
@@ -317,6 +382,7 @@ glyphs-info-mcp/
 │       ├── __main__.py                      # CLI 入口點
 │       ├── server.py                        # MCP 伺服器主程式
 │       ├── config.py                        # 配置管理
+│       ├── modules_config.yaml              # 模組配置檔案
 │       ├── modules/                         # 功能模組
 │       │   ├── glyphs_handbook/             # 手冊查詢模組
 │       │   ├── glyphs_api/                  # API 查詢模組
@@ -326,21 +392,27 @@ glyphs-info-mcp/
 │       │   ├── glyphs_sdk/                  # SDK 文件模組
 │       │   ├── light_table_api/             # Light Table API 模組
 │       │   └── mekkablue_scripts/           # Mekkablue 腳本模組
+│       ├── shared/                          # 共用模組
+│       │   ├── core/                        # 核心工具
+│       │   └── fetch/                       # 網路擷取工具
 │       └── data/                            # 資料檔案
-│           ├── handbook/                    # 手冊 Markdown 檔案
-│           ├── api/                         # API JSON 檔案
-│           ├── vocab/                       # 術語對照檔案
-│           └── plugins/                     # 外掛快取資料
+│           ├── api_structure.json           # API 結構定義
+│           ├── handbook-cache/              # 手冊快取
+│           │   ├── fresh/                   # 最新快取
+│           │   └── stable/                  # 穩定快取
+│           └── official/                    # 官方資源
+│               └── GlyphsSDK/               # Glyphs SDK
 ├── tests/                                   # 🧪 測試檔案
-│   ├── test_glyphs_handbook/                # 手冊模組測試
+│   ├── conftest.py                          # 測試配置
 │   ├── test_glyphs_api/                     # API 模組測試
-│   ├── test_glyphs_vocabulary/              # 術語模組測試
+│   ├── test_glyphs_handbook/                # 手冊模組測試
 │   ├── test_glyphs_plugins/                 # 外掛模組測試
-│   └── test_integration/                    # 整合測試
-├── modules_config.yaml                      # 模組配置檔案
-├── pyproject.toml                          # ⚙️ 專案配置
-├── README.md                               # 📝 專案說明
-└── uv.lock                                 # 🔒 依賴鎖定
+│   ├── test_glyphs_vocabulary/              # 術語模組測試
+│   ├── test_shared_core/                    # 共用核心測試
+│   └── test_*.py                            # 其他測試檔案
+├── pyproject.toml                           # ⚙️ 專案配置
+├── README.md                                # 📝 專案說明
+└── uv.lock                                  # 🔒 依賴鎖定
 ```
 
 ## 🛠️ 開發
@@ -407,17 +479,17 @@ uv run pytest --cov=src/glyphs_info_mcp
 
 ### 環境變數
 
+所有路徑皆會自動偵測，通常無需配置。僅在使用非標準位置時才需設定：
+
 ```bash
-# 資料路徑配置
-export GLYPHS_MCP_DATA_PATH=/custom/path/to/data
+# Glyphs 應用程式路徑（自動偵測）
+# export GLYPHS_APP_PATH=/Applications/Glyphs 3.app
 
-# 效能調校
-export GLYPHS_MCP_MAX_SEARCH_RESULTS=100
-export GLYPHS_MCP_SEARCH_TIMEOUT=60
-export GLYPHS_MCP_ENABLE_CACHE=true
+# Glyphs Objective-C Headers 路徑（自動偵測）
+# export GLYPHS_APP_HEADERS_PATH=/Applications/Glyphs\ 3.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/Headers
 
-# 日誌設定
-export GLYPHS_MCP_LOG_LEVEL=INFO
+# Glyphs Repositories 路徑（自動偵測）
+# export GLYPHS_REPOSITORIES_PATH=~/Library/Application\ Support/Glyphs\ 3/Repositories
 ```
 
 ## 📊 專案狀態
@@ -431,6 +503,7 @@ export GLYPHS_MCP_LOG_LEVEL=INFO
 
 - [Glyphs 官方網站](https://glyphsapp.com/)
 - [Glyphs 官方文件](https://handbook.glyphsapp.com/)
+- [Glyphs 官方論壇](https://forum.glyphsapp.com/)
 - [Glyphs 學習中心](https://glyphsapp.com/learn)
 - [MCP 協議文件](https://modelcontextprotocol.io/)
 - [回報問題](https://github.com/yintzuyuan/glyphs-info-mcp/issues)
