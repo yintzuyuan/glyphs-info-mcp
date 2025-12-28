@@ -10,7 +10,9 @@ import asyncio
 import logging
 import yaml
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
+
+from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
 
 from glyphs_info_mcp.config import MODULES_CONFIG, MODULES_DIR
 
@@ -30,7 +32,7 @@ except ImportError as e:
     sys.exit(1)
 
 # Dynamic module loading
-def load_module_configs():
+def load_module_configs() -> list[tuple[Path, str]]:
     """Load module configuration from modules_config.yaml
 
     Returns:
@@ -64,7 +66,7 @@ def load_module_configs():
             (MODULES_DIR / "glyphs_api", "api")
         ]
 
-def import_module(module_path: Path, module_name: str):
+def import_module(module_path: Path, module_name: str) -> BaseMCPModule | None:
     """Dynamically import a module
 
     Supports two module structures:
@@ -78,12 +80,11 @@ def import_module(module_path: Path, module_name: str):
     Returns:
         Module instance or None
     """
+    paths_to_add: list[str] = []
     try:
         # Add module path to sys.path
         src_path = str(module_path / "src")
         module_root = str(module_path)
-
-        paths_to_add = []
         if (module_path / "src").exists():
             paths_to_add.append(src_path)
         paths_to_add.append(module_root)
@@ -93,7 +94,7 @@ def import_module(module_path: Path, module_name: str):
                 sys.path.insert(0, path)
 
         # Dynamically import module
-        module_instance = None
+        module_instance: BaseMCPModule | None = None
 
         # Use absolute imports to load modules from package
         if module_name == "vocabulary":
@@ -155,10 +156,10 @@ def import_module(module_path: Path, module_name: str):
 mcp = FastMCP("Glyphs MCP - Modular Architecture")
 
 # Global variables for modules
-_modules = {}
+_modules: dict[str, BaseMCPModule] = {}
 
 
-def main():
+def main() -> None:
     """Initialize and start the unified MCP server"""
     try:
         # Load module configurations from YAML
