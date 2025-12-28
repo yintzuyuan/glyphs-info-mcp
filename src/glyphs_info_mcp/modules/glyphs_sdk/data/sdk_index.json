@@ -1,0 +1,159 @@
+{
+  "guides": [
+    {
+      "type": "guide",
+      "path": "README.md",
+      "name": "README.md",
+      "category": "general_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/File Format/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/Reporter/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/SelectTool/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/General Plugin/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/Palette/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/SelectTool/Snippets/Custom Info Box/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/SelectTool/Snippets/Adding a view to a context menu/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/SelectTool/Snippets/Adding a view to a context menu/Xcode/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/SelectTool/Snippets/Adding a view to a context menu/Vanilla/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/Filter/dialog with xib/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Templates/Filter/without dialog/README.md",
+      "name": "README.md",
+      "category": "template_guide"
+    },
+    {
+      "type": "guide",
+      "path": "Python Samples/Plugin Preferences/readme.md",
+      "name": "readme.md",
+      "category": "sample_guide"
+    }
+  ],
+  "implementation": [
+    {
+      "type": "implementation",
+      "path": "ObjectWrapper/GlyphsApp/plugins.py",
+      "name": "plugins.py",
+      "category": "plugin_framework"
+    },
+    {
+      "type": "implementation",
+      "path": "ObjectWrapper/GlyphsApp/drawingTools.py",
+      "name": "drawingTools.py",
+      "category": "drawing_tools"
+    },
+    {
+      "type": "implementation",
+      "path": "ObjectWrapper/GlyphsApp/UI/GlyphView.py",
+      "name": "GlyphView.py",
+      "category": "ui_components"
+    },
+    {
+      "type": "implementation",
+      "path": "ObjectWrapper/GlyphsApp/UI/HTMLView.py",
+      "name": "HTMLView.py",
+      "category": "ui_components"
+    },
+    {
+      "type": "implementation",
+      "path": "ObjectWrapper/GlyphsApp/UI/CanvasView.py",
+      "name": "CanvasView.py",
+      "category": "ui_components"
+    },
+    {
+      "type": "implementation",
+      "path": "ObjectWrapper/GlyphsApp/UI/GlyphPreview.py",
+      "name": "GlyphPreview.py",
+      "category": "ui_components"
+    }
+  ],
+  "examples": [
+    {
+      "type": "example",
+      "path": "Python Samples/Document exported/Document exported callback.py",
+      "name": "Document exported callback.py",
+      "category": "other_sample"
+    },
+    {
+      "type": "example",
+      "path": "Python Samples/Callback for context menu/addContextMenu.py",
+      "name": "addContextMenu.py",
+      "category": "other_sample"
+    },
+    {
+      "type": "example",
+      "path": "Python Samples/Plugin With Window/Plugin With Window.glyphsPlugin/Contents/Resources/plugin.py",
+      "name": "plugin.py",
+      "category": "plugin_sample"
+    },
+    {
+      "type": "example",
+      "path": "Python Samples/Smiley Panel Plugin/Smiley Palette.glyphsPalette/Contents/Resources/plugin.py",
+      "name": "plugin.py",
+      "category": "plugin_sample"
+    },
+    {
+      "type": "example",
+      "path": "Python Samples/MultipleTools/MultipleTools.glyphsTool/Contents/Resources/plugin.py",
+      "name": "plugin.py",
+      "category": "tool_sample"
+    }
+  ],
+  "templates": []
+}

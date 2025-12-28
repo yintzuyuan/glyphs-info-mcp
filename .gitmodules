@@ -1,0 +1,14 @@
+[submodule "data/official/GlyphsSDK"]
+	path = data/official/GlyphsSDK
+	url = https://github.com/schriftgestalt/GlyphsSDK.git
+	branch = Glyphs3
+[submodule "data/official/mekkablue-scripts"]
+	path = data/official/mekkablue-scripts
+	url = https://github.com/mekkablue/Glyphs-Scripts.git
+[submodule "data/official/vanilla"]
+	path = data/official/vanilla
+	url = https://github.com/robotools/vanilla.git
+[submodule "data/official/light-table"]
+	path = data/official/light-table
+	url = https://github.com/Formkunft/Light-Table.git
+	branch = release

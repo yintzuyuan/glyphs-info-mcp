@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "description": "Glyphs API 結構化關係資料 - 包含 Python API 和 Objective-C API 的類別關係",
+  "last_updated": "2025-01-17",
+
+  "classes": {
+    "Glyphs": {
+      "type": "singleton",
+      "description": "Glyphs.app 主應用程式物件",
+      "python_class": "Glyphs",
+      "objc_class": "GSApplication",
+      "contains": ["GSFont"],
+      "properties": {
+        "fonts": {"type": "List[GSFont]", "description": "所有開啟的字型檔案"}
+      }
+    },
+
+    "GSFont": {
+      "type": "class",
+      "description": "字型檔案物件，包含所有字型資料",
+      "python_class": "GSFont",
+      "objc_class": "GSFont",
+      "parent": null,
+      "contains": ["GSGlyph", "GSFontMaster", "GSAxis", "GSFeature", "GSClass", "GSInstance"],
+      "contained_by": ["Glyphs"],
+      "properties": {
+        "glyphs": {"type": "List[GSGlyph]", "description": "所有字符"},
+        "masters": {"type": "List[GSFontMaster]", "description": "所有主板"},
+        "axes": {"type": "List[GSAxis]", "description": "所有變數軸"},
+        "features": {"type": "List[GSFeature]", "description": "OpenType 特性"},
+        "classes": {"type": "List[GSClass]", "description": "字符類別定義"},
+        "instances": {"type": "List[GSInstance]", "description": "字型實例"}
+      },
+      "access_paths": [
+        "Glyphs.fonts[0]",
+        "Glyphs.font"
+      ]
+    },
+
+    "GSGlyph": {
+      "type": "class",
+      "description": "字符物件，代表一個字符的所有變體",
+      "python_class": "GSGlyph",
+      "objc_class": "GSGlyph",
+      "parent": null,
+      "contains": ["GSLayer"],
+      "contained_by": ["GSFont"],
+      "properties": {
+        "layers": {"type": "List[GSLayer]", "description": "所有圖層（每個 master 一個）"},
+        "name": {"type": "str", "description": "字符名稱"},
+        "unicode": {"type": "str", "description": "Unicode 值"},
+        "parent": {"type": "GSFont", "description": "所屬字型"}
+      },
+      "access_paths": [
+        "font.glyphs['A']",
+        "font.glyphs[0]"
+      ]
+    },
+
+    "GSLayer": {
+      "type": "class",
+      "description": "圖層物件，代表字符在特定 master 中的圖形",
+      "python_class": "GSLayer",
+      "objc_class": "GSLayer",
+      "parent": null,
+      "contains": ["GSShape", "GSAnchor", "GSHint", "GSGuide"],
+      "contained_by": ["GSGlyph"],
+      "references": ["GSFontMaster"],
+      "properties": {
+        "shapes": {"type": "List[GSShape]", "description": "所有形狀（路徑和元件）"},
+        "paths": {"type": "List[GSPath]", "description": "所有路徑"},
+        "components": {"type": "List[GSComponent]", "description": "所有元件"},
+        "anchors": {"type": "List[GSAnchor]", "description": "所有錨點"},
+        "hints": {"type": "List[GSHint]", "description": "所有提示"},
+        "guides": {"type": "List[GSGuide]", "description": "所有參考線"},
+        "associatedMasterId": {"type": "str", "description": "關聯的 master ID"},
+        "parent": {"type": "GSGlyph", "description": "所屬字符"}
+      },
+      "access_paths": [
+        "glyph.layers[0]",
+        "glyph.layers[masterId]"
+      ]
+    },
+
+    "GSShape": {
+      "type": "class",
+      "description": "形狀基底類別（抽象類別）",
+      "python_class": "GSShape",
+      "objc_class": "GSShape",
+      "parent": null,
+      "children": ["GSPath", "GSComponent"],
+      "contained_by": ["GSLayer"],
+      "properties": {
+        "parent": {"type": "GSLayer", "description": "所屬圖層"}
+      }
+    },
+
+    "GSPath": {
+      "type": "class",
+      "description": "路徑物件，由多個節點組成的向量路徑",
+      "python_class": "GSPath",
+      "objc_class": "GSPath",
+      "parent": "GSShape",
+      "contains": ["GSNode"],
+      "contained_by": ["GSLayer"],
+      "properties": {
+        "nodes": {"type": "List[GSNode]", "description": "所有節點"},
+        "closed": {"type": "bool", "description": "是否為封閉路徑"},
+        "parent": {"type": "GSLayer", "description": "所屬圖層"}
+      },
+      "access_paths": [
+        "layer.shapes[0]",
+        "layer.paths[0]"
+      ]
+    },
+
+    "GSNode": {
+      "type": "class",
+      "description": "節點物件，路徑上的控制點",
+      "python_class": "GSNode",
+      "objc_class": "GSNode",
+      "parent": null,
+      "contained_by": ["GSPath"],
+      "properties": {
+        "position": {"type": "NSPoint", "description": "節點位置"},
+        "type": {"type": "str", "description": "節點類型（LINE, CURVE, OFFCURVE）"},
+        "parent": {"type": "GSPath", "description": "所屬路徑"}
+      },
+      "access_paths": [
+        "path.nodes[0]",
+        "layer.shapes[0].nodes[0]"
+      ]
+    },
+
+    "GSComponent": {
+      "type": "class",
+      "description": "元件物件，引用其他字符的圖層",
+      "python_class": "GSComponent",
+      "objc_class": "GSComponent",
+      "parent": "GSShape",
+      "contained_by": ["GSLayer"],
+      "references": ["GSGlyph", "GSLayer"],
+      "properties": {
+        "componentName": {"type": "str", "description": "引用的字符名稱"},
+        "componentLayer": {"type": "GSLayer", "description": "引用的圖層"},
+        "transform": {"type": "NSAffineTransform", "description": "變換矩陣"},
+        "parent": {"type": "GSLayer", "description": "所屬圖層"}
+      },
+      "access_paths": [
+        "layer.components[0]",
+        "layer.shapes[0]"
+      ]
+    },
+
+    "GSAnchor": {
+      "type": "class",
+      "description": "錨點物件，用於字符組合的定位點",
+      "python_class": "GSAnchor",
+      "objc_class": "GSAnchor",
+      "parent": null,
+      "contained_by": ["GSLayer"],
+      "properties": {
+        "name": {"type": "str", "description": "錨點名稱"},
+        "position": {"type": "NSPoint", "description": "錨點位置"},
+        "parent": {"type": "GSLayer", "description": "所屬圖層"}
+      },
+      "access_paths": [
+        "layer.anchors[0]",
+        "layer.anchors['top']"
+      ]
+    },
+
+    "GSFontMaster": {
+      "type": "class",
+      "description": "主板物件，定義字型的設計空間軸點",
+      "python_class": "GSFontMaster",
+      "objc_class": "GSFontMaster",
+      "parent": null,
+      "contains": ["GSAxisValue"],
+      "contained_by": ["GSFont"],
+      "references": ["GSAxis"],
+      "properties": {
+        "name": {"type": "str", "description": "主板名稱"},
+        "id": {"type": "str", "description": "主板 ID"},
+        "axesValues": {"type": "List[GSAxisValue]", "description": "軸值列表"},
+        "ascender": {"type": "float", "description": "上升高度"},
+        "descender": {"type": "float", "description": "下降深度"}
+      },
+      "access_paths": [
+        "font.masters[0]",
+        "font.masters[masterId]"
+      ]
+    },
+
+    "GSAxis": {
+      "type": "class",
+      "description": "變數軸物件，定義字型的變數軸",
+      "python_class": "GSAxis",
+      "objc_class": "GSAxis",
+      "parent": null,
+      "contained_by": ["GSFont"],
+      "properties": {
+        "name": {"type": "str", "description": "軸名稱"},
+        "axisTag": {"type": "str", "description": "軸標籤（如 wght, wdth）"},
+        "id": {"type": "str", "description": "軸 ID"}
+      },
+      "access_paths": [
+        "font.axes[0]"
+      ]
+    },
+
+    "GSAxisValue": {
+      "type": "class",
+      "description": "軸值物件，表示在特定軸上的值",
+      "python_class": "GSAxisValue",
+      "objc_class": "GSAxisValue",
+      "parent": null,
+      "contained_by": ["GSFontMaster", "GSInstance"],
+      "references": ["GSAxis"],
+      "properties": {
+        "axisId": {"type": "str", "description": "關聯的軸 ID"},
+        "value": {"type": "float", "description": "軸值"}
+      }
+    },
+
+    "GSHint": {
+      "type": "class",
+      "description": "提示物件，用於 TrueType hinting",
+      "python_class": "GSHint",
+      "objc_class": "GSHint",
+      "parent": null,
+      "contained_by": ["GSLayer"],
+      "properties": {
+        "type": {"type": "str", "description": "提示類型"},
+        "parent": {"type": "GSLayer", "description": "所屬圖層"}
+      }
+    },
+
+    "GSGuide": {
+      "type": "class",
+      "description": "參考線物件",
+      "python_class": "GSGuide",
+      "objc_class": "GSGuide",
+      "parent": null,
+      "contained_by": ["GSLayer", "GSFont"],
+      "properties": {
+        "position": {"type": "NSPoint", "description": "參考線位置"},
+        "angle": {"type": "float", "description": "參考線角度"}
+      }
+    },
+
+    "GSFeature": {
+      "type": "class",
+      "description": "OpenType 特性物件",
+      "python_class": "GSFeature",
+      "objc_class": "GSFeature",
+      "parent": null,
+      "contained_by": ["GSFont"],
+      "properties": {
+        "name": {"type": "str", "description": "特性名稱"},
+        "code": {"type": "str", "description": "特性代碼"}
+      }
+    },
+
+    "GSClass": {
+      "type": "class",
+      "description": "字符類別物件",
+      "python_class": "GSClass",
+      "objc_class": "GSClass",
+      "parent": null,
+      "contained_by": ["GSFont"],
+      "properties": {
+        "name": {"type": "str", "description": "類別名稱"},
+        "code": {"type": "str", "description": "類別定義"}
+      }
+    },
+
+    "GSInstance": {
+      "type": "class",
+      "description": "字型實例物件，定義輸出的字型變體",
+      "python_class": "GSInstance",
+      "objc_class": "GSInstance",
+      "parent": null,
+      "contains": ["GSAxisValue"],
+      "contained_by": ["GSFont"],
+      "properties": {
+        "name": {"type": "str", "description": "實例名稱"},
+        "axesValues": {"type": "List[GSAxisValue]", "description": "軸值列表"}
+      }
+    }
+  },
+
+  "navigation_examples": {
+    "node_to_font": {
+      "description": "從 Node 向上導航到 Font",
+      "path": "node → path → layer → glyph → font",
+      "code": [
+        "node.parent  # → GSPath",
+        "node.parent.parent  # → GSLayer",
+        "node.parent.parent.parent  # → GSGlyph",
+        "node.parent.parent.parent.parent  # → GSFont"
+      ]
+    },
+    "font_to_node": {
+      "description": "從 Font 向下導航到 Node",
+      "path": "font → glyphs → layers → shapes → nodes",
+      "code": [
+        "font.glyphs[0]  # → GSGlyph",
+        "font.glyphs[0].layers[0]  # → GSLayer",
+        "font.glyphs[0].layers[0].shapes[0]  # → GSPath",
+        "font.glyphs[0].layers[0].shapes[0].nodes[0]  # → GSNode"
+      ]
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "glyphs-info-mcp": {
+          "command": "uv",
+          "args": [
+            "--directory",
+            "/path/to/glyphs-info-mcp-dev",
+            "run",
+            "glyphs-info-mcp"
+          ]
+        }
+      }
+}

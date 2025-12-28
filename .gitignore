@@ -1,0 +1,89 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+.coverage.*
+coverage.xml
+.cache
+
+# Logs
+logs/
+*.log
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Other
+.env.local
+.env.*.local
+
+# MCP configuration (contains local paths)
+.mcp.json
+
+# Cache directory (new data architecture)
+data/cache/
+
+# Handbook cache (dynamic updates, not version controlled)
+data/handbook-cache/fresh/
+data/handbook-cache/stable/
+
+# Plugin cache directory
+**/glyphs_plugins/data/cache/
+
+# Protect official Glyphs SDK files from accidental modifications
+# These files should remain unchanged to preserve official integrity
+**/GlyphsSDK/**/*.py.bak
+**/GlyphsSDK/**/*~
+**/GlyphsSDK/**/.*.swp

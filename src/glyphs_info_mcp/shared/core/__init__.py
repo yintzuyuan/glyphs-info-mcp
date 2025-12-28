@@ -1,0 +1,3 @@
+"""
+Shared Core Library
+"""

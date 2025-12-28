@@ -1,0 +1,152 @@
+# Glyphs MCP Server 模組配置
+#
+# 此檔案記錄所有可用模組的配置資訊
+# server.py 會自動讀取此檔案並載入所有啟用的模組
+
+modules:
+  # Glyphs 詞彙模組
+  - name: vocabulary
+    directory: glyphs_vocabulary
+    description: Glyphs.app 術語中英翻譯
+    tools:
+      - vocab_search_ui_term
+      - vocab_get_translation
+      - vocab_list_ui_categories
+      - vocab_translate_term
+
+  # Glyphs 手冊模組
+  - name: handbook
+    directory: glyphs_handbook
+    description: Glyphs.app 官方手冊查詢
+    tools:
+      - handbook_search_content
+      - handbook_get_content
+      - handbook_get_custom_parameter
+      - handbook_list_parameters
+      - handbook_update_cache
+      - handbook_get_cache_info
+
+  # Glyphs API 模組
+  - name: api
+    directory: glyphs_api
+    description: Glyphs.app API 參考文件
+    tools:
+      - api_convert_objc_to_python
+      - api_convert_python_to_objc
+      - api_get_class_hierarchy
+      - api_get_class_relationships
+      - api_get_method_template
+      - api_get_objc_header
+      - api_get_protocol_methods
+      - api_get_python_class
+      - api_get_python_member
+      - api_get_vanilla_ui
+      - api_identify_method_type
+      - api_list_plugin_protocols
+      - api_list_vanilla_ui
+      - api_navigate_structure
+      - api_search_objc_headers
+      - api_search_python
+      - api_search_vanilla_ui
+
+  # Glyphs 外掛模組（Issue #57）
+  - name: glyphs_plugins
+    directory: glyphs_plugins
+    description: Glyphs.app 官方外掛搜尋與管理
+    enabled: true
+    version: "0.1.0"
+    tools:
+      - plugins_search_local
+      - plugins_search_official
+      - plugins_get_info
+      - plugins_scan_repository
+      - plugins_list_categories
+    features:
+      # Phase 1: URL parsing and cache enrichment ✅
+      - url_parsing: true
+      - cache_version: "2.0"
+      - cache_ttl_hours: 24
+
+      # Phase 2: SearchEngine integration ✅
+      - core_search: true
+      - relevance_scoring: true
+
+      # Phase 3: Local installation status ✅
+      - local_status: true
+      - local_matching: true
+      - plugin_type_detection: true
+
+      # Phase 4: Author filtering ✅
+      - author_filtering: true
+
+      # Phase 5: MCP tool output enhancement ✅ (在 Phase 3 實作時已完成)
+      - enhanced_output: true
+
+      # Phase 6: Manual cache update (待實作，可選)
+      - manual_cache_update: false
+
+  # Glyphs News 模組
+  - name: glyphs_news
+    directory: glyphs_news
+    description: Glyphs.app 網路搜尋功能
+    enabled: true
+    tools:
+      - news_search_forum
+      - news_search_tutorials
+      - news_fetch_tutorial
+      - news_fetch_forum_post
+      - news_search_posts
+      - news_fetch_content
+
+  # Glyphs SDK 模組
+  - name: glyphs_sdk
+    directory: glyphs_sdk
+    description: Glyphs.app SDK 開發指南
+    enabled: true
+    tools:
+      - sdk_search_content
+      - sdk_get_content
+      - sdk_list_xcode_templates
+      - sdk_get_xcode_template
+      - sdk_list_xcode_samples
+      - sdk_get_xcode_sample
+
+  # Light Table API 模組
+  - name: light_table_api
+    directory: light_table_api
+    description: Light Table 版本控制外掛 API
+    enabled: true
+    tools:
+      - lighttable_search_api
+      - lighttable_get_enum
+      - lighttable_list_enums
+      - lighttable_list_all
+
+  # Mekkablue Scripts 模組
+  - name: mekkablue_scripts
+    directory: mekkablue_scripts
+    description: Mekkablue 358+ 實戰腳本集
+    enabled: true
+    tools:
+      - scripts_search
+      - scripts_get
+      - scripts_list_categories
+      - scripts_list
+
+# 模組載入順序（未來可能使用）
+load_order:
+  - vocabulary
+  - handbook
+  - api
+  - glyphs_plugins
+  - glyphs_news
+  - glyphs_sdk
+  - light_table_api
+  - mekkablue_scripts
+
+# 快取配置
+cache:
+  global_ttl_hours: 24
+  glyphs_plugins:
+    ttl_hours: 24
+    directory: data/cache
