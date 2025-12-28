@@ -66,7 +66,7 @@ class TestModuleConfig:
 
     def test_module_name_validation_empty(self):
         """測試空模組名稱被拒絕"""
-        with pytest.raises(ValidationError, match="模組名稱格式錯誤"):
+        with pytest.raises(ValidationError, match="Invalid module name format"):
             ModuleConfig(
                 name="",
                 module_path="modules/test",
@@ -94,7 +94,7 @@ class TestModuleConfig:
 
     def test_absolute_path_rejected_module_path(self):
         """測試拒絕絕對路徑（module_path）"""
-        with pytest.raises(ValidationError, match="相對路徑"):
+        with pytest.raises(ValidationError, match="must be relative"):
             ModuleConfig(
                 name="test",
                 module_path="/absolute/path",
@@ -104,7 +104,7 @@ class TestModuleConfig:
 
     def test_absolute_path_rejected_python_file(self):
         """測試拒絕絕對路徑（python_file）"""
-        with pytest.raises(ValidationError, match="相對路徑"):
+        with pytest.raises(ValidationError, match="must be relative"):
             ModuleConfig(
                 name="test",
                 module_path="modules/test",
@@ -245,7 +245,7 @@ class TestServerConfig:
             ),
         ]
 
-        with pytest.raises(ValidationError, match="唯一"):
+        with pytest.raises(ValidationError, match="must be unique"):
             ServerConfig(modules=modules)
 
     def test_get_enabled_modules(self):

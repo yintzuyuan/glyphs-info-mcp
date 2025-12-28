@@ -100,7 +100,7 @@ modules:
 
     def test_load_nonexistent_file(self):
         """測試載入不存在的檔案"""
-        with pytest.raises(ConfigLoadError, match="配置檔案不存在"):
+        with pytest.raises(ConfigLoadError, match="Configuration file not found"):
             ConfigLoader.load_from_yaml(Path("/nonexistent/config.yaml"))
 
     def test_load_invalid_yaml_syntax(self):
@@ -112,7 +112,7 @@ modules:
             config_path = Path(f.name)
 
         try:
-            with pytest.raises(ConfigLoadError, match="YAML 解析錯誤"):
+            with pytest.raises(ConfigLoadError, match="YAML parse error"):
                 ConfigLoader.load_from_yaml(config_path)
         finally:
             config_path.unlink()
@@ -124,7 +124,7 @@ modules:
             config_path = Path(f.name)
 
         try:
-            with pytest.raises(ConfigLoadError, match="配置檔案為空"):
+            with pytest.raises(ConfigLoadError, match="Configuration file is empty"):
                 ConfigLoader.load_from_yaml(config_path)
         finally:
             config_path.unlink()
@@ -143,7 +143,7 @@ modules:
             config_path = Path(f.name)
 
         try:
-            with pytest.raises(ConfigLoadError, match="配置驗證失敗"):
+            with pytest.raises(ConfigLoadError, match="Configuration validation failed"):
                 ConfigLoader.load_from_yaml(config_path)
         finally:
             config_path.unlink()
@@ -167,7 +167,7 @@ modules:
             config_path = Path(f.name)
 
         try:
-            with pytest.raises(ConfigLoadError, match="配置驗證失敗"):
+            with pytest.raises(ConfigLoadError, match="Configuration validation failed"):
                 ConfigLoader.load_from_yaml(config_path)
         finally:
             config_path.unlink()
@@ -187,7 +187,7 @@ modules:
             config_path = Path(f.name)
 
         try:
-            with pytest.raises(ConfigLoadError, match="配置驗證失敗"):
+            with pytest.raises(ConfigLoadError, match="Configuration validation failed"):
                 ConfigLoader.load_from_yaml(config_path)
         finally:
             config_path.unlink()
@@ -202,7 +202,7 @@ modules:
             is_valid, message = ConfigLoader.validate_config(config_path)
 
             assert is_valid is True
-            assert "配置有效" in message
+            assert "Configuration valid" in message
             assert "2" in message  # 2 個已啟用模組
         finally:
             config_path.unlink()
