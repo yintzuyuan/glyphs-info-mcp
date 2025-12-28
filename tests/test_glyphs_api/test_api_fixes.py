@@ -9,19 +9,23 @@
 
 import pytest
 from pathlib import Path
+from typing import Generator
 from unittest.mock import Mock, patch, MagicMock
+
+from glyphs_info_mcp.shared.core.python_api_native_accessor import (
+    PythonAPINativeAccessor,
+)
+from glyphs_info_mcp.modules.glyphs_api.unified_api_module import (
+    UnifiedAPIModule,
+)
 
 
 class TestGSAnchorClassPattern:
     """測試 GSAnchor 類別定義模式支援"""
 
     @pytest.fixture
-    def accessor(self):
+    def accessor(self) -> Generator[PythonAPINativeAccessor, None, None]:
         """建立 PythonAPINativeAccessor 實例"""
-        from glyphs_info_mcp.shared.core.python_api_native_accessor import (
-            PythonAPINativeAccessor,
-        )
-
         # 使用 patch 避免實際載入檔案
         with patch.object(
             PythonAPINativeAccessor, "__init__", lambda self, init_file: None
@@ -29,9 +33,11 @@ class TestGSAnchorClassPattern:
             accessor = PythonAPINativeAccessor.__new__(PythonAPINativeAccessor)
             accessor.init_file = Path("/fake/path/__init__.py")
             accessor.symbols = {"classes": ["GSAnchor"], "functions": [], "constants": []}
-            return accessor
+            yield accessor
 
-    def test_find_class_block_supports_def_pattern(self, accessor):
+    def test_find_class_block_supports_def_pattern(
+        self, accessor: PythonAPINativeAccessor
+    ) -> None:
         """測試 _find_class_block 支援 def ____ 模式"""
         # 模擬 grep 結果：找到 def ____GSFont____
         with patch.object(accessor, "_grep_line") as mock_grep:
@@ -44,7 +50,9 @@ class TestGSAnchorClassPattern:
             assert result == 100
             mock_grep.assert_called_with("def ____GSFont____")
 
-    def test_find_class_block_supports_class_pattern(self, accessor):
+    def test_find_class_block_supports_class_pattern(
+        self, accessor: PythonAPINativeAccessor
+    ) -> None:
         """測試 _find_class_block 支援 class ____ 模式（GSAnchor）"""
         # 模擬 grep 結果：def 找不到，但 class 找得到
         with patch.object(accessor, "_grep_line") as mock_grep:
@@ -58,7 +66,9 @@ class TestGSAnchorClassPattern:
             # 應該先嘗試 def，再嘗試 class
             assert mock_grep.call_count == 2
 
-    def test_find_class_block_prefers_def_over_class(self, accessor):
+    def test_find_class_block_prefers_def_over_class(
+        self, accessor: PythonAPINativeAccessor
+    ) -> None:
         """測試 _find_class_block 優先使用 def 模式"""
         # 如果 def 和 class 都找得到，應該返回 def 的結果
         with patch.object(accessor, "_grep_line") as mock_grep:
@@ -76,12 +86,8 @@ class TestWidthDescriptionFix:
     """測試 width 屬性描述修復（類別範圍感知）"""
 
     @pytest.fixture
-    def accessor(self):
+    def accessor(self) -> Generator[PythonAPINativeAccessor, None, None]:
         """建立 PythonAPINativeAccessor 實例"""
-        from glyphs_info_mcp.shared.core.python_api_native_accessor import (
-            PythonAPINativeAccessor,
-        )
-
         with patch.object(
             PythonAPINativeAccessor, "__init__", lambda self, init_file: None
         ):
@@ -92,9 +98,11 @@ class TestWidthDescriptionFix:
                 "functions": [],
                 "constants": [],
             }
-            return accessor
+            yield accessor
 
-    def test_get_property_uses_class_range(self, accessor):
+    def test_get_property_uses_class_range(
+        self, accessor: PythonAPINativeAccessor
+    ) -> None:
         """測試 get_property 使用類別範圍篩選屬性文檔"""
         # 模擬情境：
         # - GSLayer 區塊在 9000-9500 行
@@ -119,11 +127,13 @@ class TestWidthDescriptionFix:
                         result = accessor.get_property("GSLayer", "width")
 
                         # 應該選擇 9060（在類別範圍內），而不是 6239
-                        accessor._read_until_marker.assert_called_with(
+                        accessor._read_until_marker.assert_called_with(  # type: ignore[attr-defined]
                             9060, marker="'''", max_lines=100
                         )
 
-    def test_get_property_fallback_when_no_class_range(self, accessor):
+    def test_get_property_fallback_when_no_class_range(
+        self, accessor: PythonAPINativeAccessor
+    ) -> None:
         """測試當無法確定類別範圍時，回退到第一個匹配"""
         with patch.object(accessor, "_find_class_block_range", return_value=None):
             with patch.object(accessor, "_find_property_assignment", return_value=None):
@@ -140,7 +150,7 @@ class TestWidthDescriptionFix:
                         result = accessor.get_property("GSLayer", "width")
 
                         # 無法確定範圍時，應該使用第一個匹配
-                        accessor._read_until_marker.assert_called_with(
+                        accessor._read_until_marker.assert_called_with(  # type: ignore[attr-defined]
                             6239, marker="'''", max_lines=100
                         )
 
@@ -149,17 +159,13 @@ class TestNavigateStructureContainsFix:
     """測試 _navigate_recursive contains 分支修復"""
 
     @pytest.fixture
-    def module(self):
+    def module(self) -> Generator[UnifiedAPIModule, None, None]:
         """建立 UnifiedAPIModule 模擬實例"""
-        from glyphs_info_mcp.modules.glyphs_api.unified_api_module import (
-            UnifiedAPIModule,
-        )
-
         with patch.object(UnifiedAPIModule, "__init__", lambda self: None):
             module = UnifiedAPIModule.__new__(UnifiedAPIModule)
-            return module
+            yield module
 
-    def test_contains_branch_extends_path_lines(self, module):
+    def test_contains_branch_extends_path_lines(self, module: UnifiedAPIModule) -> None:
         """測試 contains 分支正確擴展 path_lines"""
         # 設置測試結構
         structure = {
@@ -192,7 +198,9 @@ class TestNavigateStructureContainsFix:
         assert len(result["tree"]) >= 2  # GSPath 和 GSComponent
         # paths 應該不會拋出錯誤（之前的 bug 會導致 KeyError）
 
-    def test_contains_branch_no_error_on_recursive(self, module):
+    def test_contains_branch_no_error_on_recursive(
+        self, module: UnifiedAPIModule
+    ) -> None:
         """測試 contains 分支遞迴時不會拋出錯誤"""
         structure = {
             "classes": {
@@ -228,27 +236,25 @@ class TestFindClassBlockRange:
     """測試 _find_class_block_range 輔助方法"""
 
     @pytest.fixture
-    def accessor(self):
+    def accessor(self) -> Generator[PythonAPINativeAccessor, None, None]:
         """建立 PythonAPINativeAccessor 實例"""
-        from glyphs_info_mcp.shared.core.python_api_native_accessor import (
-            PythonAPINativeAccessor,
-        )
-
         with patch.object(
             PythonAPINativeAccessor, "__init__", lambda self, init_file: None
         ):
             accessor = PythonAPINativeAccessor.__new__(PythonAPINativeAccessor)
             accessor.init_file = Path("/fake/path/__init__.py")
             accessor.symbols = {"classes": [], "functions": [], "constants": []}
-            return accessor
+            yield accessor
 
-    def test_returns_none_when_class_not_found(self, accessor):
+    def test_returns_none_when_class_not_found(
+        self, accessor: PythonAPINativeAccessor
+    ) -> None:
         """測試當類別不存在時返回 None"""
         with patch.object(accessor, "_find_class_block", return_value=None):
             result = accessor._find_class_block_range("NonExistent")
             assert result is None
 
-    def test_returns_range_tuple(self, accessor):
+    def test_returns_range_tuple(self, accessor: PythonAPINativeAccessor) -> None:
         """測試正常情況返回 (start, end) 元組"""
         # 模擬檔案內容
         fake_content = ["line\n"] * 100 + ["def ____NextClass____\n"] + ["line\n"] * 50

@@ -26,12 +26,12 @@ from glyphs_info_mcp.shared.core.response_utils import (
 class TestResponseFormat:
     """測試回應格式枚舉"""
 
-    def test_response_format_enum(self):
+    def test_response_format_enum(self) -> None:
         """測試 ResponseFormat 枚舉值"""
         assert ResponseFormat.JSON.value == "json"
         assert ResponseFormat.MARKDOWN.value == "markdown"
 
-    def test_response_format_from_string(self):
+    def test_response_format_from_string(self) -> None:
         """測試從字串建立枚舉"""
         assert ResponseFormat("json") == ResponseFormat.JSON
         assert ResponseFormat("markdown") == ResponseFormat.MARKDOWN
@@ -40,7 +40,7 @@ class TestResponseFormat:
 class TestFormatAsJSON:
     """測試 JSON 格式化"""
 
-    def test_format_dict_as_json(self):
+    def test_format_dict_as_json(self) -> None:
         """測試字典轉 JSON"""
         data = {
             "name": "GSFont",
@@ -55,7 +55,7 @@ class TestFormatAsJSON:
         assert parsed["type"] == "class"
         assert len(parsed["properties"]) == 2
 
-    def test_format_list_as_json(self):
+    def test_format_list_as_json(self) -> None:
         """測試列表轉 JSON"""
         data = [
             {"name": "GSFont", "type": "class"},
@@ -68,7 +68,7 @@ class TestFormatAsJSON:
         assert len(parsed) == 2
         assert parsed[0]["name"] == "GSFont"
 
-    def test_json_with_unicode(self):
+    def test_json_with_unicode(self) -> None:
         """測試 JSON 支援 Unicode"""
         data = {"title": "中文標題", "content": "內容"}
         result = format_as_json(data)
@@ -81,7 +81,7 @@ class TestFormatAsJSON:
 class TestFormatAsMarkdown:
     """測試 Markdown 格式化"""
 
-    def test_format_simple_dict(self):
+    def test_format_simple_dict(self) -> None:
         """測試簡單字典轉 Markdown"""
         data = {
             "title": "GSFont Class",
@@ -94,7 +94,7 @@ class TestFormatAsMarkdown:
         assert "**Type**: class" in result
         assert "**Description**: A font object" in result
 
-    def test_format_dict_with_list(self):
+    def test_format_dict_with_list(self) -> None:
         """測試包含列表的字典"""
         data = {
             "title": "API Methods",
@@ -107,7 +107,7 @@ class TestFormatAsMarkdown:
         assert "- addMaster" in result
         assert "- removeMaster" in result
 
-    def test_format_nested_dict(self):
+    def test_format_nested_dict(self) -> None:
         """測試嵌套字典"""
         data = {
             "title": "Class Info",
@@ -120,7 +120,7 @@ class TestFormatAsMarkdown:
         assert "**Version**: 3.0" in result
         assert "**Stable**: Yes" in result  # bool 轉換
 
-    def test_format_list_of_dicts(self):
+    def test_format_list_of_dicts(self) -> None:
         """測試字典列表轉 Markdown"""
         data = [
             {"title": "GSFont", "type": "class"},
@@ -132,12 +132,12 @@ class TestFormatAsMarkdown:
         assert "### 1. GSFont" in result
         assert "### 2. GSLayer" in result
 
-    def test_format_empty_list(self):
+    def test_format_empty_list(self) -> None:
         """測試空列表"""
         result = format_as_markdown([])
         assert "No results" in result
 
-    def test_boolean_formatting(self):
+    def test_boolean_formatting(self) -> None:
         """測試布林值格式化"""
         data = {"title": "Test", "is_active": True, "is_deprecated": False}
         result = format_as_markdown(data)
@@ -145,7 +145,7 @@ class TestFormatAsMarkdown:
         assert "**Is Active**: Yes" in result
         assert "**Is Deprecated**: No" in result
 
-    def test_none_value_formatting(self):
+    def test_none_value_formatting(self) -> None:
         """測試 None 值格式化"""
         data = {"title": "Test", "optional_field": None}
         result = format_as_markdown(data)
@@ -156,7 +156,7 @@ class TestFormatAsMarkdown:
 class TestFormatResponse:
     """測試統一格式化函數"""
 
-    def test_format_response_json(self):
+    def test_format_response_json(self) -> None:
         """測試指定 JSON 格式"""
         data = {"name": "Test", "value": 123}
         result = format_response(data, ResponseFormat.JSON)
@@ -165,7 +165,7 @@ class TestFormatResponse:
         parsed = json.loads(result)
         assert parsed["name"] == "Test"
 
-    def test_format_response_markdown(self):
+    def test_format_response_markdown(self) -> None:
         """測試指定 Markdown 格式"""
         data = {"title": "Test", "value": 123}
         result = format_response(data, ResponseFormat.MARKDOWN)
@@ -174,7 +174,7 @@ class TestFormatResponse:
         assert "#" in result
         assert "**" in result
 
-    def test_format_response_string_param(self):
+    def test_format_response_string_param(self) -> None:
         """測試使用字串參數指定格式"""
         data = {"name": "Test"}
 
@@ -190,7 +190,7 @@ class TestFormatResponse:
 class TestFormatSearchResults:
     """測試搜尋結果格式化"""
 
-    def test_format_search_results_markdown(self):
+    def test_format_search_results_markdown(self) -> None:
         """測試 Markdown 格式的搜尋結果"""
         results = [
             {"title": "GSFont", "type": "class", "content": "Font class"},
@@ -205,7 +205,7 @@ class TestFormatSearchResults:
         assert "## 1. GSFont" in result
         assert "## 2. GSLayer" in result
 
-    def test_format_search_results_json(self):
+    def test_format_search_results_json(self) -> None:
         """測試 JSON 格式的搜尋結果"""
         results = [
             {"title": "GSFont", "type": "class"},
@@ -217,7 +217,7 @@ class TestFormatSearchResults:
         assert parsed["count"] == 1
         assert len(parsed["results"]) == 1
 
-    def test_format_search_results_with_metadata(self):
+    def test_format_search_results_with_metadata(self) -> None:
         """測試帶元數據的搜尋結果"""
         results = [{"title": "Item 1"}]
         metadata = {"total_count": 100, "has_more": True, "offset": 0}
@@ -229,13 +229,13 @@ class TestFormatSearchResults:
         assert "**Total**: 100 items" in result
         assert "More results available" in result
 
-    def test_format_empty_search_results(self):
+    def test_format_empty_search_results(self) -> None:
         """測試空搜尋結果"""
         result = format_search_results([], query="nonexistent")
 
         assert "No matching results found" in result or "No results" in result
 
-    def test_long_content_truncation_in_markdown(self):
+    def test_long_content_truncation_in_markdown(self) -> None:
         """測試 Markdown 中過長內容的截斷"""
         results = [
             {
@@ -253,7 +253,7 @@ class TestFormatSearchResults:
 class TestFormatIntegration:
     """測試格式化整合場景"""
 
-    def test_real_world_api_response(self):
+    def test_real_world_api_response(self) -> None:
         """測試真實 API 回應格式化"""
         api_response = {
             "class": "GSFont",
@@ -277,7 +277,7 @@ class TestFormatIntegration:
         assert "**Class**: GSFont" in md_result
         assert "**Properties**:" in md_result
 
-    def test_consistency_between_formats(self):
+    def test_consistency_between_formats(self) -> None:
         """測試不同格式包含相同資訊"""
         data = {
             "title": "Test",

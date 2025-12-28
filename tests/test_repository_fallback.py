@@ -10,7 +10,9 @@
 
 import sys
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -26,7 +28,7 @@ class TestRepositoryFallbackMechanism:
     """測試 Repository Scanner 的 Fallback 機制"""
 
     @pytest.fixture
-    def temp_local_repo(self):
+    def temp_local_repo(self) -> Generator[Path, None, None]:
         """建立臨時本地 Repositories 目錄"""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir) / "Repositories"
@@ -45,7 +47,7 @@ class TestRepositoryFallbackMechanism:
             yield repo_path
 
     @pytest.fixture
-    def temp_fallback_paths(self):
+    def temp_fallback_paths(self) -> Generator[dict[str, Path], None, None]:
         """建立臨時 Submodule fallback 路徑"""
         with tempfile.TemporaryDirectory() as tmpdir:
             submodule_base = Path(tmpdir) / "data" / "official"
@@ -66,7 +68,7 @@ class TestRepositoryFallbackMechanism:
                 "vanilla": submodule_base / "vanilla",
             }
 
-    def test_priority_1_local_installation(self, temp_local_repo, temp_fallback_paths):
+    def test_priority_1_local_installation(self, temp_local_repo: Path, temp_fallback_paths: dict[str, Path]) -> None:
         """測試優先順序 1：本地安裝優先"""
         scanner = RepositoryScanner(temp_local_repo, temp_fallback_paths)
         scanner.scan_repositories()
@@ -79,7 +81,7 @@ class TestRepositoryFallbackMechanism:
         assert mekkablue_path == temp_local_repo / "mekkablue"
         assert vanilla_path == temp_local_repo / "vanilla"
 
-    def test_priority_3_submodule_fallback(self, temp_fallback_paths):
+    def test_priority_3_submodule_fallback(self, temp_fallback_paths: dict[str, Path]) -> None:
         """測試優先順序 3：Submodule fallback（本地未安裝）"""
         # 使用不存在的 Repositories 路徑
         nonexistent_repo = Path("/nonexistent/repositories")
@@ -95,8 +97,8 @@ class TestRepositoryFallbackMechanism:
         assert vanilla_path == temp_fallback_paths["vanilla"]
 
     def test_priority_2_environment_variable(
-        self, monkeypatch, temp_local_repo, temp_fallback_paths
-    ):
+        self, monkeypatch: pytest.MonkeyPatch, temp_local_repo: Path, temp_fallback_paths: dict[str, Path]
+    ) -> None:
         """測試優先順序 2：環境變數（本地安裝不存在時）"""
         # 建立環境變數指定的路徑
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -121,8 +123,8 @@ class TestRepositoryFallbackMechanism:
             assert mekkablue_path == env_mekkablue
 
     def test_local_overrides_environment_variable(
-        self, monkeypatch, temp_local_repo, temp_fallback_paths
-    ):
+        self, monkeypatch: pytest.MonkeyPatch, temp_local_repo: Path, temp_fallback_paths: dict[str, Path]
+    ) -> None:
         """測試本地安裝優先於環境變數"""
         # 建立環境變數路徑
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -141,8 +143,8 @@ class TestRepositoryFallbackMechanism:
             assert mekkablue_path == temp_local_repo / "mekkablue"
 
     def test_environment_variable_overrides_submodule(
-        self, monkeypatch, temp_fallback_paths
-    ):
+        self, monkeypatch: pytest.MonkeyPatch, temp_fallback_paths: dict[str, Path]
+    ) -> None:
         """測試環境變數優先於 Submodule fallback"""
         with tempfile.TemporaryDirectory() as tmpdir:
             env_mekkablue = Path(tmpdir) / "env_mekkablue"
@@ -162,7 +164,7 @@ class TestRepositoryFallbackMechanism:
             # 環境變數應該優先於 Submodule
             assert mekkablue_path == env_mekkablue
 
-    def test_no_fallback_returns_none(self):
+    def test_no_fallback_returns_none(self) -> None:
         """測試當所有路徑都不存在時返回 None"""
         nonexistent_repo = Path("/nonexistent/repositories")
         scanner = RepositoryScanner(nonexistent_repo, {})
@@ -173,7 +175,7 @@ class TestRepositoryFallbackMechanism:
         # 應該返回 None
         assert mekkablue_path is None
 
-    def test_fallback_with_nonexistent_submodule(self):
+    def test_fallback_with_nonexistent_submodule(self) -> None:
         """測試 Submodule 路徑不存在時返回 None"""
         nonexistent_repo = Path("/nonexistent/repositories")
         fallback_paths = {
@@ -189,8 +191,8 @@ class TestRepositoryFallbackMechanism:
         assert mekkablue_path is None
 
     def test_mixed_scenario_local_and_fallback(
-        self, temp_local_repo, temp_fallback_paths
-    ):
+        self, temp_local_repo: Path, temp_fallback_paths: dict[str, Path]
+    ) -> None:
         """測試混合場景：部分本地安裝，部分使用 fallback"""
         # 移除本地的 vanilla 模組
         vanilla_local = temp_local_repo / "vanilla"
@@ -210,7 +212,7 @@ class TestRepositoryFallbackMechanism:
         vanilla_path = scanner.get_module_path("vanilla")
         assert vanilla_path == temp_fallback_paths["vanilla"]
 
-    def test_multiple_module_resolution(self, temp_local_repo, temp_fallback_paths):
+    def test_multiple_module_resolution(self, temp_local_repo: Path, temp_fallback_paths: dict[str, Path]) -> None:
         """測試多個模組同時解析路徑"""
         scanner = RepositoryScanner(temp_local_repo, temp_fallback_paths)
         scanner.scan_repositories()
@@ -231,7 +233,7 @@ class TestRepositoryFallbackMechanism:
 class TestRepositoryFallbackRealWorld:
     """測試實際場景的 Fallback 機制"""
 
-    def test_real_project_structure(self):
+    def test_real_project_structure(self) -> None:
         """測試真實專案結構的 Submodule fallback"""
         project_root = Path(__file__).parent.parent
         fallback_paths = {
@@ -261,7 +263,7 @@ class TestRepositoryFallbackRealWorld:
         if (project_root / "data/official/vanilla").exists():
             assert vanilla_path is not None
 
-    def test_fallback_paths_initialization(self):
+    def test_fallback_paths_initialization(self) -> None:
         """測試 fallback_paths 可以在初始化後設定"""
         scanner = RepositoryScanner(Path("/nonexistent"))
 

@@ -11,7 +11,7 @@ class TestConfigLoader:
     """ConfigLoader 功能測試"""
 
     @pytest.fixture
-    def valid_config_yaml(self):
+    def valid_config_yaml(self) -> str:
         """有效的配置 YAML"""
         return """
 modules:
@@ -49,7 +49,7 @@ server_name: Test Server
 log_level: INFO
 """
 
-    def test_load_valid_yaml(self, valid_config_yaml):
+    def test_load_valid_yaml(self, valid_config_yaml: str) -> None:
         """測試載入有效的 YAML 配置"""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(valid_config_yaml)
@@ -70,7 +70,7 @@ log_level: INFO
         finally:
             config_path.unlink()
 
-    def test_load_minimal_config(self):
+    def test_load_minimal_config(self) -> None:
         """測試載入最小配置（只有必填欄位）"""
         minimal_yaml = """
 modules:
@@ -98,12 +98,12 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_load_nonexistent_file(self):
+    def test_load_nonexistent_file(self) -> None:
         """測試載入不存在的檔案"""
         with pytest.raises(ConfigLoadError, match="Configuration file not found"):
             ConfigLoader.load_from_yaml(Path("/nonexistent/config.yaml"))
 
-    def test_load_invalid_yaml_syntax(self):
+    def test_load_invalid_yaml_syntax(self) -> None:
         """測試載入無效的 YAML 語法"""
         invalid_yaml = "invalid: yaml: content: ["
 
@@ -117,7 +117,7 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_load_empty_file(self):
+    def test_load_empty_file(self) -> None:
         """測試載入空檔案"""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("")
@@ -129,7 +129,7 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_validation_error_missing_required_field(self):
+    def test_validation_error_missing_required_field(self) -> None:
         """測試缺少必填欄位的驗證錯誤"""
         invalid_yaml = """
 modules:
@@ -148,7 +148,7 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_validation_error_duplicate_module_names(self):
+    def test_validation_error_duplicate_module_names(self) -> None:
         """測試重複模組名稱的驗證錯誤"""
         invalid_yaml = """
 modules:
@@ -172,7 +172,7 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_validation_error_absolute_path(self):
+    def test_validation_error_absolute_path(self) -> None:
         """測試絕對路徑被拒絕"""
         invalid_yaml = """
 modules:
@@ -192,7 +192,7 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_validate_config_success(self, valid_config_yaml):
+    def test_validate_config_success(self, valid_config_yaml: str) -> None:
         """測試配置驗證成功"""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(valid_config_yaml)
@@ -207,7 +207,7 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_validate_config_failure(self):
+    def test_validate_config_failure(self) -> None:
         """測試配置驗證失敗"""
         invalid_yaml = "invalid: yaml: ["
 
@@ -223,7 +223,7 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_load_with_disabled_modules(self):
+    def test_load_with_disabled_modules(self) -> None:
         """測試載入包含停用模組的配置"""
         yaml_with_disabled = """
 modules:
@@ -254,7 +254,7 @@ modules:
         finally:
             config_path.unlink()
 
-    def test_load_with_internal_service(self):
+    def test_load_with_internal_service(self) -> None:
         """測試載入包含內部服務的配置"""
         yaml_with_internal = """
 modules:

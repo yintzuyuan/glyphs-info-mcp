@@ -6,6 +6,7 @@
 # 導入待測試的模組
 import sys
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -23,7 +24,7 @@ class TestVanillaLocalAccessor:
     """測試 Vanilla Local Accessor 基本功能"""
 
     @pytest.fixture
-    def mock_vanilla_module(self):
+    def mock_vanilla_module(self) -> Generator[Path, None, None]:
         """建立模擬的 vanilla 模組結構"""
         with tempfile.TemporaryDirectory() as tmpdir:
             # 建立 Repositories/vanilla 結構
@@ -125,19 +126,19 @@ class Window:
             yield repo_path
 
     @pytest.fixture
-    def vanilla_accessor(self, mock_vanilla_module):
+    def vanilla_accessor(self, mock_vanilla_module: Path) -> VanillaLocalAccessor:
         """建立 VanillaLocalAccessor 實例"""
         scanner = RepositoryScanner(mock_vanilla_module)
         scanner.scan_repositories()
         accessor = VanillaLocalAccessor(scanner)
         return accessor
 
-    def test_accessor_initialization(self, vanilla_accessor):
+    def test_accessor_initialization(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試 Accessor 正確初始化"""
         assert vanilla_accessor is not None
         assert vanilla_accessor.is_available()
 
-    def test_accessor_unavailable_when_no_vanilla(self):
+    def test_accessor_unavailable_when_no_vanilla(self) -> None:
         """測試當 vanilla 不存在時 is_available() 返回 False"""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir) / "Repositories"
@@ -149,7 +150,7 @@ class Window:
 
             assert not accessor.is_available()
 
-    def test_list_vanilla_classes(self, vanilla_accessor):
+    def test_list_vanilla_classes(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試列出所有 Vanilla UI 元件"""
         classes = vanilla_accessor.list_vanilla_classes()
 
@@ -159,7 +160,7 @@ class Window:
         assert "TextBox" in classes
         assert "Window" in classes
 
-    def test_get_vanilla_class_button(self, vanilla_accessor):
+    def test_get_vanilla_class_button(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試取得 Button 類別的完整資訊"""
         button_info = vanilla_accessor.get_vanilla_class("Button")
 
@@ -179,12 +180,12 @@ class Window:
         assert "setTitle" in method_names
         assert "getTitle" in method_names
 
-    def test_get_vanilla_class_not_found(self, vanilla_accessor):
+    def test_get_vanilla_class_not_found(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試取得不存在的類別"""
         result = vanilla_accessor.get_vanilla_class("NonExistentClass")
         assert result is None
 
-    def test_search_vanilla_classes_by_name(self, vanilla_accessor):
+    def test_search_vanilla_classes_by_name(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試按名稱搜尋 UI 元件"""
         results = vanilla_accessor.search_vanilla_classes("button")
 
@@ -192,7 +193,7 @@ class Window:
         assert len(results) > 0
         assert any("Button" in r["class_name"] for r in results)
 
-    def test_search_vanilla_classes_by_docstring(self, vanilla_accessor):
+    def test_search_vanilla_classes_by_docstring(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試按文檔字串搜尋"""
         results = vanilla_accessor.search_vanilla_classes("display")
 
@@ -200,14 +201,14 @@ class Window:
         # TextBox 的文檔包含 "display"
         assert any("TextBox" in r["class_name"] for r in results)
 
-    def test_search_vanilla_classes_no_results(self, vanilla_accessor):
+    def test_search_vanilla_classes_no_results(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試搜尋無結果"""
         results = vanilla_accessor.search_vanilla_classes("nonexistent_widget")
 
         assert isinstance(results, list)
         assert len(results) == 0
 
-    def test_search_vanilla_classes_case_insensitive(self, vanilla_accessor):
+    def test_search_vanilla_classes_case_insensitive(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試搜尋不區分大小寫"""
         results_lower = vanilla_accessor.search_vanilla_classes("button")
         results_upper = vanilla_accessor.search_vanilla_classes("BUTTON")
@@ -215,9 +216,10 @@ class Window:
 
         assert len(results_lower) == len(results_upper) == len(results_mixed)
 
-    def test_get_vanilla_class_with_parameters(self, vanilla_accessor):
+    def test_get_vanilla_class_with_parameters(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試取得類別時包含參數資訊"""
         button_info = vanilla_accessor.get_vanilla_class("Button")
+        assert button_info is not None
 
         # 檢查 __init__ 方法的參數
         init_method = next(
@@ -232,7 +234,7 @@ class Window:
         assert "title" in param_names
         assert "callback" in param_names
 
-    def test_cache_mechanism(self, vanilla_accessor):
+    def test_cache_mechanism(self, vanilla_accessor: VanillaLocalAccessor) -> None:
         """測試快取機制"""
         # 第一次呼叫
         classes1 = vanilla_accessor.list_vanilla_classes()
@@ -246,7 +248,7 @@ class Window:
 class TestVanillaLocalAccessorEdgeCases:
     """測試邊界情況"""
 
-    def test_malformed_init_file(self):
+    def test_malformed_init_file(self) -> None:
         """測試處理格式錯誤的 __init__.py"""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir) / "Repositories"
@@ -264,7 +266,7 @@ class TestVanillaLocalAccessorEdgeCases:
             classes = accessor.list_vanilla_classes()
             assert isinstance(classes, list)
 
-    def test_missing_class_file(self):
+    def test_missing_class_file(self) -> None:
         """測試類別檔案不存在的情況"""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir) / "Repositories"

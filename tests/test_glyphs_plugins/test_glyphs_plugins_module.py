@@ -80,14 +80,14 @@ class TestGlyphsPluginsModuleInitialization:
 
     @pytest.fixture
     def module_with_repos(
-        self, mock_repositories: Path, monkeypatch
+        self, mock_repositories: Path, monkeypatch: pytest.MonkeyPatch
     ) -> GlyphsPluginsModule:
         """建立已初始化的模組實例（有 Repositories）"""
 
         # Mock RepositoryScanner 的預設路徑為我們的 mock 路徑
-        def mock_init(self, repositories_path=None):
+        def mock_init(self: RepositoryScanner, repositories_path: Path | None = None) -> None:
             self.repositories_path = repositories_path or mock_repositories
-            self.modules = []
+            self.modules = []  # type: ignore[attr-defined]
 
         monkeypatch.setattr(RepositoryScanner, "__init__", mock_init)
 
@@ -96,14 +96,14 @@ class TestGlyphsPluginsModuleInitialization:
         return module
 
     @pytest.fixture
-    def module_without_repos(self, tmp_path: Path, monkeypatch) -> GlyphsPluginsModule:
+    def module_without_repos(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> GlyphsPluginsModule:
         """建立模組實例（無 Repositories）"""
         # Mock 一個不存在的路徑
         nonexistent_path = tmp_path / "nonexistent"
 
-        def mock_init(self, repositories_path=None):
+        def mock_init(self: RepositoryScanner, repositories_path: Path | None = None) -> None:
             self.repositories_path = repositories_path or nonexistent_path
-            self.modules = []
+            self.modules = []  # type: ignore[attr-defined]
 
         monkeypatch.setattr(RepositoryScanner, "__init__", mock_init)
 
@@ -116,7 +116,7 @@ class TestGlyphsPluginsModuleInitialization:
         """建立未初始化的模組實例"""
         return GlyphsPluginsModule()
 
-    def test_module_creation(self):
+    def test_module_creation(self) -> None:
         """測試模組建立"""
         # Act
         module = GlyphsPluginsModule()
@@ -129,7 +129,7 @@ class TestGlyphsPluginsModuleInitialization:
         assert module.official_registry is None
         assert module.is_initialized is False
 
-    def test_initialize_success(self, module_with_repos: GlyphsPluginsModule):
+    def test_initialize_success(self, module_with_repos: GlyphsPluginsModule) -> None:
         """測試成功初始化"""
         # Assert
         assert module_with_repos.is_initialized is True
@@ -139,7 +139,7 @@ class TestGlyphsPluginsModuleInitialization:
 
     def test_initialize_without_repositories(
         self, module_without_repos: GlyphsPluginsModule
-    ):
+    ) -> None:
         """測試在 Repositories 不存在時初始化"""
         # Assert - 應該仍然成功初始化，但不掃描本機外掛
         assert module_without_repos.is_initialized is True
@@ -147,7 +147,7 @@ class TestGlyphsPluginsModuleInitialization:
         assert module_without_repos.plugins_accessor is not None
         assert module_without_repos.official_registry is not None
 
-    def test_get_tools(self, module_with_repos: GlyphsPluginsModule):
+    def test_get_tools(self, module_with_repos: GlyphsPluginsModule) -> None:
         """測試取得工具清單"""
         # Act
         tools = module_with_repos.get_tools()
@@ -160,7 +160,7 @@ class TestGlyphsPluginsModuleInitialization:
         assert "plugins_scan_repository" in tools
         assert "plugins_list_categories" in tools
 
-    def test_get_module_info(self, module_with_repos: GlyphsPluginsModule):
+    def test_get_module_info(self, module_with_repos: GlyphsPluginsModule) -> None:
         """測試取得模組資訊"""
         # Act
         info = module_with_repos.get_module_info()
@@ -170,15 +170,15 @@ class TestGlyphsPluginsModuleInitialization:
         assert "description" in info
         assert info["name"] == "glyphs-plugins"
 
-    def test_initialize_with_empty_repositories(self, tmp_path: Path, monkeypatch):
+    def test_initialize_with_empty_repositories(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """測試空 Repositories 目錄的初始化"""
         # Arrange
         empty_repos = tmp_path / "EmptyRepositories"
         empty_repos.mkdir()
 
-        def mock_init(self, repositories_path=None):
+        def mock_init(self: RepositoryScanner, repositories_path: Path | None = None) -> None:
             self.repositories_path = repositories_path or empty_repos
-            self.modules = []
+            self.modules = []  # type: ignore[attr-defined]
 
         monkeypatch.setattr(RepositoryScanner, "__init__", mock_init)
 
@@ -244,12 +244,12 @@ class TestSearchLocalTool:
         return repos
 
     @pytest.fixture
-    def module(self, mock_repositories: Path, monkeypatch) -> GlyphsPluginsModule:
+    def module(self, mock_repositories: Path, monkeypatch: pytest.MonkeyPatch) -> GlyphsPluginsModule:
         """建立已初始化的模組實例"""
 
-        def mock_init(self, repositories_path=None):
+        def mock_init(self: RepositoryScanner, repositories_path: Path | None = None) -> None:
             self.repositories_path = repositories_path or mock_repositories
-            self.modules = []
+            self.modules = []  # type: ignore[attr-defined]
 
         monkeypatch.setattr(RepositoryScanner, "__init__", mock_init)
 
@@ -257,7 +257,7 @@ class TestSearchLocalTool:
         module.initialize()
         return module
 
-    def test_search_all_categories(self, module: GlyphsPluginsModule):
+    def test_search_all_categories(self, module: GlyphsPluginsModule) -> None:
         """測試搜尋所有類別"""
         # Act
         result = module._search_local_tool("cross", category="all")
@@ -266,7 +266,7 @@ class TestSearchLocalTool:
         assert "🔍" in result  # Has search icon
         assert "ShowCrosshair" in result or "Found" in result or "找到" in result
 
-    def test_search_plugins_only(self, module: GlyphsPluginsModule):
+    def test_search_plugins_only(self, module: GlyphsPluginsModule) -> None:
         """測試只搜尋外掛"""
         # Act
         result = module._search_local_tool("cross", category="plugin")
@@ -275,7 +275,7 @@ class TestSearchLocalTool:
         assert "ShowCrosshair" in result
         assert "glyphsReporter" in result
 
-    def test_search_scripts_only(self, module: GlyphsPluginsModule):
+    def test_search_scripts_only(self, module: GlyphsPluginsModule) -> None:
         """測試只搜尋腳本"""
         # Act
         result = module._search_local_tool("script", category="scripts")
@@ -284,7 +284,7 @@ class TestSearchLocalTool:
         # 使用 "script" 作為查詢詞，更有可能匹配到真實的腳本集合
         assert "found" in result.lower() or "未找到" in result or "scripts" in result.lower() or "腳本" in result
 
-    def test_search_no_results(self, module: GlyphsPluginsModule):
+    def test_search_no_results(self, module: GlyphsPluginsModule) -> None:
         """測試無結果搜尋"""
         # Act
         result = module._search_local_tool("nonexistent", category="all")
@@ -292,7 +292,7 @@ class TestSearchLocalTool:
         # Assert
         assert "未找到" in result or "找不到" in result or "無結果" in result or "found" in result.lower() or "no results" in result.lower()
 
-    def test_search_accessor_not_initialized(self):
+    def test_search_accessor_not_initialized(self) -> None:
         """測試未初始化狀態的搜尋"""
         # Arrange
         module = GlyphsPluginsModule()  # 未呼叫 initialize()
@@ -303,7 +303,7 @@ class TestSearchLocalTool:
         # Assert
         assert "尚未初始化" in result or "未初始化" in result or "無法" in result or "not initialized" in result.lower()
 
-    def test_search_with_match_in_bundle_id(self, module: GlyphsPluginsModule):
+    def test_search_with_match_in_bundle_id(self, module: GlyphsPluginsModule) -> None:
         """測試 Bundle ID 匹配"""
         # Act
         result = module._search_local_tool("mekkablue", category="plugin")
@@ -317,19 +317,19 @@ class TestSearchOfficialTool:
     """測試官方搜尋工具"""
 
     @pytest.fixture
-    def module(self, tmp_path: Path, monkeypatch) -> GlyphsPluginsModule:
+    def module(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> GlyphsPluginsModule:
         """建立模組並 mock OfficialRegistry"""
         module = GlyphsPluginsModule()
 
         # Mock RepositoryScanner
-        def mock_scanner_init(self, repositories_path=None):
+        def mock_scanner_init(self: RepositoryScanner, repositories_path: Path | None = None) -> None:
             self.repositories_path = tmp_path / "Repositories"
-            self.modules = []
+            self.modules = []  # type: ignore[attr-defined]
 
         monkeypatch.setattr(RepositoryScanner, "__init__", mock_scanner_init)
 
         # Mock OfficialRegistry.core_search
-        mock_packages = [
+        mock_packages: list[dict[str, str | float]] = [
             {
                 "title": "TestPlugin",
                 "url": "https://github.com/test/TestPlugin",
@@ -352,8 +352,8 @@ class TestSearchOfficialTool:
             },
         ]
 
-        def mock_core_search(self, query: str, max_results: int = 10, **kwargs):
-            return [p for p in mock_packages if query.lower() in p["title"].lower()][:max_results]
+        def mock_core_search(self: OfficialRegistry, query: str, max_results: int = 10, **kwargs: object) -> list[dict[str, str | float]]:
+            return [p for p in mock_packages if query.lower() in str(p["title"]).lower()][:max_results]
 
         monkeypatch.setattr(
             OfficialRegistry,
@@ -364,7 +364,7 @@ class TestSearchOfficialTool:
         module.initialize()
         return module
 
-    def test_search_official_success(self, module: GlyphsPluginsModule):
+    def test_search_official_success(self, module: GlyphsPluginsModule) -> None:
         """測試成功的官方搜尋"""
         # Act
         result = module._search_official_tool("Test")
@@ -374,7 +374,7 @@ class TestSearchOfficialTool:
         assert "搜尋結果" in result or "找到" in result or "Search Results" in result or "Found" in result
         assert "TestPlugin" in result
 
-    def test_search_official_with_max_results(self, module: GlyphsPluginsModule):
+    def test_search_official_with_max_results(self, module: GlyphsPluginsModule) -> None:
         """測試結果數量限制"""
         # Act
         result = module._search_official_tool("Plugin", max_results=1)
@@ -383,7 +383,7 @@ class TestSearchOfficialTool:
         assert "Plugin" in result
         # 應該只有一個結果
 
-    def test_search_official_no_results(self, module: GlyphsPluginsModule):
+    def test_search_official_no_results(self, module: GlyphsPluginsModule) -> None:
         """測試無結果搜尋"""
         # Act
         result = module._search_official_tool("NonexistentPlugin")
@@ -391,7 +391,7 @@ class TestSearchOfficialTool:
         # Assert
         assert "未找到" in result or "找不到" in result or "無結果" in result or "found" in result.lower() or "no results" in result.lower()
 
-    def test_search_official_registry_not_initialized(self):
+    def test_search_official_registry_not_initialized(self) -> None:
         """測試 Registry 未初始化"""
         # Arrange
         module = GlyphsPluginsModule()
@@ -473,7 +473,7 @@ class TestGetInfoTool:
         module.is_initialized = True
         return module
 
-    def test_get_plugin_info_local(self, module: GlyphsPluginsModule):
+    def test_get_plugin_info_local(self, module: GlyphsPluginsModule) -> None:
         """測試取得本機 Plugin 資訊"""
         # Act
         result = module._get_info_tool("TestPlugin", source="local")
@@ -483,7 +483,7 @@ class TestGetInfoTool:
         assert "1.0.0" in result
         assert "com.test.TestPlugin" in result
 
-    def test_get_scripts_info_local(self, module: GlyphsPluginsModule):
+    def test_get_scripts_info_local(self, module: GlyphsPluginsModule) -> None:
         """測試取得本機 Scripts 資訊"""
         # Act
         result = module._get_info_tool("TestScripts", source="local")
@@ -493,7 +493,7 @@ class TestGetInfoTool:
         assert "Scripts Collection" in result or "腳本" in result or "scripts" in result.lower()
         assert "Script1" in result or "Script2" in result
 
-    def test_get_info_official_with_exact_match(self, module: GlyphsPluginsModule):
+    def test_get_info_official_with_exact_match(self, module: GlyphsPluginsModule) -> None:
         """測試從官方清單取得資訊（精確匹配）"""
         # 使用 Mock 模擬官方清單回傳結果（匹配 core_search 返回格式）
         mock_plugin = {
@@ -520,7 +520,7 @@ class TestGetInfoTool:
             assert "ShowCrosshair" in result  # repo_name
             assert "Shows a crosshair" in result
 
-    def test_get_info_not_found_local(self, module: GlyphsPluginsModule):
+    def test_get_info_not_found_local(self, module: GlyphsPluginsModule) -> None:
         """測試本機找不到"""
         # Act
         result = module._get_info_tool("NonexistentPlugin", source="local")
@@ -528,7 +528,7 @@ class TestGetInfoTool:
         # Assert
         assert "未找到" in result or "找不到" in result or "not found" in result.lower()
 
-    def test_get_info_accessor_not_initialized(self):
+    def test_get_info_accessor_not_initialized(self) -> None:
         """測試未初始化狀態"""
         # Arrange
         module = GlyphsPluginsModule()
@@ -539,7 +539,7 @@ class TestGetInfoTool:
         # Assert
         assert "未初始化" in result or "無法" in result or "not initialized" in result.lower()
 
-    def test_get_info_invalid_source(self, module: GlyphsPluginsModule):
+    def test_get_info_invalid_source(self, module: GlyphsPluginsModule) -> None:
         """測試無效來源"""
         # Act
         result = module._get_info_tool("test", source="invalid")
@@ -560,12 +560,12 @@ class TestScanRepositoryTool:
         return repos
 
     @pytest.fixture
-    def module(self, mock_repositories: Path, monkeypatch) -> GlyphsPluginsModule:
+    def module(self, mock_repositories: Path, monkeypatch: pytest.MonkeyPatch) -> GlyphsPluginsModule:
         """建立模組實例"""
 
-        def mock_init(self, repositories_path=None):
+        def mock_init(self: RepositoryScanner, repositories_path: Path | None = None) -> None:
             self.repositories_path = repositories_path or mock_repositories
-            self.modules = []
+            self.modules = []  # type: ignore[attr-defined]
 
         monkeypatch.setattr(RepositoryScanner, "__init__", mock_init)
 
@@ -573,7 +573,7 @@ class TestScanRepositoryTool:
         module.initialize()
         return module
 
-    def test_scan_repository_success(self, module: GlyphsPluginsModule):
+    def test_scan_repository_success(self, module: GlyphsPluginsModule) -> None:
         """測試成功掃描"""
         # Act
         result = module._scan_repository_tool()
@@ -581,7 +581,7 @@ class TestScanRepositoryTool:
         # Assert
         assert "掃描完成" in result or "完成" in result or "個" in result or "scan complete" in result.lower() or "found" in result.lower()
 
-    def test_scan_repository_not_initialized(self):
+    def test_scan_repository_not_initialized(self) -> None:
         """測試未初始化"""
         # Arrange
         module = GlyphsPluginsModule()
@@ -620,12 +620,12 @@ class TestListCategoriesTool:
         return repos
 
     @pytest.fixture
-    def module(self, mock_repositories: Path, monkeypatch) -> GlyphsPluginsModule:
+    def module(self, mock_repositories: Path, monkeypatch: pytest.MonkeyPatch) -> GlyphsPluginsModule:
         """建立模組實例"""
 
-        def mock_init(self, repositories_path=None):
+        def mock_init(self: RepositoryScanner, repositories_path: Path | None = None) -> None:
             self.repositories_path = repositories_path or mock_repositories
-            self.modules = []
+            self.modules = []  # type: ignore[attr-defined]
 
         monkeypatch.setattr(RepositoryScanner, "__init__", mock_init)
 
@@ -633,7 +633,7 @@ class TestListCategoriesTool:
         module.initialize()
         return module
 
-    def test_list_categories_with_plugins(self, module: GlyphsPluginsModule):
+    def test_list_categories_with_plugins(self, module: GlyphsPluginsModule) -> None:
         """測試列出分類（有外掛）"""
         # Act
         result = module._list_categories_tool()
@@ -641,7 +641,7 @@ class TestListCategoriesTool:
         # Assert
         assert "分類" in result or "類別" in result or "統計" in result or "Category" in result or "Statistics" in result
 
-    def test_list_categories_not_initialized(self):
+    def test_list_categories_not_initialized(self) -> None:
         """測試未初始化"""
         # Arrange
         module = GlyphsPluginsModule()
@@ -652,7 +652,7 @@ class TestListCategoriesTool:
         # Assert
         assert "未初始化" in result or "無法" in result or "not initialized" in result.lower()
 
-    def test_list_categories_with_many_scripts(self, tmp_path: Path):
+    def test_list_categories_with_many_scripts(self, tmp_path: Path) -> None:
         """測試腳本清單截斷邏輯（>10個）"""
         # Arrange - 建立包含 15 個腳本集合的 mock
         repos = tmp_path / "Repositories"
@@ -681,7 +681,7 @@ class TestListCategoriesTool:
         assert "Scripts Collections (15" in result or "Scripts Collections (15 個)" in result
         assert "還有 5 個集合" in result or "5 more collections" in result  # Truncation message
 
-    def test_list_categories_with_many_libraries(self, tmp_path: Path):
+    def test_list_categories_with_many_libraries(self, tmp_path: Path) -> None:
         """測試函式庫清單截斷邏輯（>10個）"""
         # Arrange - 建立包含 15 個 Library 的 mock
         repos = tmp_path / "Repositories"

@@ -80,7 +80,7 @@ class TestStringsFileParser:
 
         return test_dir
 
-    def test_parse_single_strings_file(self, temp_strings_files: Path):
+    def test_parse_single_strings_file(self, temp_strings_files: Path) -> None:
         """測試解析單一 .strings 檔案"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_strings_files)
 
@@ -94,7 +94,7 @@ class TestStringsFileParser:
         assert result["Has Anchors"] == "Has Anchors"
         assert result["File"] == "File"
 
-    def test_parse_strings_file_with_comments(self, temp_strings_files: Path):
+    def test_parse_strings_file_with_comments(self, temp_strings_files: Path) -> None:
         """測試解析包含註解的 .strings 檔案"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_strings_files)
 
@@ -105,7 +105,7 @@ class TestStringsFileParser:
         assert "/* UI Elements */" not in result
         assert "/* Menu Items */" not in result
 
-    def test_parse_strings_file_chinese(self, temp_strings_files: Path):
+    def test_parse_strings_file_chinese(self, temp_strings_files: Path) -> None:
         """測試解析繁體中文 .strings 檔案"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_strings_files)
 
@@ -117,7 +117,7 @@ class TestStringsFileParser:
         assert result["Has Anchors"] == "包含錨點"
         assert result["File"] == "檔案"
 
-    def test_parse_nonexistent_file(self, temp_strings_files: Path):
+    def test_parse_nonexistent_file(self, temp_strings_files: Path) -> None:
         """測試解析不存在的檔案"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_strings_files)
 
@@ -184,7 +184,7 @@ class TestUIVocabularyNativeAccessor:
 
         return test_dir
 
-    def test_accessor_initialization(self, temp_resources: Path):
+    def test_accessor_initialization(self, temp_resources: Path) -> None:
         """測試 Accessor 初始化"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -193,7 +193,7 @@ class TestUIVocabularyNativeAccessor:
         assert "zh-Hant" in accessor.supported_locales
         assert "ja" in accessor.supported_locales
 
-    def test_get_all_terms_english(self, temp_resources: Path):
+    def test_get_all_terms_english(self, temp_resources: Path) -> None:
         """測試取得所有英文詞彙"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -205,7 +205,7 @@ class TestUIVocabularyNativeAccessor:
         assert result["Delete"] == "Delete"
         assert result["Glyph Info"] == "Glyph Info"
 
-    def test_get_all_terms_chinese(self, temp_resources: Path):
+    def test_get_all_terms_chinese(self, temp_resources: Path) -> None:
         """測試取得所有繁體中文詞彙"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -216,7 +216,7 @@ class TestUIVocabularyNativeAccessor:
         assert result["Delete"] == "刪除"
         assert result["Glyph Info"] == "字符資訊"
 
-    def test_get_all_terms_japanese(self, temp_resources: Path):
+    def test_get_all_terms_japanese(self, temp_resources: Path) -> None:
         """測試取得所有日文詞彙"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -226,7 +226,7 @@ class TestUIVocabularyNativeAccessor:
         assert result["Add Glyph"] == "グリフを追加"
         assert result["Delete"] == "削除"
 
-    def test_get_translation_single_locale(self, temp_resources: Path):
+    def test_get_translation_single_locale(self, temp_resources: Path) -> None:
         """測試取得單一語系翻譯"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -241,7 +241,7 @@ class TestUIVocabularyNativeAccessor:
         assert result["source_locale"] == "en"
         assert result["target_locale"] == "zh-Hant"
 
-    def test_get_translation_multiple_locales(self, temp_resources: Path):
+    def test_get_translation_multiple_locales(self, temp_resources: Path) -> None:
         """測試取得多語系翻譯"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -259,7 +259,7 @@ class TestUIVocabularyNativeAccessor:
         assert result["translations"]["zh-Hant"] == "新增字符"
         assert result["translations"]["ja"] == "グリフを追加"
 
-    def test_get_translation_by_chinese_term(self, temp_resources: Path):
+    def test_get_translation_by_chinese_term(self, temp_resources: Path) -> None:
         """測試使用中文詞彙查詢翻譯"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -272,7 +272,7 @@ class TestUIVocabularyNativeAccessor:
         assert result["source"] == "新增字符"
         assert result["target"] == "Add Glyph"
 
-    def test_get_translation_term_not_found(self, temp_resources: Path):
+    def test_get_translation_term_not_found(self, temp_resources: Path) -> None:
         """測試查詢不存在的詞彙"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -282,7 +282,7 @@ class TestUIVocabularyNativeAccessor:
 
         assert result is None
 
-    def test_get_term_by_key(self, temp_resources: Path):
+    def test_get_term_by_key(self, temp_resources: Path) -> None:
         """測試透過 key 精確查詢"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -290,7 +290,7 @@ class TestUIVocabularyNativeAccessor:
 
         assert result == "新增字符"
 
-    def test_get_term_by_key_not_found(self, temp_resources: Path):
+    def test_get_term_by_key_not_found(self, temp_resources: Path) -> None:
         """測試查詢不存在的 key"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -298,7 +298,7 @@ class TestUIVocabularyNativeAccessor:
 
         assert result is None
 
-    def test_list_available_locales(self, temp_resources: Path):
+    def test_list_available_locales(self, temp_resources: Path) -> None:
         """測試列出可用語系"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -350,7 +350,7 @@ class TestNibTermsIntegration:
 
     def test_get_all_terms_includes_nib_terms_for_english(
         self, temp_resources_with_nib_mock: Path
-    ):
+    ) -> None:
         """When locale is 'en', get_all_terms() should include NIB terms"""
         accessor = UIVocabularyNativeAccessor(
             resources_path=temp_resources_with_nib_mock
@@ -387,7 +387,7 @@ class TestNibTermsIntegration:
 
     def test_get_all_terms_strings_takes_priority_over_nib(
         self, temp_resources_with_nib_mock: Path
-    ):
+    ) -> None:
         """When both .strings and NIB have the same key, .strings wins"""
         accessor = UIVocabularyNativeAccessor(
             resources_path=temp_resources_with_nib_mock
@@ -418,7 +418,7 @@ class TestNibTermsIntegration:
 
     def test_get_all_terms_excludes_nib_for_non_english(
         self, temp_resources_with_nib_mock: Path
-    ):
+    ) -> None:
         """Non-English locales should NOT include NIB terms"""
         accessor = UIVocabularyNativeAccessor(
             resources_path=temp_resources_with_nib_mock
@@ -448,7 +448,7 @@ class TestNibTermsIntegration:
 
     def test_search_term_finds_nib_vocabulary(
         self, temp_resources_with_nib_mock: Path
-    ):
+    ) -> None:
         """search_term() should find terms from NIB files"""
         accessor = UIVocabularyNativeAccessor(
             resources_path=temp_resources_with_nib_mock
@@ -477,7 +477,7 @@ class TestNibTermsIntegration:
 
     def test_search_term_finds_anchors_from_nib(
         self, temp_resources_with_nib_mock: Path
-    ):
+    ) -> None:
         """search_term() should find 'Show Anchors' from NIB"""
         accessor = UIVocabularyNativeAccessor(
             resources_path=temp_resources_with_nib_mock
@@ -520,7 +520,7 @@ class TestNibTermsIntegrationRealGlyphs:
 
     def test_get_all_terms_includes_view_menu_item(
         self, glyphs_accessor: UIVocabularyNativeAccessor | None
-    ):
+    ) -> None:
         """get_all_terms('en') should include 'View' menu from MainMenu.nib"""
         if glyphs_accessor is None:
             pytest.skip("Glyphs 3.app not installed")
@@ -533,7 +533,7 @@ class TestNibTermsIntegrationRealGlyphs:
 
     def test_search_term_finds_view_menu(
         self, glyphs_accessor: UIVocabularyNativeAccessor | None
-    ):
+    ) -> None:
         """search_term() should find 'View' from MainMenu.nib"""
         if glyphs_accessor is None:
             pytest.skip("Glyphs 3.app not installed")
@@ -546,7 +546,7 @@ class TestNibTermsIntegrationRealGlyphs:
 
     def test_search_term_finds_show_anchors_menu(
         self, glyphs_accessor: UIVocabularyNativeAccessor | None
-    ):
+    ) -> None:
         """search_term() should find 'Show Anchors' menu item from NIB"""
         if glyphs_accessor is None:
             pytest.skip("Glyphs 3.app not installed")
@@ -595,7 +595,7 @@ class TestUIVocabularySearch:
 
         return test_dir
 
-    def test_search_term_exact_match(self, temp_resources: Path):
+    def test_search_term_exact_match(self, temp_resources: Path) -> None:
         """測試精確匹配搜尋"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -604,7 +604,7 @@ class TestUIVocabularySearch:
         assert len(results) > 0
         assert any(r["key"] == "Add Glyph" for r in results)
 
-    def test_search_term_partial_match(self, temp_resources: Path):
+    def test_search_term_partial_match(self, temp_resources: Path) -> None:
         """測試部分匹配搜尋"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -616,7 +616,7 @@ class TestUIVocabularySearch:
         assert "Delete Glyph" in keys
         assert "Glyph Info" in keys
 
-    def test_search_term_case_insensitive(self, temp_resources: Path):
+    def test_search_term_case_insensitive(self, temp_resources: Path) -> None:
         """測試不區分大小寫搜尋"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -625,7 +625,7 @@ class TestUIVocabularySearch:
         assert len(results) > 0
         assert any(r["key"] == "Add Glyph" for r in results)
 
-    def test_search_term_chinese(self, temp_resources: Path):
+    def test_search_term_chinese(self, temp_resources: Path) -> None:
         """測試中文搜尋"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 
@@ -637,7 +637,7 @@ class TestUIVocabularySearch:
         assert "刪除字符" in values
         assert "字符資訊" in values
 
-    def test_search_term_no_results(self, temp_resources: Path):
+    def test_search_term_no_results(self, temp_resources: Path) -> None:
         """測試無結果的搜尋"""
         accessor = UIVocabularyNativeAccessor(resources_path=temp_resources)
 

@@ -12,7 +12,7 @@ from glyphs_info_mcp.modules.sdk_indexer import SDKIndexer
 class TestSDKIndexer:
     """Test SDK indexer"""
 
-    def test_should_create_indexer_with_sdk_path(self):
+    def test_should_create_indexer_with_sdk_path(self) -> None:
         """Should create indexer with SDK path"""
         # Arrange
         sdk_path = Path("../glyphs-api/src/resources/GlyphsSDK")
@@ -23,7 +23,7 @@ class TestSDKIndexer:
         # Assert
         assert indexer.sdk_path == sdk_path
 
-    def test_should_scan_readme_files(self):
+    def test_should_scan_readme_files(self) -> None:
         """Should scan all README files"""
         # Arrange
         sdk_path = Path("../glyphs-api/src/resources/GlyphsSDK")
@@ -37,7 +37,7 @@ class TestSDKIndexer:
         assert any("README.md" in str(file) for file in readme_files)
         assert any("Python Templates" in str(file) for file in readme_files)
 
-    def test_should_scan_python_implementation_files(self):
+    def test_should_scan_python_implementation_files(self) -> None:
         """Should scan Python implementation files (excluding __init__.py)"""
         # Arrange
         sdk_path = Path("../glyphs-api/src/resources/GlyphsSDK")
@@ -53,7 +53,7 @@ class TestSDKIndexer:
         # Verify __init__.py is excluded
         assert not any("__init__.py" in str(file) for file in impl_files)
 
-    def test_should_build_content_index(self):
+    def test_should_build_content_index(self) -> None:
         """Should build content index"""
         # Arrange
         sdk_path = Path("../glyphs-api/src/resources/GlyphsSDK")

@@ -12,11 +12,13 @@ import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+from glyphs_info_mcp.modules.glyphs_plugins.accessors.official_registry import OfficialRegistry
+
 
 class TestGlyphsPluginsModule:
     """測試 GlyphsPluginsModule 基本功能"""
 
-    def test_module_initialization(self):
+    def test_module_initialization(self) -> None:
         """測試模組初始化"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
@@ -29,7 +31,7 @@ class TestGlyphsPluginsModule:
         assert result is True
         assert module.is_initialized
 
-    def test_module_has_official_registry(self):
+    def test_module_has_official_registry(self) -> None:
         """測試模組包含 OfficialRegistry"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
@@ -39,7 +41,7 @@ class TestGlyphsPluginsModule:
         assert hasattr(module, 'official_registry')
         assert module.official_registry is not None
 
-    def test_get_tools_returns_search_tool(self):
+    def test_get_tools_returns_search_tool(self) -> None:
         """測試 get_tools() 返回搜尋工具"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
@@ -51,7 +53,7 @@ class TestGlyphsPluginsModule:
         assert 'plugins_search_official' in tools
         assert callable(tools['plugins_search_official'])
 
-    def test_search_tool_basic_functionality(self, monkeypatch):
+    def test_search_tool_basic_functionality(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """測試搜尋工具基本功能"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
@@ -69,7 +71,7 @@ class TestGlyphsPluginsModule:
             }
         ]
 
-        def mock_fetch_packages(self):
+        def mock_fetch_packages(self: OfficialRegistry) -> list[dict[str, str]]:
             return [{
                 "name": "ShowCrosshair.glyphsReporter",
                 "title": "ShowCrosshair",
@@ -96,12 +98,12 @@ class TestGlyphsPluginsModule:
         assert isinstance(result, str)
         assert "ShowCrosshair" in result
 
-    def test_search_tool_with_max_results(self, monkeypatch):
+    def test_search_tool_with_max_results(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """測試搜尋工具支援 max_results 參數"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
         # Mock 多個結果
-        def mock_fetch_packages(self):
+        def mock_fetch_packages(self: OfficialRegistry) -> list[dict[str, str]]:
             return [
                 {"name": f"Plugin{i}", "title": f"Plugin{i}",
                  "url": f"https://github.com/test/plugin{i}",
@@ -128,7 +130,7 @@ class TestGlyphsPluginsModule:
         # 結果應該包含最多 5 個外掛（實際可能更少因為評分過濾）
         assert isinstance(result, str)
 
-    def test_module_not_initialized_error(self):
+    def test_module_not_initialized_error(self) -> None:
         """測試模組未初始化時的錯誤處理"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
@@ -141,7 +143,7 @@ class TestGlyphsPluginsModule:
         result = search_tool(query="test")
         assert "not initialized" in result.lower() or "未初始化" in result
 
-    def test_get_module_info(self):
+    def test_get_module_info(self) -> None:
         """測試 get_module_info() 方法"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
@@ -155,12 +157,12 @@ class TestGlyphsPluginsModule:
         assert info['name'] == 'glyphs-plugins'
         assert 'plugins_search_official' in info['tools']
 
-    def test_search_tool_with_author_filter(self, monkeypatch):
+    def test_search_tool_with_author_filter(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """測試搜尋工具支援作者篩選 (Phase 4)"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
         # Mock 多個作者的外掛
-        def mock_fetch_packages(self):
+        def mock_fetch_packages(self: OfficialRegistry) -> list[dict[str, str]]:
             return [
                 {
                     "name": "ShowCrosshair.glyphsReporter",

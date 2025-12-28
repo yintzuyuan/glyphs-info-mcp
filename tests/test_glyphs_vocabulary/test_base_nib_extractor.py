@@ -18,7 +18,7 @@ from glyphs_info_mcp.modules.glyphs_vocabulary.accessors.base_nib_extractor impo
 class TestBaseNibExtractorBasics:
     """基本功能測試"""
 
-    def test_init_with_default_path(self):
+    def test_init_with_default_path(self) -> None:
         """測試預設路徑初始化"""
         extractor = BaseNibExtractor()
 
@@ -27,14 +27,14 @@ class TestBaseNibExtractorBasics:
         )
         assert extractor.base_lproj == extractor.resources_path / "Base.lproj"
 
-    def test_init_with_custom_path(self, tmp_path: Path):
+    def test_init_with_custom_path(self, tmp_path: Path) -> None:
         """測試自訂路徑初始化"""
         extractor = BaseNibExtractor(tmp_path)
 
         assert extractor.resources_path == tmp_path
         assert extractor.base_lproj == tmp_path / "Base.lproj"
 
-    def test_is_available_when_exists(self, tmp_path: Path):
+    def test_is_available_when_exists(self, tmp_path: Path) -> None:
         """測試 Base.lproj 存在時的可用性"""
         base_lproj = tmp_path / "Base.lproj"
         base_lproj.mkdir()
@@ -43,13 +43,13 @@ class TestBaseNibExtractorBasics:
 
         assert extractor.is_available is True
 
-    def test_is_available_when_not_exists(self, tmp_path: Path):
+    def test_is_available_when_not_exists(self, tmp_path: Path) -> None:
         """測試 Base.lproj 不存在時的可用性"""
         extractor = BaseNibExtractor(tmp_path)
 
         assert extractor.is_available is False
 
-    def test_clear_cache(self, tmp_path: Path):
+    def test_clear_cache(self, tmp_path: Path) -> None:
         """測試清除快取"""
         extractor = BaseNibExtractor(tmp_path)
         extractor._cache = {"test": "value"}
@@ -106,7 +106,7 @@ class TestBaseNibExtractorParsing:
 
     def test_parse_nib_extracts_key_value_pairs(
         self, tmp_path: Path, mock_plutil_output: str
-    ):
+    ) -> None:
         """測試解析 nib 檔案提取 key-value 對應"""
         # 建立模擬的 nib 檔案
         nib_file = tmp_path / "test.nib"
@@ -129,7 +129,7 @@ class TestBaseNibExtractorParsing:
 
     def test_parse_nib_extracts_ib_id_format_keys(
         self, tmp_path: Path, mock_plutil_output_with_ib_id: str
-    ):
+    ) -> None:
         """測試解析包含 IB ID 格式 key（字母+數字+連字號）的 nib 檔案
 
         Glyphs 的 nib 檔案使用 Interface Builder ID 作為 key，
@@ -155,7 +155,7 @@ class TestBaseNibExtractorParsing:
             "210.title": "View",
         }
 
-    def test_parse_nib_handles_failure(self, tmp_path: Path):
+    def test_parse_nib_handles_failure(self, tmp_path: Path) -> None:
         """測試 plutil 失敗時的處理"""
         nib_file = tmp_path / "test.nib"
         nib_file.write_bytes(b"mock binary content")
@@ -169,7 +169,7 @@ class TestBaseNibExtractorParsing:
 
         assert result == {}
 
-    def test_parse_nib_handles_timeout(self, tmp_path: Path):
+    def test_parse_nib_handles_timeout(self, tmp_path: Path) -> None:
         """測試 plutil 超時的處理"""
         nib_file = tmp_path / "test.nib"
         nib_file.write_bytes(b"mock binary content")
@@ -204,7 +204,7 @@ class TestBaseNibExtractorExtraction:
 
         return BaseNibExtractor(tmp_path)
 
-    def test_extract_all_terms_from_multiple_nibs(self, mock_extractor: BaseNibExtractor):
+    def test_extract_all_terms_from_multiple_nibs(self, mock_extractor: BaseNibExtractor) -> None:
         """測試從多個 nib 檔案提取詞彙"""
         # 模擬 _parse_nib 回傳不同結果
         parse_results = [
@@ -213,7 +213,7 @@ class TestBaseNibExtractorExtraction:
         ]
         call_count = [0]
 
-        def mock_parse_nib(nib_path):
+        def mock_parse_nib(nib_path: Path) -> dict[str, str]:
             result = parse_results[call_count[0] % len(parse_results)]
             call_count[0] += 1
             return result
@@ -226,7 +226,7 @@ class TestBaseNibExtractorExtraction:
         assert "150.title" in result
         assert "100.title" in result
 
-    def test_extract_all_terms_caches_result(self, mock_extractor: BaseNibExtractor):
+    def test_extract_all_terms_caches_result(self, mock_extractor: BaseNibExtractor) -> None:
         """測試提取結果會被快取"""
         with patch.object(
             mock_extractor, "_parse_nib", return_value={"test": "value"}
@@ -241,7 +241,7 @@ class TestBaseNibExtractorExtraction:
         # _parse_nib 只被呼叫有限次數（第一次提取時）
         # 第二次呼叫不應該再呼叫 _parse_nib
 
-    def test_get_term_returns_value(self, mock_extractor: BaseNibExtractor):
+    def test_get_term_returns_value(self, mock_extractor: BaseNibExtractor) -> None:
         """測試取得單個詞彙"""
         mock_extractor._cache = {"210.title": "View"}
         mock_extractor._is_extracted = True
@@ -250,7 +250,7 @@ class TestBaseNibExtractorExtraction:
 
         assert result == "View"
 
-    def test_get_term_returns_none_for_missing_key(self, mock_extractor: BaseNibExtractor):
+    def test_get_term_returns_none_for_missing_key(self, mock_extractor: BaseNibExtractor) -> None:
         """測試取得不存在的詞彙"""
         mock_extractor._cache = {"210.title": "View"}
         mock_extractor._is_extracted = True
@@ -259,7 +259,7 @@ class TestBaseNibExtractorExtraction:
 
         assert result is None
 
-    def test_get_term_triggers_extraction(self, mock_extractor: BaseNibExtractor):
+    def test_get_term_triggers_extraction(self, mock_extractor: BaseNibExtractor) -> None:
         """測試 get_term 會觸發提取"""
         with patch.object(
             mock_extractor, "extract_all_terms", return_value={"210.title": "View"}
@@ -280,7 +280,7 @@ class TestBaseNibExtractorWithRealGlyphs:
             return extractor
         return None
 
-    def test_extract_from_real_glyphs(self, real_extractor: BaseNibExtractor | None):
+    def test_extract_from_real_glyphs(self, real_extractor: BaseNibExtractor | None) -> None:
         """測試從真實 Glyphs 3.app 提取詞彙"""
         if real_extractor is None:
             pytest.skip("Glyphs 3.app not installed")
@@ -294,7 +294,7 @@ class TestBaseNibExtractorWithRealGlyphs:
         assert "210.title" in result
         assert result["210.title"] == "View"
 
-    def test_get_view_term_from_real_glyphs(self, real_extractor: BaseNibExtractor | None):
+    def test_get_view_term_from_real_glyphs(self, real_extractor: BaseNibExtractor | None) -> None:
         """測試取得 'View' 詞彙"""
         if real_extractor is None:
             pytest.skip("Glyphs 3.app not installed")
@@ -305,7 +305,7 @@ class TestBaseNibExtractorWithRealGlyphs:
 
     def test_get_show_all_term_from_real_glyphs(
         self, real_extractor: BaseNibExtractor | None
-    ):
+    ) -> None:
         """測試取得 'Show All' 詞彙"""
         if real_extractor is None:
             pytest.skip("Glyphs 3.app not installed")
@@ -316,7 +316,7 @@ class TestBaseNibExtractorWithRealGlyphs:
 
     def test_get_show_anchors_with_ib_id_from_real_glyphs(
         self, real_extractor: BaseNibExtractor | None
-    ):
+    ) -> None:
         """測試使用 IB ID 格式 key 取得 'Show Anchors' 詞彙
 
         這個測試驗證 BaseNibExtractor 能正確解析 IB ID 格式的 key，

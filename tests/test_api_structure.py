@@ -10,6 +10,7 @@
 
 import sys
 from pathlib import Path
+from typing import Any, Callable
 
 import pytest
 
@@ -17,7 +18,7 @@ from glyphs_info_mcp.modules.glyphs_api.unified_api_module import UnifiedAPIModu
 
 
 @pytest.fixture
-def api_module():
+def api_module() -> UnifiedAPIModule:
     """初始化 API 模組"""
     module = UnifiedAPIModule("api", None)
     assert module.initialize(), "API module initialization failed"
@@ -25,7 +26,7 @@ def api_module():
 
 
 @pytest.fixture
-def api_tools(api_module):
+def api_tools(api_module: UnifiedAPIModule) -> dict[str, Callable[..., Any]]:
     """取得 API 工具"""
     return api_module.get_tools()
 
@@ -35,7 +36,7 @@ def api_tools(api_module):
 # ============================================================================
 
 
-def test_get_class_hierarchy_tree(api_tools):
+def test_get_class_hierarchy_tree(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 1: 取得完整層級 - tree 格式"""
     result = api_tools["api_get_class_hierarchy"]("tree")
 
@@ -56,7 +57,7 @@ def test_get_class_hierarchy_tree(api_tools):
     print("✅ Test 1 通過：tree 格式包含完整結構")
 
 
-def test_get_class_hierarchy_json(api_tools):
+def test_get_class_hierarchy_json(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 1 (補充): 取得完整層級 - json 格式"""
     import json
 
@@ -73,7 +74,7 @@ def test_get_class_hierarchy_json(api_tools):
         pytest.fail(f"JSON 格式無效: {e}")
 
 
-def test_get_class_hierarchy_mermaid(api_tools):
+def test_get_class_hierarchy_mermaid(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 1 (補充): 取得完整層級 - mermaid 格式"""
     result = api_tools["api_get_class_hierarchy"]("mermaid")
 
@@ -92,7 +93,7 @@ def test_get_class_hierarchy_mermaid(api_tools):
 # ============================================================================
 
 
-def test_get_class_relationships_gslayer(api_tools):
+def test_get_class_relationships_gslayer(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 2: 查詢 GSLayer 的所有關係"""
     result = api_tools["api_get_class_relationships"]("GSLayer", True)
 
@@ -115,7 +116,7 @@ def test_get_class_relationships_gslayer(api_tools):
     print("✅ Test 2 通過：GSLayer 關係查詢完整")
 
 
-def test_get_class_relationships_gspath(api_tools):
+def test_get_class_relationships_gspath(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 2 (補充): 查詢 GSPath 的關係"""
     result = api_tools["api_get_class_relationships"]("GSPath", True)
 
@@ -137,7 +138,7 @@ def test_get_class_relationships_gspath(api_tools):
 # ============================================================================
 
 
-def test_get_class_relationships_references_gslayer(api_tools):
+def test_get_class_relationships_references_gslayer(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 2.5a (Issue #53): 查詢 GSLayer 的引用關係"""
     result = api_tools["api_get_class_relationships"]("GSLayer", True)
 
@@ -148,7 +149,7 @@ def test_get_class_relationships_references_gslayer(api_tools):
     print("✅ Test 2.5a 通過：GSLayer 引用關係顯示正確")
 
 
-def test_get_class_relationships_references_gscomponent(api_tools):
+def test_get_class_relationships_references_gscomponent(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 2.5b (Issue #53): 查詢 GSComponent 的多個引用關係"""
     result = api_tools["api_get_class_relationships"]("GSComponent", True)
 
@@ -160,7 +161,7 @@ def test_get_class_relationships_references_gscomponent(api_tools):
     print("✅ Test 2.5b 通過：GSComponent 多個引用關係顯示正確")
 
 
-def test_get_class_relationships_referenced_by_gsfontmaster(api_tools):
+def test_get_class_relationships_referenced_by_gsfontmaster(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 2.5c (Issue #53): 查詢 GSFontMaster 的被引用關係"""
     result = api_tools["api_get_class_relationships"]("GSFontMaster", True)
 
@@ -171,7 +172,7 @@ def test_get_class_relationships_referenced_by_gsfontmaster(api_tools):
     print("✅ Test 2.5c 通過：GSFontMaster 被引用關係顯示正確")
 
 
-def test_get_class_relationships_referenced_by_gsaxis(api_tools):
+def test_get_class_relationships_referenced_by_gsaxis(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 2.5d (Issue #53): 查詢 GSAxis 的多個被引用關係"""
     result = api_tools["api_get_class_relationships"]("GSAxis", True)
 
@@ -189,7 +190,7 @@ def test_get_class_relationships_referenced_by_gsaxis(api_tools):
 # ============================================================================
 
 
-def test_navigate_structure_upward(api_tools):
+def test_navigate_structure_upward(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 3: 從 GSNode 向上導航到 Font"""
     result = api_tools["api_navigate_structure"]("GSNode", "contained_by", 4, True)
 
@@ -209,7 +210,7 @@ def test_navigate_structure_upward(api_tools):
     print("✅ Test 3 通過：Node → Path → Layer → Glyph 路徑完整")
 
 
-def test_navigate_structure_depth_limit(api_tools):
+def test_navigate_structure_depth_limit(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 3 (補充): 驗證深度限制"""
     result = api_tools["api_navigate_structure"]("GSNode", "contained_by", 2, True)
 
@@ -225,7 +226,7 @@ def test_navigate_structure_depth_limit(api_tools):
 # ============================================================================
 
 
-def test_navigate_structure_downward(api_tools):
+def test_navigate_structure_downward(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 4: 從 GSFont 向下導航到 Shapes"""
     result = api_tools["api_navigate_structure"]("GSFont", "contains", 3, True)
 
@@ -246,7 +247,7 @@ def test_navigate_structure_downward(api_tools):
     print("✅ Test 4 通過：Font → Glyphs → Layers → Shapes 結構顯示")
 
 
-def test_navigate_structure_contains_gslayer(api_tools):
+def test_navigate_structure_contains_gslayer(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 4 (補充): 從 GSLayer 向下查看包含的物件"""
     result = api_tools["api_navigate_structure"]("GSLayer", "contains", 2, False)
 
@@ -257,7 +258,7 @@ def test_navigate_structure_contains_gslayer(api_tools):
     print("✅ Test 4 (GSLayer contains) 通過：包含關係正確")
 
 
-def test_navigate_structure_parent(api_tools):
+def test_navigate_structure_parent(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 5: 測試 parent 導航（繼承層級向上）"""
     result = api_tools["api_navigate_structure"]("GSPath", "parent", 2, True)
 
@@ -268,7 +269,7 @@ def test_navigate_structure_parent(api_tools):
     print("✅ Test 5 通過：parent 導航正確")
 
 
-def test_navigate_structure_children(api_tools):
+def test_navigate_structure_children(api_tools: dict[str, Callable[..., Any]]) -> None:
     """Test 6: 測試 children 導航（繼承層級向下）"""
     result = api_tools["api_navigate_structure"]("GSShape", "children", 1, True)
 
@@ -284,28 +285,28 @@ def test_navigate_structure_children(api_tools):
 # ============================================================================
 
 
-def test_invalid_format(api_tools):
+def test_invalid_format(api_tools: dict[str, Callable[..., Any]]) -> None:
     """測試無效的格式參數"""
     result = api_tools["api_get_class_hierarchy"]("invalid_format")
     assert "無效" in result or "invalid" in result.lower(), "應返回錯誤訊息"
     print("✅ 錯誤處理：無效格式正確處理")
 
 
-def test_invalid_class_name(api_tools):
+def test_invalid_class_name(api_tools: dict[str, Callable[..., Any]]) -> None:
     """測試不存在的類別名稱"""
     result = api_tools["api_get_class_relationships"]("NonExistentClass", True)
     assert "未找到" in result or "not found" in result.lower(), "應返回未找到訊息"
     print("✅ 錯誤處理：不存在的類別正確處理")
 
 
-def test_invalid_relationship(api_tools):
+def test_invalid_relationship(api_tools: dict[str, Callable[..., Any]]) -> None:
     """測試無效的關係類型"""
     result = api_tools["api_navigate_structure"]("GSNode", "invalid_rel", 1, True)
     assert "無效" in result or "invalid" in result.lower(), "應返回錯誤訊息"
     print("✅ 錯誤處理：無效關係類型正確處理")
 
 
-def test_invalid_depth(api_tools):
+def test_invalid_depth(api_tools: dict[str, Callable[..., Any]]) -> None:
     """測試無效的深度值"""
     result = api_tools["api_navigate_structure"]("GSNode", "contained_by", 10, True)
     assert "無效" in result or "範圍" in result or "invalid" in result.lower() or "range" in result.lower(), "應返回範圍錯誤訊息"
@@ -317,7 +318,7 @@ def test_invalid_depth(api_tools):
 # ============================================================================
 
 
-def test_fuzzy_matching(api_tools):
+def test_fuzzy_matching(api_tools: dict[str, Callable[..., Any]]) -> None:
     """測試類別名稱的模糊匹配"""
     result = api_tools["api_get_class_relationships"]("layer", True)
 
@@ -332,7 +333,7 @@ def test_fuzzy_matching(api_tools):
 # ============================================================================
 
 
-def test_tools_registered(api_module):
+def test_tools_registered(api_module: UnifiedAPIModule) -> None:
     """驗證所有新工具都已註冊"""
     tools = api_module.get_tools()
 
@@ -348,7 +349,7 @@ def test_tools_registered(api_module):
     print(f"✅ 整合測試：{len(tools)} 個工具已註冊（包含 3 個新工具）")
 
 
-def test_api_structure_file_exists():
+def test_api_structure_file_exists() -> None:
     """驗證 api_structure.json 檔案存在且有效"""
     import json
 

@@ -5,9 +5,10 @@ Protocol Parser 測試
 TDD 紅燈階段：先寫測試定義預期行為
 """
 
-import pytest
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import pytest
 
 from glyphs_info_mcp.modules.glyphs_api.api.objc_header_parser import HeaderParser
 
@@ -16,22 +17,22 @@ class TestProtocolParser:
     """Protocol 解析器測試"""
 
     @pytest.fixture
-    def parser(self):
+    def parser(self) -> HeaderParser:
         """建立 HeaderParser 實例"""
         return HeaderParser()
 
     @pytest.fixture
-    def glyphs_reporter_protocol_path(self):
+    def glyphs_reporter_protocol_path(self) -> Path:
         """GlyphsReporterProtocol.h 路徑"""
         return Path("/Applications/Glyphs 3.app/Contents/Frameworks/GlyphsCore.framework/Headers/GlyphsReporterProtocol.h")
 
     @pytest.fixture
-    def all_protocol_paths(self):
+    def all_protocol_paths(self) -> list[Path]:
         """所有 Glyphs Protocol Headers 路徑"""
         headers_dir = Path("/Applications/Glyphs 3.app/Contents/Frameworks/GlyphsCore.framework/Headers/")
         return list(headers_dir.glob("Glyphs*Protocol.h"))
 
-    def test_parse_glyphs_reporter_protocol(self, parser, glyphs_reporter_protocol_path):
+    def test_parse_glyphs_reporter_protocol(self, parser: HeaderParser, glyphs_reporter_protocol_path: Path) -> None:
         """測試解析 GlyphsReporterProtocol.h"""
         if not glyphs_reporter_protocol_path.exists():
             pytest.skip("GlyphsReporterProtocol.h 不存在")
@@ -51,7 +52,7 @@ class TestProtocolParser:
 
         assert glyphs_reporter is not None, "應該找到 GlyphsReporter protocol"
 
-    def test_parse_protocol_required_methods(self, parser, glyphs_reporter_protocol_path):
+    def test_parse_protocol_required_methods(self, parser: HeaderParser, glyphs_reporter_protocol_path: Path) -> None:
         """測試解析 required 方法"""
         if not glyphs_reporter_protocol_path.exists():
             pytest.skip("GlyphsReporterProtocol.h 不存在")
@@ -68,7 +69,7 @@ class TestProtocolParser:
         assert 'interfaceVersion' in method_names
         assert 'title' in method_names
 
-    def test_parse_protocol_optional_methods(self, parser, glyphs_reporter_protocol_path):
+    def test_parse_protocol_optional_methods(self, parser: HeaderParser, glyphs_reporter_protocol_path: Path) -> None:
         """測試解析 optional 方法"""
         if not glyphs_reporter_protocol_path.exists():
             pytest.skip("GlyphsReporterProtocol.h 不存在")
@@ -84,7 +85,7 @@ class TestProtocolParser:
         method_names = [m['name'] for m in glyphs_reporter['optional_methods']]
         assert 'drawBackgroundForLayer' in method_names or 'drawForegroundForLayer' in method_names
 
-    def test_parse_protocol_deprecated_methods(self, parser, glyphs_reporter_protocol_path):
+    def test_parse_protocol_deprecated_methods(self, parser: HeaderParser, glyphs_reporter_protocol_path: Path) -> None:
         """測試識別已棄用的方法"""
         if not glyphs_reporter_protocol_path.exists():
             pytest.skip("GlyphsReporterProtocol.h 不存在")
@@ -105,7 +106,7 @@ class TestProtocolParser:
         deprecated_methods = [m for m in all_methods if m.get('deprecated', False)]
         assert len(deprecated_methods) >= 0  # 至少不會出錯
 
-    def test_parse_protocol_properties(self, parser, glyphs_reporter_protocol_path):
+    def test_parse_protocol_properties(self, parser: HeaderParser, glyphs_reporter_protocol_path: Path) -> None:
         """測試解析 protocol 屬性"""
         if not glyphs_reporter_protocol_path.exists():
             pytest.skip("GlyphsReporterProtocol.h 不存在")
@@ -122,7 +123,7 @@ class TestProtocolParser:
             # controller 屬性應該存在
             assert 'controller' in property_names
 
-    def test_parse_all_plugin_protocols(self, parser, all_protocol_paths):
+    def test_parse_all_plugin_protocols(self, parser: HeaderParser, all_protocol_paths: list[Path]) -> None:
         """測試解析所有 Glyphs 外掛 Protocol Headers"""
         if not all_protocol_paths:
             pytest.skip("找不到 Glyphs Protocol Headers")
@@ -150,7 +151,7 @@ class TestProtocolParser:
         # 驗證至少解析了一些 protocol
         assert len(results) >= 5, f"應該至少解析 5 個 protocols，實際解析了 {len(results)} 個"
 
-    def test_parse_protocol_method_details(self, parser, glyphs_reporter_protocol_path):
+    def test_parse_protocol_method_details(self, parser: HeaderParser, glyphs_reporter_protocol_path: Path) -> None:
         """測試方法詳細資訊解析"""
         if not glyphs_reporter_protocol_path.exists():
             pytest.skip("GlyphsReporterProtocol.h 不存在")
@@ -172,7 +173,7 @@ class TestProtocolParser:
         assert interface_version_method['method_type'] == 'instance'
         assert 'full_signature' in interface_version_method
 
-    def test_parse_protocol_with_parameters(self, parser, glyphs_reporter_protocol_path):
+    def test_parse_protocol_with_parameters(self, parser: HeaderParser, glyphs_reporter_protocol_path: Path) -> None:
         """測試解析帶參數的方法"""
         if not glyphs_reporter_protocol_path.exists():
             pytest.skip("GlyphsReporterProtocol.h 不存在")
@@ -192,7 +193,7 @@ class TestProtocolParser:
             print(f"  參數: {method['parameters']}")
             assert isinstance(method['parameters'], list)
 
-    def test_parse_simple_protocol(self, parser):
+    def test_parse_simple_protocol(self, parser: HeaderParser) -> None:
         """測試解析簡單的 Protocol 範例"""
         simple_protocol = """
         @protocol SimpleProtocol
@@ -213,7 +214,7 @@ class TestProtocolParser:
         assert protocol['required_methods'][0]['name'] == 'requiredMethod'
         assert protocol['optional_methods'][0]['name'] == 'optionalMethod'
 
-    def test_parse_protocol_with_parent(self, parser):
+    def test_parse_protocol_with_parent(self, parser: HeaderParser) -> None:
         """測試解析有父 Protocol 的情況"""
         protocol_with_parent = """
         @protocol ChildProtocol <ParentProtocol>

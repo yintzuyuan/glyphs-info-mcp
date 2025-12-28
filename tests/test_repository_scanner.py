@@ -7,6 +7,7 @@
 # 導入待測試的模組
 import sys
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -23,7 +24,7 @@ class TestRepositoryScanner:
     """測試 Repository Scanner 基本功能"""
 
     @pytest.fixture
-    def temp_repositories(self):
+    def temp_repositories(self) -> Generator[Path, None, None]:
         """建立臨時 Repositories 目錄結構"""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir) / "Repositories"
@@ -68,18 +69,18 @@ class TextBox:
 
             yield repo_path
 
-    def test_scanner_initialization(self, temp_repositories):
+    def test_scanner_initialization(self, temp_repositories: Path) -> None:
         """測試 Scanner 正確初始化"""
         scanner = RepositoryScanner(temp_repositories)
         assert scanner.repositories_path == temp_repositories
         assert scanner.is_available()
 
-    def test_scanner_initialization_nonexistent_path(self):
+    def test_scanner_initialization_nonexistent_path(self) -> None:
         """測試不存在的路徑"""
         scanner = RepositoryScanner(Path("/nonexistent/path"))
         assert not scanner.is_available()
 
-    def test_scan_repositories(self, temp_repositories):
+    def test_scan_repositories(self, temp_repositories: Path) -> None:
         """測試掃描 Repositories 並找到已安裝模組"""
         scanner = RepositoryScanner(temp_repositories)
         modules = scanner.scan_repositories()
@@ -87,7 +88,7 @@ class TextBox:
         assert "vanilla" in modules
         assert len(modules) >= 1
 
-    def test_is_module_installed(self, temp_repositories):
+    def test_is_module_installed(self, temp_repositories: Path) -> None:
         """測試檢查模組是否已安裝"""
         scanner = RepositoryScanner(temp_repositories)
         scanner.scan_repositories()
@@ -95,7 +96,7 @@ class TextBox:
         assert scanner.is_module_installed("vanilla")
         assert not scanner.is_module_installed("nonexistent_module")
 
-    def test_get_module_path(self, temp_repositories):
+    def test_get_module_path(self, temp_repositories: Path) -> None:
         """測試取得模組路徑"""
         scanner = RepositoryScanner(temp_repositories)
         scanner.scan_repositories()
@@ -105,7 +106,7 @@ class TextBox:
         assert vanilla_path.exists()
         assert "vanilla" in str(vanilla_path)
 
-    def test_get_module_path_nonexistent(self, temp_repositories):
+    def test_get_module_path_nonexistent(self, temp_repositories: Path) -> None:
         """測試取得不存在模組的路徑"""
         scanner = RepositoryScanner(temp_repositories)
         scanner.scan_repositories()
@@ -113,7 +114,7 @@ class TextBox:
         path = scanner.get_module_path("nonexistent")
         assert path is None
 
-    def test_get_installed_modules(self, temp_repositories):
+    def test_get_installed_modules(self, temp_repositories: Path) -> None:
         """測試列出所有已安裝模組"""
         scanner = RepositoryScanner(temp_repositories)
         scanner.scan_repositories()
@@ -122,7 +123,7 @@ class TextBox:
         assert isinstance(modules, list)
         assert "vanilla" in modules
 
-    def test_cache_mechanism(self, temp_repositories):
+    def test_cache_mechanism(self, temp_repositories: Path) -> None:
         """測試快取機制 - 第二次呼叫不重新掃描"""
         scanner = RepositoryScanner(temp_repositories)
 
@@ -134,7 +135,7 @@ class TextBox:
 
         assert modules1 == modules2
 
-    def test_force_rescan(self, temp_repositories):
+    def test_force_rescan(self, temp_repositories: Path) -> None:
         """測試強制重新掃描"""
         scanner = RepositoryScanner(temp_repositories)
 
@@ -150,7 +151,7 @@ class TextBox:
 class TestRepositoryScannerAutoDetection:
     """測試 Repository Scanner 自動偵測功能"""
 
-    def test_auto_detect_glyphs3_path(self, monkeypatch):
+    def test_auto_detect_glyphs3_path(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """測試自動偵測 Glyphs 3 路徑"""
         # 創建臨時目錄模擬 Glyphs 3
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -159,7 +160,7 @@ class TestRepositoryScannerAutoDetection:
             mock_path.mkdir(parents=True)
 
             # 模擬 Path.home() 返回臨時 home
-            def mock_home():
+            def mock_home() -> Path:
                 return tmp_home
 
             monkeypatch.setattr(Path, "home", mock_home)
@@ -168,16 +169,17 @@ class TestRepositoryScannerAutoDetection:
             assert scanner is not None
             assert scanner.repositories_path == mock_path
 
-    def test_auto_detect_with_env_var(self, monkeypatch, temp_repositories):
+    def test_auto_detect_with_env_var(self, monkeypatch: pytest.MonkeyPatch, temp_repositories: Path) -> None:
         """測試使用環境變數指定路徑"""
         monkeypatch.setenv("GLYPHS_REPOSITORIES_PATH", str(temp_repositories))
 
         scanner = RepositoryScanner.auto_detect()
+        assert scanner is not None
         assert scanner.repositories_path == temp_repositories
         assert scanner.is_available()
 
     @pytest.fixture
-    def temp_repositories(self):
+    def temp_repositories(self) -> Generator[Path, None, None]:
         """建立臨時 Repositories 目錄"""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_path = Path(tmpdir) / "Repositories"

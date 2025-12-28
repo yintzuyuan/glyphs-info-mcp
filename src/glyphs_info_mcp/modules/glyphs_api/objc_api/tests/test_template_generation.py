@@ -11,37 +11,37 @@ from glyphs_info_mcp.modules.glyphs_api.objc_api.glyphs_sdk_mapper import Glyphs
 class TestParameterExtraction:
     """Test parameter name extraction"""
 
-    def test_extract_single_parameter(self):
+    def test_extract_single_parameter(self) -> None:
         """Test extracting single parameter"""
         parameters = ["(GSLayer *)layer"]
         result = GlyphsSDKMapper._extract_parameter_names(parameters)
         assert result == ["layer"]
 
-    def test_extract_multiple_parameters(self):
+    def test_extract_multiple_parameters(self) -> None:
         """Test extracting multiple parameters"""
         parameters = ["(GSLayer *)layer", "(NSDictionary *)options"]
         result = GlyphsSDKMapper._extract_parameter_names(parameters)
         assert result == ["layer", "options"]
 
-    def test_extract_without_pointer(self):
+    def test_extract_without_pointer(self) -> None:
         """Test extracting parameters without pointer types"""
         parameters = ["(NSInteger)value", "(BOOL)flag"]
         result = GlyphsSDKMapper._extract_parameter_names(parameters)
         assert result == ["value", "flag"]
 
-    def test_extract_mixed_types(self):
+    def test_extract_mixed_types(self) -> None:
         """Test mixed type parameters"""
         parameters = ["(GSLayer *)layer", "(NSInteger)index", "(BOOL)flag"]
         result = GlyphsSDKMapper._extract_parameter_names(parameters)
         assert result == ["layer", "index", "flag"]
 
-    def test_extract_empty_list(self):
+    def test_extract_empty_list(self) -> None:
         """Test empty parameter list"""
-        parameters = []
+        parameters: list[str] = []
         result = GlyphsSDKMapper._extract_parameter_names(parameters)
         assert result == []
 
-    def test_extract_complex_types(self):
+    def test_extract_complex_types(self) -> None:
         """Test complex types"""
         parameters = [
             "(NSViewController<GSGlyphEditViewControllerProtocol> *)controller",
@@ -54,13 +54,13 @@ class TestParameterExtraction:
 class TestDocstringGeneration:
     """Test docstring generation"""
 
-    def test_generate_basic_docstring(self):
+    def test_generate_basic_docstring(self) -> None:
         """Test generating basic docstring"""
         docstring = GlyphsSDKMapper._generate_docstring("reporter")
         assert '"""' in docstring
         assert "GlyphsReporter Protocol" in docstring
 
-    def test_generate_with_parameters(self):
+    def test_generate_with_parameters(self) -> None:
         """Test generating docstring with parameters"""
         parameters = ["(GSLayer *)layer", "(NSDictionary *)options"]
         docstring = GlyphsSDKMapper._generate_docstring("reporter", parameters)
@@ -71,13 +71,13 @@ class TestDocstringGeneration:
         assert "GSLayer" in docstring
         assert "NSDictionary" in docstring
 
-    def test_generate_without_parameters(self):
+    def test_generate_without_parameters(self) -> None:
         """Test generating docstring without parameters"""
         docstring = GlyphsSDKMapper._generate_docstring("reporter", None)
         assert "Args:" not in docstring
         assert '"""' in docstring
 
-    def test_generate_for_different_plugin_types(self):
+    def test_generate_for_different_plugin_types(self) -> None:
         """Test docstring for different plugin types"""
         docstring_reporter = GlyphsSDKMapper._generate_docstring("reporter")
         docstring_filter = GlyphsSDKMapper._generate_docstring("filter")
@@ -89,7 +89,7 @@ class TestDocstringGeneration:
 class TestEnhancedTemplateGeneration:
     """Test enhanced template generation"""
 
-    def test_generate_with_protocol_data(self):
+    def test_generate_with_protocol_data(self) -> None:
         """Test generating template with Protocol data"""
         method_info = {
             'name': 'drawForegroundForLayer',
@@ -102,6 +102,7 @@ class TestEnhancedTemplateGeneration:
             "reporter",
             method_info=method_info
         )
+        assert template is not None
 
         # Check parameter list
         assert "def drawForegroundForLayer_options_(self, layer, options):" in template
@@ -112,19 +113,20 @@ class TestEnhancedTemplateGeneration:
         assert "layer:" in template
         assert "options:" in template
 
-    def test_generate_without_protocol_data_fallback(self):
+    def test_generate_without_protocol_data_fallback(self) -> None:
         """Test fallback when no Protocol data available"""
         template = GlyphsSDKMapper.get_implementation_template(
             "drawForegroundForLayer_options_",
             "reporter",
             method_info=None
         )
+        assert template is not None
 
         # Should use legacy template
         assert "def drawForegroundForLayer_options_(self, ...)" in template
         assert "# 實作 Protocol 方法" in template
 
-    def test_generate_no_param_method_with_protocol_data(self):
+    def test_generate_no_param_method_with_protocol_data(self) -> None:
         """Test no-parameter method (with Protocol data)"""
         method_info = {
             'name': 'interfaceVersion',
@@ -137,6 +139,7 @@ class TestEnhancedTemplateGeneration:
             "reporter",
             method_info=method_info
         )
+        assert template is not None
 
         # No-parameter method should generate docstring
         assert "def interfaceVersion(self):" in template
@@ -144,13 +147,14 @@ class TestEnhancedTemplateGeneration:
         assert "GlyphsReporter Protocol" in template
         assert "return ..." in template
 
-    def test_generate_helper_method_unchanged(self):
+    def test_generate_helper_method_unchanged(self) -> None:
         """Test helper method is unaffected"""
         template = GlyphsSDKMapper.get_implementation_template(
             "drawTextAtPoint",
             "reporter",
             method_info={"parameters": ["test"]}  # Should be ignored even if data is provided
         )
+        assert template is not None
 
         # Helper method still uses legacy template
         assert "@objc.python_method" in template
@@ -160,7 +164,7 @@ class TestEnhancedTemplateGeneration:
 class TestRealWorldProtocolData:
     """Test real-world Protocol data"""
 
-    def test_glyphs_reporter_method(self):
+    def test_glyphs_reporter_method(self) -> None:
         """Test GlyphsReporter Protocol method"""
         method_info = {
             'name': 'drawBackgroundForLayer',
@@ -174,12 +178,13 @@ class TestRealWorldProtocolData:
             "reporter",
             method_info=method_info
         )
+        assert template is not None
 
         assert "def drawBackgroundForLayer_options_(self, Layer, options):" in template
         assert "GlyphsReporter Protocol" in template
         assert "Args:" in template
 
-    def test_complex_parameter_types(self):
+    def test_complex_parameter_types(self) -> None:
         """Test complex parameter types"""
         method_info = {
             'parameters': [
@@ -193,12 +198,13 @@ class TestRealWorldProtocolData:
             "reporter",
             method_info=method_info
         )
+        assert template is not None
 
         assert "controller" in template
         assert "items" in template
         assert "NSViewController<GSGlyphEditViewControllerProtocol>" in template
 
-    def test_three_parameter_method_recognition(self):
+    def test_three_parameter_method_recognition(self) -> None:
         """Test 3-parameter method recognition"""
         from glyphs_info_mcp.modules.glyphs_api.objc_api.glyphs_sdk_mapper import GlyphsSDKMapper, MethodType
 
@@ -211,24 +217,25 @@ class TestRealWorldProtocolData:
             "addMenuItemsForEvent_controller_toMenu_",
             "reporter"
         )
+        assert template is not None
         assert "def addMenuItemsForEvent_controller_toMenu_" in template
 
 
 class TestBackwardCompatibility:
     """Test backward compatibility"""
 
-    def test_old_api_still_works(self):
+    def test_old_api_still_works(self) -> None:
         """Test old API still works"""
         # Not passing method_info, should still work
         template = GlyphsSDKMapper.get_implementation_template(
             "drawForegroundForLayer_options_",
             "reporter"
         )
-
-        assert "def drawForegroundForLayer_options_" in template
         assert template is not None
 
-    def test_existing_tests_not_broken(self):
+        assert "def drawForegroundForLayer_options_" in template
+
+    def test_existing_tests_not_broken(self) -> None:
         """Test existing tests are not broken"""
         # Test all method types still work
         protocol_template = GlyphsSDKMapper.get_implementation_template("interfaceVersion")
@@ -243,20 +250,20 @@ class TestBackwardCompatibility:
 class TestHeaderParserFormat:
     """Test HeaderParser format support"""
 
-    def test_extract_header_parser_format_single_param(self):
+    def test_extract_header_parser_format_single_param(self) -> None:
         """Test extracting single parameter in HeaderParser format"""
         # HeaderParser format: Type * name
         parameters = ["GSLayer * layer"]
         result = GlyphsSDKMapper._extract_parameter_names(parameters)
         assert result == ["layer"]
 
-    def test_extract_header_parser_format_multiple_params(self):
+    def test_extract_header_parser_format_multiple_params(self) -> None:
         """Test extracting multiple parameters in HeaderParser format"""
         parameters = ["GSLayer * layer", "NSDictionary * options"]
         result = GlyphsSDKMapper._extract_parameter_names(parameters)
         assert result == ["layer", "options"]
 
-    def test_extract_mixed_formats(self):
+    def test_extract_mixed_formats(self) -> None:
         """Test mixed formats"""
         # Test both Objective-C format and HeaderParser format
         parameters = [
@@ -266,7 +273,7 @@ class TestHeaderParserFormat:
         result = GlyphsSDKMapper._extract_parameter_names(parameters)
         assert result == ["layer", "options"]
 
-    def test_generate_docstring_with_header_parser_format(self):
+    def test_generate_docstring_with_header_parser_format(self) -> None:
         """Test generating docstring with HeaderParser format"""
         parameters = ["GSLayer * layer", "NSDictionary * options"]
         docstring = GlyphsSDKMapper._generate_docstring(
@@ -281,7 +288,7 @@ class TestHeaderParserFormat:
         assert "GSLayer *" in docstring or "GSLayer" in docstring
         assert "NSDictionary *" in docstring or "NSDictionary" in docstring
 
-    def test_generate_template_with_header_parser_format(self):
+    def test_generate_template_with_header_parser_format(self) -> None:
         """Test generating complete template with HeaderParser format"""
         method_info = {
             'name': 'drawForegroundForLayer',
@@ -294,6 +301,7 @@ class TestHeaderParserFormat:
             "reporter",
             method_info=method_info
         )
+        assert template is not None
 
         # Should successfully generate template with correct parameter names
         assert "def drawForegroundForLayer_options_(self, layer, options):" in template

@@ -81,7 +81,7 @@ This is the next section.
 class TestSectionDataStructure:
     """測試 Section 資料結構"""
 
-    def test_section_has_required_fields(self):
+    def test_section_has_required_fields(self) -> None:
         """Section 應包含必要欄位"""
         section = Section(
             level=3,
@@ -100,13 +100,13 @@ class TestSectionDataStructure:
 class TestParseSections:
     """測試 parse_sections() 方法"""
 
-    def test_parse_empty_content(self):
+    def test_parse_empty_content(self) -> None:
         """空內容應返回空列表"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections("")
         assert sections == []
 
-    def test_parse_single_h2_section(self):
+    def test_parse_single_h2_section(self) -> None:
         """解析單一 ## 標題"""
         content = "## [Title](#anchor)\n\nSome content here."
         parser = MarkdownSectionParser()
@@ -118,7 +118,7 @@ class TestParseSections:
         assert sections[0].anchor == "anchor"
         assert sections[0].start_line == 0
 
-    def test_parse_h3_sections(self):
+    def test_parse_h3_sections(self) -> None:
         """解析 ### 子章節"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(SAMPLE_MARKDOWN)
@@ -143,7 +143,7 @@ class TestParseSections:
         assert sections[3].level == 3
         assert sections[3].title == "Cursive Attachment"
 
-    def test_parse_section_boundaries(self):
+    def test_parse_section_boundaries(self) -> None:
         """驗證段落邊界正確"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(SAMPLE_MARKDOWN)
@@ -153,7 +153,7 @@ class TestParseSections:
         # 第二個段落應在第三個段落開始前結束
         assert sections[1].end_line < sections[2].start_line
 
-    def test_parse_title_without_anchor(self):
+    def test_parse_title_without_anchor(self) -> None:
         """解析沒有錨點的標題"""
         content = "## Simple Title\n\nContent here."
         parser = MarkdownSectionParser()
@@ -167,7 +167,7 @@ class TestParseSections:
 class TestFindSectionForLine:
     """測試 find_section_for_line() 方法"""
 
-    def test_find_section_for_line_in_first_section(self):
+    def test_find_section_for_line_in_first_section(self) -> None:
         """找出第一個段落內的行"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(SAMPLE_MARKDOWN)
@@ -177,7 +177,7 @@ class TestFindSectionForLine:
         assert section is not None
         assert section.title == "Anchors"
 
-    def test_find_section_for_line_in_subsection(self):
+    def test_find_section_for_line_in_subsection(self) -> None:
         """找出子章節內的行"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(SAMPLE_MARKDOWN)
@@ -195,7 +195,7 @@ class TestFindSectionForLine:
             assert section is not None
             assert section.title == "Mark to Base Positioning"
 
-    def test_find_section_for_line_not_found(self):
+    def test_find_section_for_line_not_found(self) -> None:
         """找不到段落時返回 None"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(SAMPLE_MARKDOWN)
@@ -212,7 +212,7 @@ class TestFindSectionForLine:
 class TestExtractSmartExcerpt:
     """測試 extract_smart_excerpt() 方法"""
 
-    def test_short_section_returns_complete(self):
+    def test_short_section_returns_complete(self) -> None:
         """短段落（≤15 行）應返回完整內容"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(SAMPLE_MARKDOWN)
@@ -233,7 +233,7 @@ class TestExtractSmartExcerpt:
         # 應包含內容
         assert "Arabic typesetting" in excerpt
 
-    def test_long_section_truncated_with_marker(self):
+    def test_long_section_truncated_with_marker(self) -> None:
         """長段落應截取並標示省略"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(LONG_SECTION_MARKDOWN)
@@ -254,7 +254,7 @@ class TestExtractSmartExcerpt:
         # 應包含省略標記
         assert "..." in excerpt or "省略" in excerpt
 
-    def test_excerpt_centers_on_match(self):
+    def test_excerpt_centers_on_match(self) -> None:
         """截取應以匹配位置為中心"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(LONG_SECTION_MARKDOWN)
@@ -273,7 +273,7 @@ class TestExtractSmartExcerpt:
         # 應包含關鍵字所在行
         assert "keyword" in excerpt.lower()
 
-    def test_excerpt_preserves_title(self):
+    def test_excerpt_preserves_title(self) -> None:
         """截取的內容應保留段落標題"""
         parser = MarkdownSectionParser()
         sections = parser.parse_sections(LONG_SECTION_MARKDOWN)
@@ -300,7 +300,7 @@ class TestExtractSmartExcerpt:
 class TestIntegration:
     """整合測試"""
 
-    def test_full_workflow(self):
+    def test_full_workflow(self) -> None:
         """完整工作流程測試"""
         parser = MarkdownSectionParser()
 

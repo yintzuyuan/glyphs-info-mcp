@@ -10,7 +10,7 @@ from glyphs_info_mcp.modules.sdk_formatter import SDKResultFormatter
 class TestSDKResultFormatter:
     """Test SDK result formatter"""
 
-    def test_should_format_guide_result(self):
+    def test_should_format_guide_result(self) -> None:
         """Should format guide result"""
         # Arrange
         formatter = SDKResultFormatter()
@@ -33,7 +33,7 @@ class TestSDKResultFormatter:
         assert "📄 檔案：" in formatted
         assert "Python Templates/Filter" in formatted
 
-    def test_should_format_implementation_result(self):
+    def test_should_format_implementation_result(self) -> None:
         """Should format implementation result"""
         # Arrange
         formatter = SDKResultFormatter()
@@ -56,7 +56,7 @@ class TestSDKResultFormatter:
         assert "📄 檔案：" in formatted
         assert "class FilterWithDialog" in formatted
 
-    def test_should_format_example_result(self):
+    def test_should_format_example_result(self) -> None:
         """Should format example result"""
         # Arrange
         formatter = SDKResultFormatter()
@@ -79,7 +79,7 @@ class TestSDKResultFormatter:
         assert "📄 檔案：" in formatted
         assert "selectTool" in formatted
 
-    def test_should_format_template_result(self):
+    def test_should_format_template_result(self) -> None:
         """Should format template result"""
         # Arrange
         formatter = SDKResultFormatter()
@@ -102,7 +102,7 @@ class TestSDKResultFormatter:
         assert "📄 檔案：" in formatted
         assert "PluginClassName" in formatted
 
-    def test_should_format_multiple_results(self):
+    def test_should_format_multiple_results(self) -> None:
         """Should format multiple search results"""
         # Arrange
         formatter = SDKResultFormatter()
@@ -135,11 +135,11 @@ class TestSDKResultFormatter:
         assert "Filter development guide" in formatted
         assert "FilterWithDialog" in formatted
 
-    def test_should_handle_empty_results(self):
+    def test_should_handle_empty_results(self) -> None:
         """Should handle empty search results"""
         # Arrange
         formatter = SDKResultFormatter()
-        results = []
+        results: list[dict[str, str]] = []
 
         # Act
         formatted = formatter.format_results(results, "nonexistent")
@@ -148,7 +148,7 @@ class TestSDKResultFormatter:
         assert "🔍 Found 0 related SDK content:" in formatted
         assert "No SDK content related to 'nonexistent' found" in formatted
 
-    def test_should_limit_content_display(self):
+    def test_should_limit_content_display(self) -> None:
         """Should limit content display length"""
         # Arrange
         formatter = SDKResultFormatter()
@@ -167,4 +167,5 @@ class TestSDKResultFormatter:
 
         # Assert
         assert len(formatted) < 1000  # Ensure formatted result is not too long
-        assert "..." in formatted or len(result["content"]) <= 200  # Should be truncated or content is short
+        content = str(result["content"])
+        assert "..." in formatted or len(content) <= 200  # Should be truncated or content is short
