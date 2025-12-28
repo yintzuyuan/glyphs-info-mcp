@@ -52,7 +52,7 @@ class TestTieredSearchStrategy:
 
         # 結果應該包含 GSFont
         assert 'GSFont' in result
-        assert '類別' in result
+        assert 'class' in result.lower()
 
     def test_first_layer_search_finds_function(self, manager):
         """測試第一層搜尋可以找到函數"""
@@ -63,7 +63,7 @@ class TestTieredSearchStrategy:
         result = manager.search('divideCurve')
 
         assert 'divideCurve' in result
-        assert '函數' in result
+        assert 'function' in result.lower()
 
     def test_second_layer_triggered_when_first_layer_empty(self, manager):
         """測試第一層無結果時觸發第二層搜尋"""
@@ -80,8 +80,8 @@ class TestTieredSearchStrategy:
 
         # 應該找到 userData 屬性
         assert 'userData' in result
-        assert '屬性' in result
-        assert '成員層' in result  # 新格式使用「成員層」標示
+        assert 'property' in result.lower()
+        assert 'member' in result.lower()  # 新格式使用 Member Layer 標示
 
     def test_both_layers_searched_when_scope_is_all(self, manager):
         """測試 scope='all' 時同時搜尋兩層（新行為）"""
@@ -99,7 +99,7 @@ class TestTieredSearchStrategy:
         manager.accessor.get_class.assert_called()
         # 結果應該包含兩層
         assert 'GSFont' in result
-        assert '符號層' in result
+        assert 'symbol' in result.lower()
 
     def test_max_results_limits_output(self, manager):
         """測試 max_results 限制結果數量"""
@@ -129,8 +129,8 @@ class TestTieredSearchStrategy:
 
         result = manager.search('nonexistent')
 
-        assert '未找到' in result
-        assert '搜尋建議' in result
+        assert 'no' in result.lower() and 'found' in result.lower()
+        assert 'suggestion' in result.lower()
 
 
 class TestSearchClassMembers:

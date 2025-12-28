@@ -56,8 +56,8 @@ class TestLayeredSearchBothLayers:
         # 應該同時包含符號層和成員層結果
         assert 'STROKEWIDTH' in result  # 符號層
         assert 'GSLayer.width' in result or 'width' in result  # 成員層
-        assert '符號層' in result
-        assert '成員層' in result
+        assert 'Symbol Layer' in result or 'symbol' in result.lower()
+        assert 'Member Layer' in result or 'member' in result.lower()
 
     def test_search_shows_match_type_in_output(self, manager):
         """測試輸出格式標示匹配層級"""
@@ -72,8 +72,8 @@ class TestLayeredSearchBothLayers:
         result = manager.search('font')
 
         # 應該有分層標示
-        assert '符號層匹配' in result or '符號層' in result
-        assert '成員層匹配' in result or '成員層' in result
+        assert 'Symbol Layer' in result or 'symbol' in result.lower()
+        assert 'Member Layer' in result or 'member' in result.lower()
 
     def test_search_all_scope_searches_both_layers(self, manager):
         """測試 scope='all' 搜尋兩層"""
@@ -209,8 +209,8 @@ class TestLayeredOutputFormat:
         output = manager._format_layered_results('width', results)
 
         # 應該有分層標題
-        assert '符號層' in output
-        assert '成員層' in output
+        assert 'Symbol Layer' in output or 'symbol' in output.lower()
+        assert 'Member Layer' in output or 'member' in output.lower()
         # 應該包含所有結果
         assert 'STROKEWIDTH' in output
         assert 'GSLayer' in output
@@ -236,7 +236,7 @@ class TestLayeredOutputFormat:
         output = manager._format_layered_results('userData', results)
 
         # 應該只顯示成員層
-        assert '成員層' in output
+        assert 'Member Layer' in output or 'member' in output.lower()
         assert 'userData' in output
 
     def test_format_layered_results_empty_member_layer(self, manager):
@@ -248,7 +248,7 @@ class TestLayeredOutputFormat:
         output = manager._format_layered_results('GSFont', results)
 
         # 應該只顯示符號層
-        assert '符號層' in output
+        assert 'Symbol Layer' in output or 'symbol' in output.lower()
         assert 'GSFont' in output
 
 

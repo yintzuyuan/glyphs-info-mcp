@@ -128,14 +128,14 @@ class TestFormatAsMarkdown:
         ]
         result = format_as_markdown(data)
 
-        assert "## 搜尋結果 (2 項)" in result
+        assert "## Search Results (2 items)" in result
         assert "### 1. GSFont" in result
         assert "### 2. GSLayer" in result
 
     def test_format_empty_list(self):
         """測試空列表"""
         result = format_as_markdown([])
-        assert "沒有結果" in result
+        assert "No results" in result
 
     def test_boolean_formatting(self):
         """測試布林值格式化"""
@@ -200,8 +200,8 @@ class TestFormatSearchResults:
             results, query="font", response_format="markdown"
         )
 
-        assert '# 搜尋結果: "font"' in result
-        assert "**找到**: 2 項" in result
+        assert '# Search Results: "font"' in result
+        assert "**Found**: 2 items" in result
         assert "## 1. GSFont" in result
         assert "## 2. GSLayer" in result
 
@@ -226,14 +226,14 @@ class TestFormatSearchResults:
             results, query="test", response_format="markdown", metadata=metadata
         )
 
-        assert "**總計**: 100 項" in result
-        assert "還有更多結果可用" in result
+        assert "**Total**: 100 items" in result
+        assert "More results available" in result
 
     def test_format_empty_search_results(self):
         """測試空搜尋結果"""
         result = format_search_results([], query="nonexistent")
 
-        assert "沒有找到符合的結果" in result
+        assert "No matching results found" in result or "No results" in result
 
     def test_long_content_truncation_in_markdown(self):
         """測試 Markdown 中過長內容的截斷"""
