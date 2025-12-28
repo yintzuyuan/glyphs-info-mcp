@@ -83,7 +83,7 @@ class VocabularyModule(BaseMCPModule):
             logger.error(f"Failed to initialize vocabulary module: {e}")
             return False
 
-    def get_tools(self) -> dict[str, callable]:
+    def get_tools(self) -> dict[str, Any]:
         """Get available tools as dictionary"""
         return {
             "vocab_search_ui_term": self.search_ui_term,
@@ -470,7 +470,7 @@ class VocabularyModule(BaseMCPModule):
             output = [f"## 📁 Glyphs UI Vocabulary Categories ({len(strings_files)} files)\n"]
 
             # Sort by file size and display
-            file_info = []
+            file_info: list[dict[str, Any]] = []
             for file_path in strings_files:
                 terms = self.ui_accessor._parse_strings_file(file_path)
                 file_info.append(
@@ -756,7 +756,7 @@ class VocabularyModule(BaseMCPModule):
                 return min(score, 0.95), "partial"
             return 0.0, ""
 
-        def _process_results(search_results: list, locale: str, source: str = "app"):
+        def _process_results(search_results: list[dict[str, Any]], locale: str, source: str = "app") -> None:
             """Process search results"""
             for result in search_results:
                 key = result["key"]
