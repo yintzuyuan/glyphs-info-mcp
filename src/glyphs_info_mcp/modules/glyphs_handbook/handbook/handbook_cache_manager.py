@@ -9,13 +9,15 @@ import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
 # Dynamic import of HandbookScraper (avoid circular import)
 _scraper_file = Path(__file__).parent / "handbook_scraper.py"
 _spec = importlib.util.spec_from_file_location("handbook_scraper", _scraper_file)
+if _spec is None or _spec.loader is None:
+    raise ImportError(f"Cannot load module spec from {_scraper_file}")
 _scraper_module = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_scraper_module)
 HandbookScraper = _scraper_module.HandbookScraper
@@ -240,40 +242,43 @@ class HandbookCacheManager:
             logger.error(f"❌ Failed to generate stable cache: {e}")
             return False
 
-    def get_cache_status(self) -> Dict:
+    def get_cache_status(self) -> Dict[str, Any]:
         """
         Get cache status info
 
         Returns:
             Dictionary containing cache status
         """
-        status = {
-            "active_cache": "fresh" if self.is_fresh_cache_valid() else "stable",
-            "stable_cache": {
-                "exists": self.stable_cache_dir.exists(),
-                "file_count": len(list(self.stable_cache_dir.glob("*.md")))
-                if self.stable_cache_dir.exists()
-                else 0,
-            },
-            "fresh_cache": {
-                "exists": self.fresh_cache_dir.exists(),
-                "valid": self.is_fresh_cache_valid(),
-                "file_count": len(list(self.fresh_cache_dir.glob("*.md")))
-                if self.fresh_cache_dir.exists()
-                else 0,
-            },
+        stable_cache_info: Dict[str, Any] = {
+            "exists": self.stable_cache_dir.exists(),
+            "file_count": len(list(self.stable_cache_dir.glob("*.md")))
+            if self.stable_cache_dir.exists()
+            else 0,
+        }
+        fresh_cache_info: Dict[str, Any] = {
+            "exists": self.fresh_cache_dir.exists(),
+            "valid": self.is_fresh_cache_valid(),
+            "file_count": len(list(self.fresh_cache_dir.glob("*.md")))
+            if self.fresh_cache_dir.exists()
+            else 0,
         }
 
         # Load cache info
         if self.stable_info_file.exists():
-            status["stable_cache"]["info"] = self._load_cache_info(
+            stable_cache_info["info"] = self._load_cache_info(
                 self.stable_info_file
             )
 
         if self.fresh_info_file.exists():
-            status["fresh_cache"]["info"] = self._load_cache_info(
+            fresh_cache_info["info"] = self._load_cache_info(
                 self.fresh_info_file
             )
+
+        status: Dict[str, Any] = {
+            "active_cache": "fresh" if self.is_fresh_cache_valid() else "stable",
+            "stable_cache": stable_cache_info,
+            "fresh_cache": fresh_cache_info,
+        }
 
         return status
 

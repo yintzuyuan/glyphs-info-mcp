@@ -7,7 +7,7 @@ Combines functionality from handbook and handbook_search modules
 import logging
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 # Use shared core library
 project_root = Path(__file__).parent.parent.parent.parent
@@ -21,41 +21,40 @@ from pathlib import Path
 
 from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
 
+logger = logging.getLogger(__name__)
+
+
+def _dynamic_import(file_path: Path, module_name: str, class_name: str) -> type[Any]:
+    """Dynamically import a class from a file"""
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {file_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return getattr(module, class_name)
+
+
 # Dynamically import search module
 search_file = Path(__file__).parent / "search.py"
-spec = importlib.util.spec_from_file_location("search", search_file)
-search_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(search_module)
-HandbookSearcher = search_module.HandbookSearcher
-
-# Removed fallback vocabulary manager, using unified VocabularyModule service
+HandbookSearcher: type[Any] = _dynamic_import(search_file, "search", "HandbookSearcher")
 
 # Dynamically import HandbookCacheManager
 cache_manager_file = Path(__file__).parent / "handbook_cache_manager.py"
-spec = importlib.util.spec_from_file_location(
-    "handbook_cache_manager", cache_manager_file
+HandbookCacheManager: type[Any] = _dynamic_import(
+    cache_manager_file, "handbook_cache_manager", "HandbookCacheManager"
 )
-cache_manager_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(cache_manager_module)
-HandbookCacheManager = cache_manager_module.HandbookCacheManager
-
-logger = logging.getLogger(__name__)
 
 # Try to import enhanced searcher
+ENHANCED_SEARCH_AVAILABLE = False
+EnhancedHandbookSearcher: type[Any] | None = None
 try:
     enhanced_search_file = Path(__file__).parent / "enhanced_search.py"
     if enhanced_search_file.exists():
-        spec = importlib.util.spec_from_file_location(
-            "enhanced_search", enhanced_search_file
+        EnhancedHandbookSearcher = _dynamic_import(
+            enhanced_search_file, "enhanced_search", "EnhancedHandbookSearcher"
         )
-        enhanced_search_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(enhanced_search_module)
-        EnhancedHandbookSearcher = enhanced_search_module.EnhancedHandbookSearcher
         ENHANCED_SEARCH_AVAILABLE = True
-    else:
-        ENHANCED_SEARCH_AVAILABLE = False
 except ImportError:
-    ENHANCED_SEARCH_AVAILABLE = False
     logger.warning("Enhanced search not available, using basic search")
 
 
@@ -69,16 +68,15 @@ class UnifiedHandbookModule(BaseMCPModule):
             data_path = project_root / "data" / "official"
 
         super().__init__(name, data_path)
-        self.handbook_files = []
+        self.handbook_files: list[dict[str, str]] = []
         self.use_enhanced_search = ENHANCED_SEARCH_AVAILABLE
-        self.search_engine = None  # Will be injected by server.py
 
         # Initialize cache manager
-        self.cache_manager = HandbookCacheManager(
+        self.cache_manager: Any = HandbookCacheManager(
             project_root=Path(__file__).parent.parent.parent.parent
         )
 
-    def set_search_engine(self, search_engine):
+    def set_search_engine(self, search_engine: Any) -> None:
         """Set unified search engine (called by server.py)"""
         self.search_engine = search_engine
 
@@ -99,7 +97,7 @@ class UnifiedHandbookModule(BaseMCPModule):
             logger.info(f"Using Handbook path: {handbook_path}")
 
             # Initialize searcher
-            if self.use_enhanced_search:
+            if self.use_enhanced_search and EnhancedHandbookSearcher is not None:
                 logger.info("Using enhanced searcher")
                 self.searcher = EnhancedHandbookSearcher(handbook_path)
             else:
@@ -120,7 +118,9 @@ class UnifiedHandbookModule(BaseMCPModule):
             logger.error(f"Failed to initialize handbook module: {e}")
             return False
 
-    def core_search(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:
+    def core_search(
+        self, query: str, max_results: int = 5, **kwargs: Any
+    ) -> list[dict[str, Any]]:
         """Core search function - for unified search engine use only
 
         Returns structured search results without vocabulary processing or formatting
@@ -170,7 +170,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         # ChapterFinder removed, this method no longer extracts chapter info
         return []
 
-    def _load_handbook_files(self, handbook_path: Path):
+    def _load_handbook_files(self, handbook_path: Path) -> None:
         """Load handbook files"""
         try:
             self.handbook_files = []
@@ -198,7 +198,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         except Exception:
             return file_path.stem.replace("_", " ").title()
 
-    def get_tools(self) -> dict[str, callable]:
+    def get_tools(self) -> dict[str, Callable[..., Any]]:
         """Get available tools as dictionary"""
 
         # Wrap async method as standalone function (consistent with News/API modules)
@@ -288,7 +288,7 @@ class UnifiedHandbookModule(BaseMCPModule):
 
         if self.search_engine and self.search_engine.query_processor:
             # Detect user language (inferred from filename, or default to Chinese)
-            user_language = self.search_engine.query_processor.detect_user_language(
+            user_language = self.search_engine.query_processor.detect_user_language(  # type: ignore[attr-defined]
                 filename
             )
             return self.search_engine.query_processor.postprocess_output(
@@ -498,7 +498,7 @@ class UnifiedHandbookModule(BaseMCPModule):
 
         if self.search_engine and self.search_engine.query_processor:
             # Detect user language (inferred from parameter_name, or default to Chinese)
-            user_language = self.search_engine.query_processor.detect_user_language(
+            user_language = self.search_engine.query_processor.detect_user_language(  # type: ignore[attr-defined]
                 parameter_name
             )
             return self.search_engine.query_processor.postprocess_output(
@@ -561,7 +561,7 @@ class UnifiedHandbookModule(BaseMCPModule):
 
     def _extract_parameter_exact_match(
         self, lines: list[str], parameter_name: str
-    ) -> str:
+    ) -> str | None:
         """Extract specific parameter from file lines using exact matching"""
         # Start searching from line 20 (exact matching)
         for i in range(19, len(lines)):
@@ -701,7 +701,7 @@ class UnifiedHandbookModule(BaseMCPModule):
                 logger.info(f"Cache update successful, reloading: {new_handbook_path}")
 
                 # Reinitialize searcher
-                if self.use_enhanced_search:
+                if self.use_enhanced_search and EnhancedHandbookSearcher is not None:
                     self.searcher = EnhancedHandbookSearcher(new_handbook_path)
                 else:
                     self.searcher = HandbookSearcher(new_handbook_path)

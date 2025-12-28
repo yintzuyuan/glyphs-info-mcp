@@ -48,7 +48,7 @@ class HandbookScraper:
         )
         return self
 
-    async def __aexit__(self, *args) -> None:
+    async def __aexit__(self, *args: object) -> None:
         """Async context manager exit"""
         if self.client:
             await self.client.aclose()
@@ -111,7 +111,7 @@ class HandbookScraper:
 
         # Fallback: use body
         body = soup.find("body")
-        if body:
+        if body and isinstance(body, Tag):
             logger.warning("Cannot find main content block, using entire body")
             return body
 
@@ -264,8 +264,10 @@ class HandbookScraper:
     def _extract_url_from_heading(self, heading: Tag) -> Optional[str]:
         """Extract URL from heading element"""
         link = heading.find("a", href=True)
-        if link:
-            return urljoin(self.base_url, link["href"])
+        if link and isinstance(link, Tag):
+            href = link.get("href")
+            if isinstance(href, str):
+                return urljoin(self.base_url, href)
         return None
 
     def _extract_filename_from_title(self, title: str) -> str:

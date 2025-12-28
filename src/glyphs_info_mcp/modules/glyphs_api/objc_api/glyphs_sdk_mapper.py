@@ -19,9 +19,12 @@ SDK Abstraction Levels:
 """
 
 import os
-from typing import Optional
+from typing import Optional, Any, TYPE_CHECKING
 from enum import Enum
 from pathlib import Path
+
+if TYPE_CHECKING:
+    from glyphs_info_mcp.modules.glyphs_api.objc_api.protocol_registry import ProtocolRegistry
 
 
 class MethodType(Enum):
@@ -36,7 +39,7 @@ class GlyphsSDKMapper:
     """Glyphs SDK method mapper"""
 
     # Protocol Registry (dynamically loaded)
-    _registry: Optional['ProtocolRegistry'] = None
+    _registry: Optional["ProtocolRegistry"] = None
 
     # Glyphs Headers path (supports environment variable)
     GLYPHS_HEADERS_PATH = Path(
@@ -93,7 +96,7 @@ class GlyphsSDKMapper:
     }
 
     @classmethod
-    def initialize(cls, headers_path: Path):
+    def initialize(cls, headers_path: Path) -> None:
         """
         Initialize Protocol Registry
 
@@ -108,7 +111,7 @@ class GlyphsSDKMapper:
             cls._registry = None
 
     @classmethod
-    def _initialize_if_needed(cls):
+    def _initialize_if_needed(cls) -> None:
         """Auto-initialize (if not already initialized)"""
         if cls._registry is None:
             # Try using default Glyphs 3 Headers path

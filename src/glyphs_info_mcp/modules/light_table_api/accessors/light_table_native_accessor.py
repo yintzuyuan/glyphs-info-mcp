@@ -89,6 +89,9 @@ class LightTableNativeAccessor:
 
         try:
             # Read API file
+            if self.api_path is None:
+                logger.warning("Light Table API path is None, cannot parse")
+                return
             api_code = self.api_path.read_text(encoding="utf-8")
 
             # Parse using AST
@@ -211,7 +214,7 @@ class LightTableNativeAccessor:
         if not self._parsed:
             self.parse_api()
 
-        all_items = []
+        all_items: list[dict[str, Any]] = []
         all_items.extend(self._enums.values())
         all_items.extend(self._classes.values())
         return all_items

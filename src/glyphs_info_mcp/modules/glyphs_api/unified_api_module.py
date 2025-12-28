@@ -8,7 +8,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 # Use shared core library
 project_root = Path(__file__).parent.parent.parent
@@ -26,9 +26,11 @@ import sys
 from pathlib import Path
 
 
-def import_submodule(module_path: str, class_name: str):
+def import_submodule(module_path: str, class_name: str) -> type[Any]:
     """Dynamically import submodule"""
     spec = importlib.util.spec_from_file_location(class_name.lower(), module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {module_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return getattr(module, class_name)
@@ -74,27 +76,26 @@ class UnifiedAPIModule(BaseMCPModule):
         super().__init__(name, data_path)
 
         # New architecture: submodules
-        self.python_api_module = None  # PythonAPIModule instance
-        self.objc_api_module = None  # ObjectiveCAPIModule instance
+        self.python_api_module: Any = None  # PythonAPIModule instance
+        self.objc_api_module: Any = None  # ObjectiveCAPIModule instance
 
         # Legacy modules
-        self.plugin_tools_module = None
-        self.websearch_api_module = None
-        self.vanilla_tools = None
+        self.plugin_tools_module: Any = None
+        self.websearch_api_module: Any = None
+        self.vanilla_tools: Any = None
 
         # Other retained variables
-        self.plugin_api = None
-        self.sdk_accessor = None
-        self.search_engine = None  # Will be injected by server.py
+        self.plugin_api: Any = None
+        self.sdk_accessor: Any = None
 
     @property
-    def python_api(self):
+    def python_api(self) -> Any:
         """Backward-compatible property proxy, maps self.python_api to self.python_api_module.python_api"""
         if self.python_api_module and hasattr(self.python_api_module, 'python_api'):
             return self.python_api_module.python_api
         return None
 
-    def set_search_engine(self, search_engine):
+    def set_search_engine(self, search_engine: Any) -> None:
         """Set unified search engine (called by server.py)"""
         self.search_engine = search_engine
 
@@ -197,7 +198,7 @@ class UnifiedAPIModule(BaseMCPModule):
             self.is_initialized = True
 
             # Count initialized modules
-            initialized_modules = []
+            initialized_modules: list[str] = []
             if self.python_api_module and self.python_api_module.is_initialized:
                 initialized_modules.append("PythonAPI")
             if self.objc_api_module and self.objc_api_module.is_initialized:
@@ -219,7 +220,7 @@ class UnifiedAPIModule(BaseMCPModule):
             return False
 
     def core_search(
-        self, query: str, max_results: int = 5, scope: str = "auto"
+        self, query: str, max_results: int = 5, **kwargs: Any
     ) -> list[dict[str, Any]]:
         """Core search function - For unified search engine use only (New architecture: delegates to submodules)
 
@@ -236,7 +237,8 @@ class UnifiedAPIModule(BaseMCPModule):
         if not self.is_initialized:
             return []
 
-        results = []
+        scope = kwargs.get("scope", "auto")
+        results: list[dict[str, Any]] = []
 
         try:
             # === New architecture: Delegate to submodules ===
@@ -244,14 +246,14 @@ class UnifiedAPIModule(BaseMCPModule):
             # 1. Python API module search
             if self.python_api_module and self.python_api_module.is_initialized:
                 python_results = self.python_api_module.core_search(
-                    query, max_results, scope
+                    query, max_results, scope=scope
                 )
                 results.extend(python_results)
 
             # 2. Objective-C API module search
             if self.objc_api_module and self.objc_api_module.is_initialized:
                 objc_results = self.objc_api_module.core_search(
-                    query, max_results // 2, scope
+                    query, max_results // 2, scope=scope
                 )
                 results.extend(objc_results)
 
@@ -318,7 +320,7 @@ class UnifiedAPIModule(BaseMCPModule):
 
         return results
 
-    def _load_api_data(self, api_path: Path):
+    def _load_api_data(self, api_path: Path) -> None:
         """Load API data files"""
         try:
             # Load Python API
@@ -342,7 +344,7 @@ class UnifiedAPIModule(BaseMCPModule):
         except Exception as e:
             logger.error(f"Failed to load API data: {e}")
 
-    def get_tools(self) -> dict[str, callable]:
+    def get_tools(self) -> dict[str, Callable[..., Any]]:
         """Get available tools as dictionary - Coordinator pattern aggregates all submodule tools"""
         tools = {}
 
@@ -536,7 +538,7 @@ class UnifiedAPIModule(BaseMCPModule):
         return self._get_python_member_info(class_name, member_name, member_type)
 
     # Plugin tools methods
-    def search_plugins(self, query: str, plugin_type: str = None) -> str:
+    def search_plugins(self, query: str, plugin_type: str | None = None) -> str:
         """
         [PLUGIN DEV] Search Glyphs.app plugin types and features
 

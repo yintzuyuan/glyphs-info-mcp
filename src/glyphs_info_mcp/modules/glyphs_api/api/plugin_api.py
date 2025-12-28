@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class PluginAPIManager:
     """Plugin API Manager - Uses SDK Native Accessor to read plugins.py directly"""
 
-    def __init__(self, api_file=None, sdk_accessor=None):
+    def __init__(self, api_file: Any = None, sdk_accessor: Any = None) -> None:
         """Initialize Plugin API Manager
 
         Args:

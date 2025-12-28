@@ -7,6 +7,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 # Use shared core library
@@ -24,9 +25,11 @@ logger = logging.getLogger(__name__)
 import importlib.util
 
 
-def import_local_module(file_path: str, module_name: str):
+def import_local_module(file_path: str, module_name: str) -> ModuleType:
     """Dynamically import local module"""
     spec = importlib.util.spec_from_file_location(module_name, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {file_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -36,6 +39,8 @@ def import_local_module(file_path: str, module_name: str):
 current_dir = Path(__file__).parent
 
 # Dynamically import Header related modules
+HeaderSearchEngine: type[Any] | None = None
+HeaderParser: type[Any] | None = None
 try:
     header_search_module = import_local_module(
         str(current_dir / "objc_header_search.py"), "objc_header_search"
@@ -57,15 +62,15 @@ class APIModule(BaseMCPModule):
 
     def __init__(self, name: str, data_path: Path | None = None):
         super().__init__(name, data_path)
-        self.python_api = {}
-        self.objc_api = {}
-        self.drawing_tools = {}
-        self.plugins = {}
+        self.python_api: dict[str, Any] = {}
+        self.objc_api: dict[str, Any] = {}
+        self.drawing_tools: dict[str, Any] = {}
+        self.plugins: dict[str, Any] = {}
 
         # Header search related attributes
-        self.header_search_engine: HeaderSearchEngine | None = None
-        self.header_parser: HeaderParser | None = None
-        self.search_engine = None  # Unified search engine (injected by server.py)
+        self.header_search_engine: Any = None
+        self.header_parser: Any = None
+        self.search_engine: Any = None  # Unified search engine (injected by server.py)
 
     def initialize(self) -> bool:
         """Initialize the API module (Header search only for Native Accessor architecture)"""
@@ -91,7 +96,7 @@ class APIModule(BaseMCPModule):
             logger.error(f"Failed to initialize API module: {e}")
             return False
 
-    def _load_api_data(self, api_path: Path):
+    def _load_api_data(self, api_path: Path) -> None:
         """Load API data from JSON files"""
         try:
             # Load Python API
@@ -176,11 +181,11 @@ class APIModule(BaseMCPModule):
             self.header_parser = None
             self.headers_base_path = None
 
-    def set_search_engine(self, search_engine) -> None:
+    def set_search_engine(self, search_engine: Any) -> None:
         """Set unified search engine (called by server.py)"""
         self.search_engine = search_engine
 
-    def register_tools(self, mcp_instance) -> None:
+    def register_tools(self, mcp_instance: Any) -> None:
         """Register MCP tools for API functionality"""
 
         @mcp_instance.tool()
@@ -748,7 +753,7 @@ class APIModule(BaseMCPModule):
         self, query: str, max_results: int = 5
     ) -> list[dict[str, Any]]:
         """Search in API list files"""
-        results = []
+        results: list[dict[str, Any]] = []
         query_lower = query.lower()
 
         try:
@@ -825,7 +830,7 @@ class APIModule(BaseMCPModule):
             logger.error(f"Error searching API list files: {e}")
 
         # Sort by score and limit results
-        results.sort(key=lambda x: x["score"], reverse=True)
+        results.sort(key=lambda x: float(x["score"]), reverse=True)
         return results[:max_results]
 
     def _get_objc_header(self, header_query: str) -> str:
@@ -891,7 +896,9 @@ Possible similar files:
             else:
                 return f"Header file not found: {query}"
 
-    def core_search(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:
+    def core_search(
+        self, query: str, max_results: int = 5, **kwargs: Any
+    ) -> list[dict[str, Any]]:
         """Core search method for unified search engine"""
         if not self.header_search_engine:
             return []

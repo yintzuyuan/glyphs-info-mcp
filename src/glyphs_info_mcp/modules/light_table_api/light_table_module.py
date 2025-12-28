@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class LightTableModule(BaseMCPModule):
     """Light Table API Module - Manages Light Table Python API reference"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="light-table-api")
         self.description = "Light Table Python API query and documentation management"
 
@@ -116,7 +116,7 @@ class LightTableModule(BaseMCPModule):
             },
         }
 
-    def core_search(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:
+    def core_search(self, query: str, max_results: int = 5, **kwargs: Any) -> list[dict[str, Any]]:
         """
         Core search functionality - for unified search engine
 
@@ -308,7 +308,7 @@ class LightTableModule(BaseMCPModule):
                 return "❌ No API items found"
 
             # Group by type
-            by_type = {}
+            by_type: dict[str, list[str]] = {}
             for item in all_items:
                 item_type = item["type"]
                 if item_type not in by_type:

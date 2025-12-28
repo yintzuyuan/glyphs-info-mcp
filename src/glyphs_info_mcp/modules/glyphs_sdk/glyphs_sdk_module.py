@@ -6,6 +6,7 @@ Integrates SDK content indexing, search, and formatting functionality
 import json
 import sys
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 # Add shared core module path
@@ -20,10 +21,12 @@ from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
 from glyphs_info_mcp.shared.core.sdk_native_accessor import SDKNativeAccessor
 
 
-def _import_sdk_module(module_name: str):
+def _import_sdk_module(module_name: str) -> ModuleType:
     """Dynamically import SDK submodule"""
     module_file = Path(__file__).parent / f"{module_name}.py"
     spec = importlib.util.spec_from_file_location(module_name, module_file)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module {module_name}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -34,15 +37,15 @@ _indexer_module = _import_sdk_module("sdk_indexer")
 _searcher_module = _import_sdk_module("sdk_searcher")
 _formatter_module = _import_sdk_module("sdk_formatter")
 
-SDKIndexer = _indexer_module.SDKIndexer
-SDKSearcher = _searcher_module.SDKSearcher
-SDKResultFormatter = _formatter_module.SDKResultFormatter
+SDKIndexer: type[Any] = _indexer_module.SDKIndexer
+SDKSearcher: type[Any] = _searcher_module.SDKSearcher
+SDKResultFormatter: type[Any] = _formatter_module.SDKResultFormatter
 
 
 class GlyphsSDKModule(BaseMCPModule):
     """Glyphs SDK search module"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="glyphs-sdk")
         self.description = "Glyphs SDK code and development guide search"
 
@@ -53,8 +56,8 @@ class GlyphsSDKModule(BaseMCPModule):
         self.index_file = Path(__file__).parent / "data" / "sdk_index.json"
 
         # Core components
-        self.indexer: SDKIndexer | None = None
-        self.searcher: SDKSearcher | None = None
+        self.indexer: Any = None
+        self.searcher: Any = None
         self.formatter = SDKResultFormatter()
         self.index: dict[str, list[dict[str, Any]]] = {}
 
@@ -98,7 +101,9 @@ class GlyphsSDKModule(BaseMCPModule):
             print(f"[{self.name}] Initialization failed: {e}", file=sys.stderr)
             return False
 
-    def core_search(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:
+    def core_search(
+        self, query: str, max_results: int = 5, **kwargs: Any
+    ) -> list[dict[str, Any]]:
         """
         Core search functionality
 
@@ -270,8 +275,10 @@ class GlyphsSDKModule(BaseMCPModule):
         # Can add more complex logic, such as checking SDK directory modification time
         return False
 
-    def _build_and_save_index(self):
+    def _build_and_save_index(self) -> None:
         """Build and save index"""
+        if self.indexer is None:
+            return
         self.index = self.indexer.build_index()
 
         # Ensure data directory exists
@@ -281,12 +288,12 @@ class GlyphsSDKModule(BaseMCPModule):
         with open(self.index_file, "w", encoding="utf-8") as f:
             json.dump(self.index, f, ensure_ascii=False, indent=2)
 
-    def _load_index(self):
+    def _load_index(self) -> None:
         """Load existing index"""
         with open(self.index_file, encoding="utf-8") as f:
             self.index = json.load(f)
 
-    def _load_file_contents(self):
+    def _load_file_contents(self) -> None:
         """Load file contents into index
 
         Paths in index are relative, need to combine with sdk_path to get absolute path

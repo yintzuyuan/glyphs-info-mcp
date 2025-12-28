@@ -211,7 +211,7 @@ class GlyphsPluginsModule(BaseMCPModule):
         self,
         query: str,
         max_results: int = 10,
-        filter_by_author: str = None
+        filter_by_author: str | None = None
     ) -> str:
         """
         [OFFICIAL] Search Glyphs official plugin registry

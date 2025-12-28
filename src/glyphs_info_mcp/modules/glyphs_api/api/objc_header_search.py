@@ -8,22 +8,32 @@ TDD Green Phase: Implement minimum functionality to pass tests
 import importlib.util
 import sys
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 # Dynamically import HeaderParser
 current_dir = Path(__file__).parent
 parser_module_file = current_dir / "objc_header_parser.py"
 
-spec = importlib.util.spec_from_file_location("objc_header_parser", parser_module_file)
-parser_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(parser_module)
-HeaderParser = parser_module.HeaderParser
+
+def _load_parser_module() -> ModuleType:
+    """Load the parser module dynamically"""
+    spec = importlib.util.spec_from_file_location("objc_header_parser", parser_module_file)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {parser_module_file}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+parser_module = _load_parser_module()
+HeaderParser: type[Any] = parser_module.HeaderParser
 
 
 class HeaderSearchEngine:
     """Header search engine core functionality"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.headers_data: list[dict[str, Any]] = []
         self.parser = HeaderParser()
 
@@ -176,7 +186,7 @@ class HeaderSearchEngine:
 
     def _calculate_multi_word_score(self, header_data: dict[str, Any], words: list[str]) -> float:
         """Calculate combined score for multi-word queries"""
-        total_score = 0
+        total_score: float = 0.0
         word_matches = 0
 
         for word in words:
@@ -227,7 +237,7 @@ class HeaderSearchEngine:
     def _calculate_camel_case_score(self, header_data: dict[str, Any], words: list[str]) -> float:
         """Calculate matching score for CamelCase naming"""
         if len(words) < 2:
-            return 0
+            return 0.0
 
         # Create query patterns - combine multiple words into CamelCase patterns
         # Example: ["add", "anchor"] -> "addanchor" and "addAnchor"
@@ -236,7 +246,7 @@ class HeaderSearchEngine:
             words[0] + ''.join(w.capitalize() for w in words[1:])  # CamelCase: addAnchor
         ]
 
-        best_score = 0
+        best_score: float = 0.0
 
         # Check method names
         for method in header_data.get('methods', []):
@@ -271,8 +281,8 @@ class HeaderSearchEngine:
 class HeaderSearchIndex:
     """Search index (for test compatibility)"""
 
-    def __init__(self):
-        self.index = {
+    def __init__(self) -> None:
+        self.index: dict[str, dict[str, Any]] = {
             'file_names': {},
             'class_names': {},
             'property_names': {},
@@ -309,8 +319,8 @@ class HeaderSearchIndex:
 class HeaderSearchModule:
     """Header search module (integrated with unified search engine)"""
 
-    def __init__(self):
-        self.search_engine = None
+    def __init__(self) -> None:
+        self.search_engine: Any = None
         self.header_search_engine = HeaderSearchEngine()
 
     def search_headers(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:

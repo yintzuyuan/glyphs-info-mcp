@@ -12,6 +12,7 @@ import itertools
 import logging
 import sys
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class PythonAPIManager:
         self.accessor = PythonAPINativeAccessor(init_file)
         logger.info("Python API Manager initialized with Native Accessor")
 
-    def search(self, query: str, search_scope: str = 'all', max_results: int = 10, **kwargs) -> str:
+    def search(self, query: str, search_scope: str = 'all', max_results: int = 10, **kwargs: Any) -> str:
         """Search Python API - Layered search strategy
 
         Layered search strategy (referencing Issue #72/#73 match_type mechanism):
@@ -99,7 +100,7 @@ class PythonAPIManager:
         # Format as layered output
         return self._format_layered_results(query, all_results)
 
-    def _search_class_members(self, query: str, max_results: int) -> list:
+    def _search_class_members(self, query: str, max_results: int) -> list[dict[str, Any]]:
         """Search class members (properties and methods)
 
         Second layer search: iterate through all classes, search their property and method names.
@@ -113,7 +114,9 @@ class PythonAPIManager:
         """
         query_lower = query.lower()
 
-        def _iter_members():
+        from collections.abc import Iterator
+
+        def _iter_members() -> Iterator[dict[str, Any]]:
             """Internal generator: iterate through all class members and yield matching results"""
             for class_name in self.accessor.symbols.get('classes', []):
                 try:
@@ -156,7 +159,7 @@ class PythonAPIManager:
         suggestions.append("- Use `api_get_python_class` to view complete member list for a specific class")
         return "\n".join(suggestions)
 
-    def _deduplicate_and_sort(self, results: list) -> list:
+    def _deduplicate_and_sort(self, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Deduplicate and sort search results
 
         Sorting rules:
@@ -180,7 +183,7 @@ class PythonAPIManager:
                 unique_results.append(r)
 
         # Sort: by score descending, symbol layer first when scores are equal
-        def sort_key(item):
+        def sort_key(item: dict[str, Any]) -> tuple[float, int]:
             score = item.get('score', 0)
             # match_type weight: symbol=1, member=0
             match_type_weight = 1 if item.get('match_type') == 'symbol' else 0
@@ -189,7 +192,7 @@ class PythonAPIManager:
         unique_results.sort(key=sort_key)
         return unique_results
 
-    def _format_layered_results(self, query: str, results: list) -> str:
+    def _format_layered_results(self, query: str, results: list[dict[str, Any]]) -> str:
         """Format layered search results
 
         Based on #72/#73 match_type mechanism, display results grouped by layer.

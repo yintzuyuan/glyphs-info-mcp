@@ -7,7 +7,7 @@ Handles Python API queries and documentation
 import logging
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 # Use shared core library
 project_root = Path(__file__).parent.parent.parent.parent
@@ -22,9 +22,11 @@ logger = logging.getLogger(__name__)
 # Dynamically import PythonAPIManager
 import importlib.util
 
-def import_manager(module_path: str, class_name: str):
+def import_manager(module_path: str, class_name: str) -> type[Any]:
     """Dynamically import manager class"""
     spec = importlib.util.spec_from_file_location(class_name.lower(), module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {module_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return getattr(module, class_name)
@@ -39,10 +41,10 @@ class PythonAPIModule(BaseMCPModule):
 
     def __init__(self, name: str = "python-api", data_path: Path | None = None):
         super().__init__(name, data_path)
-        self.python_api = None
-        self.search_engine = None  # Will be injected by server.py
+        self.python_api: Any = None
+        self.search_engine: Any = None  # Will be injected by server.py
 
-    def set_search_engine(self, search_engine):
+    def set_search_engine(self, search_engine: Any) -> None:
         """Set unified search engine (called by server.py)"""
         self.search_engine = search_engine
 
@@ -65,7 +67,9 @@ class PythonAPIModule(BaseMCPModule):
             logger.error(f"Failed to initialize Python API module: {e}")
             return False
 
-    def core_search(self, query: str, max_results: int = 5, scope: str = "auto") -> list[dict[str, Any]]:
+    def core_search(
+        self, query: str, max_results: int = 5, **kwargs: Any
+    ) -> list[dict[str, Any]]:
         """Core search function - exclusively for unified search engine
 
         Returns structured search results without vocabulary processing or formatting
@@ -73,7 +77,7 @@ class PythonAPIModule(BaseMCPModule):
         Args:
             query: Search query (pre-processed)
             max_results: Maximum number of results
-            scope: Search scope
+            **kwargs: Additional parameters (e.g., scope)
 
         Returns:
             List of structured search results
@@ -81,7 +85,8 @@ class PythonAPIModule(BaseMCPModule):
         if not self.is_initialized:
             return []
 
-        results = []
+        results: list[dict[str, Any]] = []
+        scope = kwargs.get("scope", "auto")
 
         try:
             # Use internal Python API search
@@ -95,7 +100,10 @@ class PythonAPIModule(BaseMCPModule):
 
     def _search_python_api_structured(self, query: str, max_results: int, scope: str) -> list[dict[str, Any]]:
         """Search in Python API (simplified version - returns formatted string directly)"""
-        results = []
+        results: list[dict[str, Any]] = []
+
+        if self.python_api is None:
+            return results
 
         try:
             # Use Python API Manager's indexed search (already formatted)
@@ -116,7 +124,7 @@ class PythonAPIModule(BaseMCPModule):
 
         return results
 
-    def get_tools(self) -> dict[str, callable]:
+    def get_tools(self) -> dict[str, Callable[..., Any]]:
         """Get available tools dictionary"""
         return {
             'api_search_python': self.python_api_search,
@@ -234,6 +242,8 @@ class PythonAPIModule(BaseMCPModule):
 
     def _get_python_class_info(self, class_name: str, detail_level: str) -> str:
         """Implementation for python class info - uses new concise format"""
+        if self.python_api is None:
+            return f"Class '{class_name}' not found"
         result = self.python_api.get_class_info(class_name, detail_level)
         if result and 'error' not in result:
             formatted_info = self._format_class_info_simple(result, detail_level)
@@ -295,6 +305,8 @@ class PythonAPIModule(BaseMCPModule):
 
     def _get_python_member_info(self, class_name: str, member_name: str, member_type: str) -> str:
         """Enhanced implementation for python member info"""
+        if self.python_api is None:
+            return f"Member '{member_name}' (type: {member_type}) not found in class '{class_name}'"
         result = self.python_api.get_class_member(class_name, member_name, member_type)
         if result and 'error' not in result:
             return self._format_member_info_enhanced(result, "Python API")
@@ -303,6 +315,8 @@ class PythonAPIModule(BaseMCPModule):
 
     def _search_python_api(self, query: str, max_results: int) -> str:
         """Implementation for Python API search with smart routing"""
+        if self.python_api is None:
+            return f"No Python API found related to '{query}'"
         if ' ' in query.strip():
             # Multi-word query - use smart routing
             return self._smart_search_python_api(query, max_results)
@@ -312,6 +326,9 @@ class PythonAPIModule(BaseMCPModule):
 
     def _smart_search_python_api(self, query: str, max_results: int) -> str:
         """Enhanced smart search for Python API with better relevance"""
+        if self.python_api is None:
+            return f"No Python API found related to '{query}'"
+
         query_words = query.lower().split()
 
         # Glyphs-specific class keywords
@@ -352,8 +369,11 @@ class PythonAPIModule(BaseMCPModule):
 
         return "\n".join(output) if output else "No information available"
 
-    def _enhanced_multi_word_search(self, query: str, query_words: list, max_results: int) -> str:
+    def _enhanced_multi_word_search(self, query: str, query_words: list[str], max_results: int) -> str:
         """Enhanced multi-word search with better relevance scoring"""
+        if self.python_api is None:
+            return f"No Python API found related to '{query}'"
+
         # Define search priority: object terms > action terms
         object_terms = ['background', 'anchor', 'bounds', 'width', 'height', 'layer', 'glyph', 'font',
                        'color', 'path', 'node', 'guide', 'master', 'component']
@@ -368,8 +388,8 @@ class PythonAPIModule(BaseMCPModule):
         search_order = primary_words + other_words + secondary_words
 
         # Try each word in priority order
-        best_result = None
-        best_word = None
+        best_result: str | None = None
+        best_word: str | None = None
 
         for word in search_order:
             word_result = self.python_api.search(word)
@@ -396,6 +416,8 @@ class PythonAPIModule(BaseMCPModule):
 
     def _single_word_search(self, query: str, max_results: int) -> str:
         """Enhanced single word search"""
+        if self.python_api is None:
+            return f"No Python API found related to '{query}'"
         result = self.python_api.search(query)
         if result and not result.startswith("Not found") and "No Python API found" not in result:
             return f"# 🔍 Python API Search: {query}\n\n{result}"

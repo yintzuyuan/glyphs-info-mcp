@@ -18,10 +18,10 @@ class HandbookSearcher:
     def __init__(self, data_path: Path):
         self.data_path = data_path
         self.index_file = data_path / "index.md"
-        self.files = []
+        self.files: list[str] = []
         self._load_files()
 
-    def _load_files(self):
+    def _load_files(self) -> None:
         """Load file list"""
         try:
             # Directly scan all .md files in directory

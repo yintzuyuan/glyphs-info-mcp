@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class MekkablueScriptsModule(BaseMCPModule):
     """Mekkablue Scripts Module - Manages mekkablue script collection code templates"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="mekkablue-scripts")
         self.description = "mekkablue script collection code template search and management"
 
@@ -79,7 +79,7 @@ class MekkablueScriptsModule(BaseMCPModule):
             logger.error(f"[{self.name}] Initialization failed: {e}")
             return False
 
-    def core_search(self, query: str, max_results: int = 5) -> list[dict[str, Any]]:
+    def core_search(self, query: str, max_results: int = 5, **kwargs: Any) -> list[dict[str, Any]]:
         """
         Core search function - For use by unified search engine
 
@@ -131,7 +131,7 @@ class MekkablueScriptsModule(BaseMCPModule):
         }
 
     def _search_scripts_tool(
-        self, query: str, category: str = None, max_results: int = 10
+        self, query: str, category: str | None = None, max_results: int = 10
     ) -> str:
         """
         [MEKKABLUE SCRIPTS] Search mekkablue script collection code samples
@@ -357,7 +357,7 @@ Use `scripts_list(category='Anchors')` to list scripts in a specific category
 
         return "\n".join(output)
 
-    def _list_scripts_tool(self, category: str = None) -> str:
+    def _list_scripts_tool(self, category: str | None = None) -> str:
         """
         [MEKKABLUE SCRIPTS] List scripts in a specified category
 

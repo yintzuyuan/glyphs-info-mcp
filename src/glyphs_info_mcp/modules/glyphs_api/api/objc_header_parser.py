@@ -13,9 +13,9 @@ from typing import Any
 class HeaderParser:
     """Objective-C Header file parser"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Header Parser"""
-        self.protocols = {}  # Protocol definition cache {protocol_name: protocol_data}
+        self.protocols: dict[str, Any] = {}  # Protocol definition cache {protocol_name: protocol_data}
 
     def parse_content(self, header_content: str) -> dict[str, Any]:
         """Parse Header content
@@ -26,7 +26,7 @@ class HeaderParser:
         Returns:
             Parsed data structure
         """
-        result = {
+        result: dict[str, Any] = {
             'interfaces': [],
             'protocols': [],
             'properties': [],
