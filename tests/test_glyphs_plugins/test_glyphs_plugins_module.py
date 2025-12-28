@@ -3,6 +3,8 @@
 
 TDD 紅燈階段：先撰寫測試，預期失敗
 目標：將覆蓋率從 0% 提升至 85%+
+
+注意：部分測試類別需要本地 Repositories 目錄才能正確執行 mock。
 """
 
 import plistlib
@@ -189,8 +191,9 @@ class TestGlyphsPluginsModuleInitialization:
         assert module.is_initialized is True
 
 
+@pytest.mark.requires_repositories
 class TestSearchLocalTool:
-    """測試本機搜尋工具"""
+    """測試本機搜尋工具（需要 Repositories 目錄）"""
 
     @pytest.fixture
     def mock_repositories(self, tmp_path: Path) -> Path:
@@ -545,8 +548,9 @@ class TestGetInfoTool:
         assert "無效" in result or "錯誤" in result or "invalid" in result.lower() or "error" in result.lower()
 
 
+@pytest.mark.requires_repositories
 class TestScanRepositoryTool:
-    """測試掃描工具"""
+    """測試掃描工具（需要 Repositories 目錄）"""
 
     @pytest.fixture
     def mock_repositories(self, tmp_path: Path) -> Path:
