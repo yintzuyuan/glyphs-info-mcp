@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import httpx
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,8 @@ def extract_nav_links_from_html(html: str) -> List[str]:
     seen: set[str] = set()
 
     for anchor in soup.find_all("a", href=True):
+        if not isinstance(anchor, Tag):
+            continue
         href_attr = anchor.get("href")
         if not isinstance(href_attr, str):
             continue
