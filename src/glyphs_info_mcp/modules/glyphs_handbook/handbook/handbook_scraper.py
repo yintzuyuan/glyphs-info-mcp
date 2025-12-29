@@ -35,7 +35,10 @@ def extract_nav_links_from_html(html: str) -> List[str]:
     seen: set[str] = set()
 
     for anchor in soup.find_all("a", href=True):
-        href = anchor["href"]
+        href_attr = anchor.get("href")
+        if not isinstance(href_attr, str):
+            continue
+        href: str = href_attr
 
         # Skip external links
         if href.startswith("http://") or href.startswith("https://"):
