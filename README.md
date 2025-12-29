@@ -2,60 +2,20 @@
 
 # Glyphs info MCP
 
-A unified MCP server integrating Glyphs handbook queries and API reference lookups.
-
-## 📋 Project Overview
-
-Glyphs info MCP is a unified MCP (Model Context Protocol) server specifically designed for Glyphs font design software, providing developers and designers with an integrated knowledge query platform.
-
-## ⚠️ Important Notes
-
-Please note the following important points before using this project:
-
-### 🏗️ Development Approach
-- This project was largely built using **Vibe Coding** iterative development, focusing on rapid feature implementation and practicality
-
-### 🌐 Network Requirements
-- **Forum search tools**, **tutorial search tools**, and **official news search tools** only work **when connected to the internet**
-- Local cache tools can be used as a fallback option when offline
-
-### 🤖 Recommended Model
-- After testing, this project works best with **Claude models**
-- We recommend using it in the Claude Desktop environment for the best experience
-
-### 📊 Data Sources
-- **API Reference**: Converted from Glyphs official GitHub SDK code
-- **Handbook Content**: Scraped and organized from Glyphs official website using an internal parser
-- **Terminology Translation**: Extracted from Glyphs application localization string files (.strings), ensuring consistency with the software interface
-
-### 💡 Usage Tips
-- Prioritize using network search tools to get the latest information
-- Rely on local cache data when offline usage is needed
-- Recommended to use Claude's conversational capabilities for complex queries
-
-## ✨ Features
-
-- 🔍 **Unified Search** - Smart query routing with automatic content type detection
-- 🌏 **Multilingual UI Terms** - Support for Glyphs UI terminology in 14 languages
-- 📚 **Complete Handbook Queries** - Covers all Glyphs official handbook content
-- 🔌 **Comprehensive API Reference** - Full documentation for Python and Objective-C APIs
-- 🧠 **Smart Cross-referencing** - Automatic linking of related content and terminology
-- 🛠️ **MCP Protocol Compatible** - Standardized tool interface, easy to integrate
+A unified MCP server integrating Glyphs handbook queries and API reference lookups for [Glyphs](https://glyphsapp.com/) font design software.
 
 ## 🚀 Quick Start
 
 ### Requirements
 
-- **Python 3.10+** - Must be installed
-- **uv package manager** - MCP officially recommended package management tool
+- **Python 3.10+**
+- **uv package manager** - MCP officially recommended
 - **Claude Desktop** - For running the MCP server
-- **Operating System**: macOS
+- **macOS**
 
-### 📦 Installation
+### Installation
 
 #### Method 1: Using uvx (Recommended)
-
-This is the simplest installation method, no manual project download required.
 
 **Step 1: Install uv**
 
@@ -65,7 +25,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 **Step 2: Configure Claude Desktop**
 
-Edit the Claude Desktop configuration file (path shown below) and add the following:
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
@@ -84,96 +44,18 @@ Restart Claude Desktop and you're ready to go!
 
 #### Method 2: Install from Source (Developers)
 
-Suitable for users who need customization or development.
-
-**Step 1: Install uv package manager**
+**Prerequisites**: uv installed (see Method 1 Step 1)
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-Restart your terminal after installation to ensure the `uv` command is available.
-
-**Step 2: Download the Project**
-
-**Option 1: Clone with submodules (recommended)**
-
-```bash
+# Clone with submodules
 git clone --recursive https://github.com/yintzuyuan/glyphs-info-mcp.git
 cd glyphs-info-mcp
-```
 
-**Option 2: Clone and then initialize submodules**
-
-```bash
-git clone https://github.com/yintzuyuan/glyphs-info-mcp.git
-cd glyphs-info-mcp
-git submodule update --init --recursive
-```
-
-> **📦 Git Submodules Note**:
-> This project uses Git Submodules to manage external resources, including:
-> - **GlyphsSDK**: Official SDK documentation and examples
-> - **mekkablue-scripts**: 358+ production scripts (ready to use)
-> - **vanilla**: UI framework documentation (ready to use)
->
-> Dynamic path switching feature:
-> - Prioritizes local installation (`~/Library/Application Support/Glyphs 3/Repositories/`)
-> - Automatically uses built-in Submodule when not installed (no additional setup needed)
-> - Provides out-of-the-box experience while maintaining flexibility
-
-#### Step 3: Install Dependencies
-
-```bash
-# Install basic dependencies
+# Install dependencies
 uv sync
-
-# (Optional) Install development dependencies
-uv sync --extra dev
 ```
 
-#### Step 4: Test the Server
-
-```bash
-# Test if the server starts correctly
-uv run glyphs-info-mcp
-```
-
-If you see the server startup success message, installation is complete!
-
-To use this MCP server in Claude Desktop, you need to edit the configuration file.
-
-#### Configuration File Location
-
-```
-~/Library/Application Support/Claude/claude_desktop_config.json
-```
-
-#### Configuration Content
-
-Add the following to `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "glyphs-info-mcp": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/ABSOLUTE/PATH/TO/glyphs-info-mcp",
-        "run",
-        "glyphs-info-mcp"
-      ]
-    }
-  }
-}
-```
-
-**⚠️ Important Notes:**
-- Replace `/ABSOLUTE/PATH/TO/glyphs-info-mcp` with your actual project path
-- You must use an **absolute path**, relative paths or `~` symbol are not supported
-
-#### Configuration Example
+Configure Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
 ```json
 {
@@ -191,94 +73,69 @@ Add the following to `claude_desktop_config.json`:
 }
 ```
 
-#### 🔧 Troubleshooting
+> [!IMPORTANT]
+> Replace `/Users/username/glyphs-info-mcp` with your actual **absolute path**.
 
-If you encounter issues with the server not starting, check:
+---
 
-1. **Path correctness**: Ensure the `--directory` parameter uses an absolute path
-2. **JSON format**: Ensure there are no syntax errors in the configuration file
-3. **Dependencies**: Run `uv sync` to reinstall dependencies
-4. **Restart application**: You must restart Claude Desktop after modifying the configuration
+### Verify Installation
 
-#### Apply Configuration
-
-1. Save the `claude_desktop_config.json` file
-2. **Restart Claude Desktop**
-3. Test if MCP tools are available in the conversation
-
-### 📋 Usage Examples
-
-After configuration, you can use the following features directly in Claude Desktop:
-
-```python
-# Handbook queries
-handbook_search_content("kerning")           # Search handbook content
-handbook_get_content("anchors")              # Get specific chapter
-
-# API queries
-api_search_python("GSFont")                  # Search Python API
-api_get_python_class("GSGlyph")              # Get class details
-
-# UI terminology
-vocab_translate_term("Cancel", "zh-Hant")    # Translate UI term
-```
-
-### 🛠️ Installation Verification
-
-#### Verify uv installation
-```bash
-uv --version
-```
-Should display version number, e.g., `uv 0.1.x`
-
-#### Verify project dependencies
-```bash
-cd glyphs-info-mcp
-uv run python -c "import mcp; print('MCP package is working')"
-```
-
-#### Verify MCP server
 ```bash
 uv run glyphs-info-mcp
 ```
-You should see output similar to:
+
+You should see:
+
 ```
-✅ Vocabulary module loaded successfully
-✅ Handbook module loaded successfully
-✅ API module loaded successfully
 ✅ Glyphs info MCP Server initialized with 8 modules and 53 tools
 ```
 
-### ❓ FAQ
+## ✨ Features
 
-#### Q: Cannot find uv command
-**A:** Make sure you've restarted your terminal. If the issue persists, run `source ~/.bashrc` or `source ~/.zshrc`
+- 🔍 **Unified Search** - Smart query routing with automatic content type detection
+- 🌏 **Multilingual UI Terms** - Support for Glyphs UI terminology in 14 languages
+- 📚 **Complete Handbook** - All Glyphs official handbook content
+- 🔌 **Full API Reference** - Python and Objective-C API documentation
+- 🧠 **Smart Cross-referencing** - Automatic linking of related content
+- 🛠️ **MCP Protocol Compatible** - Standardized tool interface
 
-#### Q: Claude Desktop cannot load the MCP server
-**A:** Check the following:
-1. Is the configuration file path correct?
-2. Is there a JSON syntax error?
-3. Is the project path an absolute path?
-4. Have you restarted Claude Desktop?
+## 📋 Feature Overview
 
-#### Q: Server fails to start
-**A:** Common solutions:
-```bash
-# Reinstall dependencies
-uv sync --reinstall
+### Operating Requirements
 
-# Check Python version (requires 3.10+)
-python --version
+| Module | Out-of-box | Network | Glyphs Required |
+|--------|:----------:|:-------:|:---------------:|
+| Handbook | ✅ | First cache build | - |
+| API (Python) | ✅ | - | - |
+| API (Obj-C Headers) | - | - | ✅ |
+| SDK Documentation | ✅ | - | - |
+| mekkablue Scripts | ✅ | - | - |
+| Light Table API | ✅ | - | - |
+| Vocabulary | - | - | ✅ |
+| Plugins (Local) | - | - | ✅ |
+| Plugins (Official) | - | ✅ | - |
+| News/Tutorials | - | ✅ | - |
 
-# Check project integrity
-uv run python -m pytest tests/ -v
-```
+> [!TIP]
+> **Out-of-box**: Uses bundled GlyphsSDK submodule data, no extra setup needed.
+> **Network**: Handbook only needs network for initial cache, then works offline.
+> **Glyphs Required**: Reads from local Glyphs app (Headers from GlyphsCore.framework).
 
-## 🔧 Main Features
+### MCP Tools (53 total)
 
-### MCP Tools
+The server provides 8 modules:
 
-The server provides **53 tools** across **8 modules**:
+- **Handbook** - Search and query handbook content
+- **Vocabulary** - UI terminology translation in 14 languages
+- **API (Python)** - Python API classes and methods
+- **API (Obj-C)** - Objective-C headers and protocols
+- **SDK** - SDK documentation and Xcode templates
+- **Plugins** - Local and official plugin search
+- **Scripts** - mekkablue script collection (358+)
+- **News** - Forum and tutorial search
+
+<details>
+<summary>Expand full tool list</summary>
 
 #### Handbook Module
 
@@ -298,7 +155,7 @@ The server provides **53 tools** across **8 modules**:
 | `vocab_translate_term` | Translate UI term |
 | `vocab_list_ui_categories` | List UI term categories |
 
-#### API Module - Python API
+#### API Module - Python
 
 | Tool | Description |
 |------|-------------|
@@ -306,7 +163,7 @@ The server provides **53 tools** across **8 modules**:
 | `api_get_python_class` | Get Python class info |
 | `api_get_python_member` | Get Python member info |
 
-#### API Module - Objective-C API
+#### API Module - Objective-C
 
 | Tool | Description |
 |------|-------------|
@@ -348,76 +205,35 @@ The server provides **53 tools** across **8 modules**:
 | `news_search_tutorials` | Search tutorials |
 | `news_fetch_tutorial` | Fetch tutorial content |
 
-## 📖 User Guide
+</details>
+
+## 📖 Usage Guide
+
+### Usage Examples
+
+```python
+# Handbook queries
+handbook_search_content("kerning")
+handbook_get_content("anchors")
+
+# API queries
+api_search_python("GSFont")
+api_get_python_class("GSGlyph")
+
+# UI terminology
+vocab_translate_term("Cancel", "zh-Hant")
+```
 
 ### Search Best Practices
 
-- Use core words of English terminology
+- Use core English terminology words
 - Prefer single concept keywords
 - Utilize automatic query type detection
 - Refer to the terminology reference for translations
 
-#### Common Query Patterns
-
-```bash
-# API development
-api_search_python("GSFont")              # Search Python API for font class
-api_get_python_class("GSGlyph")          # Get glyph class details
-
-# Feature learning
-handbook_search_content("kerning")       # Search handbook for kerning
-handbook_get_content("anchors")          # Get anchors chapter content
-
-# Script reference
-scripts_search("anchor")                 # Search mekkablue scripts for examples
-```
-
-## 🏗️ Project Structure
-
-```
-glyphs-info-mcp/
-├── src/
-│   └── glyphs_info_mcp/                    # 📦 Core package
-│       ├── __init__.py                      # Package initialization
-│       ├── __main__.py                      # CLI entry point
-│       ├── server.py                        # MCP server main program
-│       ├── config.py                        # Configuration management
-│       ├── modules_config.yaml              # Module configuration file
-│       ├── modules/                         # Feature modules
-│       │   ├── glyphs_handbook/             # Handbook query module
-│       │   ├── glyphs_api/                  # API query module
-│       │   ├── glyphs_vocabulary/           # Terminology translation module
-│       │   ├── glyphs_plugins/              # Plugin information module
-│       │   ├── glyphs_news/                 # News and forum module
-│       │   ├── glyphs_sdk/                  # SDK documentation module
-│       │   ├── light_table_api/             # Light Table API module
-│       │   └── mekkablue_scripts/           # Mekkablue scripts module
-│       ├── shared/                          # Shared modules
-│       │   ├── core/                        # Core utilities
-│       │   └── fetch/                       # Network fetch utilities
-│       └── data/                            # Data files
-│           ├── api_structure.json           # API structure definition
-│           ├── handbook-cache/              # Handbook cache
-│           │   ├── fresh/                   # Fresh cache
-│           │   └── stable/                  # Stable cache
-│           └── official/                    # Official resources
-│               └── GlyphsSDK/               # Glyphs SDK
-├── tests/                                   # 🧪 Test files
-│   ├── conftest.py                          # Test configuration
-│   ├── test_glyphs_api/                     # API module tests
-│   ├── test_glyphs_handbook/                # Handbook module tests
-│   ├── test_glyphs_plugins/                 # Plugin module tests
-│   ├── test_glyphs_vocabulary/              # Vocabulary module tests
-│   ├── test_shared_core/                    # Shared core tests
-│   └── test_*.py                            # Other test files
-├── pyproject.toml                           # ⚙️ Project configuration
-├── README.md                                # 📝 Project documentation
-└── uv.lock                                  # 🔒 Dependency lock
-```
-
 ## 🛠️ Development
 
-### Development Environment Setup
+### Setup
 
 ```bash
 # Install development dependencies
@@ -430,90 +246,90 @@ uv sync --extra test
 ### Code Quality
 
 ```bash
-# Code formatting
-uv run black src/ tests/
-
-# Linting
-uv run ruff check src/ tests/ --fix
-
-# Type checking
-uv run mypy src/
+uv run black src/ tests/      # Formatting
+uv run ruff check src/ --fix  # Linting
+uv run mypy src/              # Type checking
 ```
 
 ### Testing
 
 ```bash
-# Run all tests
-uv run pytest
-
-# Run specific tests
-uv run pytest tests/test_specific.py
-
-# Test coverage
-uv run pytest --cov=src/glyphs_info_mcp
+uv run pytest                              # All tests
+uv run pytest tests/test_specific.py       # Specific tests
+uv run pytest --cov=src/glyphs_info_mcp    # Coverage
 ```
 
-## 🎯 Use Cases
+## 📚 Background
 
-### Type Designers
-- Quickly query Glyphs features and operation instructions
-- Learn advanced features and best practices
-- Chinese-English terminology reference and understanding
+### Development Approach
 
-### Plugin Developers
-- Query Python/Objective-C API documentation
-- Get class method and property details
-- Reference plugin development examples and patterns
+This project was largely built using **Vibe Coding** iterative development, focusing on rapid feature implementation and practicality.
 
-### Automation Script Developers
-- Quickly find APIs and usage examples
-- Understand object relationships and inheritance structures
-- Get complete code references
+### Data Sources
 
-### Educators
-- Structured teaching content
-- Systematic knowledge organization
-- Multilingual learning resources
+- **API Reference**: Converted from [Glyphs official GitHub SDK](https://github.com/schriftgestalt/GlyphsSDK) code
+- **Handbook Content**: Scraped from [Glyphs official handbook](https://handbook.glyphsapp.com/) using an internal parser
+- **Terminology Translation**: Extracted from Glyphs app localization string files (.strings)
+
+### Recommended Model
+
+After testing, this project works best with **Claude models**. We recommend using it in the Claude Desktop environment for the best experience.
+
+## ❓ FAQ
+
+<details>
+<summary>Cannot find uv command</summary>
+
+Restart your terminal, or run `source ~/.zshrc`
+
+</details>
+
+<details>
+<summary>Claude Desktop cannot load the MCP server</summary>
+
+1. Ensure the path is an **absolute path** (not relative or using `~`)
+2. Check for JSON syntax errors
+3. Restart Claude Desktop
+
+</details>
+
+<details>
+<summary>Server fails to start</summary>
+
+```bash
+uv sync --reinstall
+python --version  # Requires 3.10+
+```
+
+</details>
 
 ## ⚙️ Configuration
 
 ### Environment Variables
 
-All paths are auto-detected and usually don't need configuration. Only set these if using non-standard locations:
+All paths are auto-detected. Only set these if using non-standard locations:
 
 ```bash
-# Glyphs application path (auto-detected)
 # export GLYPHS_APP_PATH=/Applications/Glyphs 3.app
-
-# Glyphs Objective-C headers path (auto-detected)
 # export GLYPHS_APP_HEADERS_PATH=/Applications/Glyphs\ 3.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/Headers
-
-# Glyphs Repositories path (auto-detected)
 # export GLYPHS_REPOSITORIES_PATH=~/Library/Application\ Support/Glyphs\ 3/Repositories
 ```
 
-## 📊 Project Status
-
-- **Version:** 1.0.0
-- **Status:** Stable Release
-- **MCP Protocol:** Fully Compatible
-- **License:** MIT License
-
-## 🔗 Related Resources
+## 🔗 Resources
 
 - [Glyphs Official Website](https://glyphsapp.com/)
-- [Glyphs Official Documentation](https://handbook.glyphsapp.com/)
-- [Glyphs Official Forum](https://forum.glyphsapp.com/)
-- [Glyphs Learning Center](https://glyphsapp.com/learn)
-- [MCP Protocol Documentation](https://modelcontextprotocol.io/)
+- [Glyphs Handbook](https://handbook.glyphsapp.com/)
+- [Glyphs Forum](https://forum.glyphsapp.com/)
+- [GlyphsSDK](https://github.com/schriftgestalt/GlyphsSDK)
+- [MCP Protocol](https://modelcontextprotocol.io/)
 - [Report Issues](https://github.com/yintzuyuan/glyphs-info-mcp/issues)
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Glyphs info MCP** - Making Glyphs knowledge queries simple and powerful 🚀
+**Glyphs info MCP** - Making Glyphs knowledge queries simple and powerful
 
-*Last updated: 2025-12-27*
+*Last updated: 2025-12-29*
