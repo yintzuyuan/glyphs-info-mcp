@@ -411,10 +411,11 @@ class EnhancedHandbookSearcher:
     def _extract_title(content: str) -> str:
         """Extract document title
 
-        Prioritizes level-1 heading (#), falls back to level-2 heading (##).
+        Prioritizes level-1 heading (#), falls back to level-2 (##), then level-3 (###).
         Supports Markdown link syntax: ## [Title](#anchor) → Title
         """
         h2_title = None
+        h3_title = None
 
         def _parse_title(line_text: str, prefix: str) -> str:
             """Extract and clean title from line"""
@@ -429,10 +430,14 @@ class EnhancedHandbookSearcher:
                 return _parse_title(stripped, '# ')
 
             # Record first level-2 heading as fallback
-            if h2_title is None and stripped.startswith('## '):
+            if h2_title is None and stripped.startswith('## ') and not stripped.startswith('### '):
                 h2_title = _parse_title(stripped, '## ')
 
-        return h2_title or "Unnamed chapter"
+            # Record first level-3 heading as secondary fallback
+            if h3_title is None and stripped.startswith('### ') and not stripped.startswith('#### '):
+                h3_title = _parse_title(stripped, '### ')
+
+        return h2_title or h3_title or "Unnamed chapter"
 
     def _extract_intro_only(self, content: str) -> str:
         """Layer 1 extraction: Return file introduction only

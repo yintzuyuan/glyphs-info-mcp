@@ -183,15 +183,19 @@ class HandbookCacheManager:
 
         try:
             async with HandbookScraper() as scraper:
-                # Scrape all chapters
-                chapters = await scraper.scrape_single_page()
+                # Scrape all pages (per-page download)
+                chapters = await scraper.scrape_all_pages()
 
                 # Save to fresh cache directory
                 self.fresh_cache_dir.mkdir(parents=True, exist_ok=True)
                 scraper.save_to_directory(chapters, self.fresh_cache_dir)
 
                 # Save cache info
-                self._save_cache_info(self.fresh_cache_dir, len(chapters))
+                self._save_cache_info(
+                    self.fresh_cache_dir,
+                    len(chapters),
+                    scraper_version="2.0",  # New per-page scraping version
+                )
 
                 logger.info(
                     f"✅ fresh cache update successful ({len(chapters)} files)"
@@ -219,8 +223,8 @@ class HandbookCacheManager:
 
         try:
             async with HandbookScraper(base_url=source_url) as scraper:
-                # Scrape all chapters
-                chapters = await scraper.scrape_single_page()
+                # Scrape all pages (per-page download)
+                chapters = await scraper.scrape_all_pages()
 
                 # Save to stable cache directory
                 self.stable_cache_dir.mkdir(parents=True, exist_ok=True)
@@ -230,6 +234,7 @@ class HandbookCacheManager:
                 self._save_cache_info(
                     self.stable_cache_dir,
                     len(chapters),
+                    scraper_version="2.0",  # New per-page scraping version
                     source_url=source_url,
                 )
 
