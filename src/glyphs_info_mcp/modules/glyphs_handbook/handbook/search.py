@@ -3,10 +3,10 @@ Handbook Searcher (revised version)
 """
 
 import logging
-import re
 from pathlib import Path
 from typing import Any
 
+from glyphs_info_mcp.modules.glyphs_handbook.handbook.utils import extract_title
 from glyphs_info_mcp.shared.core.query_utils import highlight_keyword
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class HandbookSearcher:
                     if excerpts:
                         results.append({
                             'file': filename,
-                            'title': self._extract_title(content),
+                            'title': extract_title(content),
                             'excerpts': excerpts
                         })
                         logger.info(f"Found matching content in file {filename}")
@@ -83,19 +83,6 @@ class HandbookSearcher:
 
         # Format results
         return self._format_results(query, results)
-
-    def _extract_title(self, content: str) -> str:
-        """Extract document title"""
-        lines = content.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line.startswith('# '):
-                # Remove Markdown link syntax
-                title = line[2:].strip()
-                # Remove [title](url) format links
-                title = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', title)
-                return title
-        return "Unnamed chapter"
 
     def _extract_excerpts(self, content: str, query: str) -> list[str]:
         """Extract relevant excerpts"""

@@ -268,9 +268,9 @@ class UnifiedHandbookModule(BaseMCPModule):
         - Automatic content cleanup and formatting
 
         Args:
-            filename: Filename (e.g., "handbook_glyphsapp_com_anchors.md")
+            filename: Filename (e.g., "anchors.md")
                      .md extension can be omitted
-                     "handbook_glyphsapp_com_" prefix can be omitted
+                     Legacy "handbook_glyphsapp_com_" prefix is auto-removed
 
         Returns:
             Complete file content or intelligently segmented content
@@ -278,7 +278,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         Examples:
             handbook_fetch("anchors")
             handbook_fetch("custom_parameters")
-            handbook_fetch("handbook_glyphsapp_com_anchors.md")
+            handbook_fetch("anchors.md")
         """
         if not self.is_initialized:
             return "Handbook module not initialized"
@@ -359,11 +359,12 @@ class UnifiedHandbookModule(BaseMCPModule):
             if "custom_parameter" in filename.lower():
                 return self._fetch_custom_parameters_intro()
 
-            # Normalize filename (remove prefix and suffix, then add back uniformly)
+            # Normalize filename (remove legacy prefix and suffix)
             clean_name = filename.removesuffix(".md").removeprefix(
                 "handbook_glyphsapp_com_"
             )
-            full_filename = f"handbook_glyphsapp_com_{clean_name}.md"
+            # New simplified filename format
+            full_filename = f"{clean_name}.md"
 
             return self._load_file_directly(full_filename)
 
@@ -577,21 +578,14 @@ class UnifiedHandbookModule(BaseMCPModule):
                 while j < len(lines):
                     current_line = lines[j].strip()
 
-                    # Check if this is the start of next parameter (using same parameter identification logic)
+                    # Check if this is the start of next parameter
+                    # Core conditions: word count ≤ 6 and not a list item
                     if (
                         current_line
-                        and not current_line.startswith("string")
-                        and not current_line.startswith("integer")
-                        and not current_line.startswith("boolean")
-                        and not current_line.startswith("float")
-                        and not current_line.startswith("list")
-                        and not current_line.startswith("- ")  # Exclude markdown list items
-                        and not current_line.startswith("  ")
+                        and not current_line.startswith("-")
                         and len(current_line.split()) <= 6
-                        and not current_line.endswith(".")
-                        and len(current_line) < 80
                         and j > i + 2
-                    ):  # Must skip at least some lines before next parameter
+                    ):
                         break
 
                     content_lines.append(lines[j])
@@ -625,20 +619,12 @@ class UnifiedHandbookModule(BaseMCPModule):
             for i in range(19, len(lines)):  # Start from line 20 (index 19)
                 line = lines[i].strip()
 
-                # Use same parameter identification logic
+                # Core conditions: word count ≤ 6 and not a list item or heading
                 if (
                     line
                     and not line.startswith("#")
                     and not line.startswith("-")
-                    and not line.startswith("string")
-                    and not line.startswith("integer")
-                    and not line.startswith("boolean")
-                    and not line.startswith("float")
-                    and not line.startswith("list")
-                    and not line.startswith("  ")
                     and len(line.split()) <= 6
-                    and not line.endswith(".")
-                    and len(line) < 80
                 ):
 
                     parameters.append({"name": line, "line": i + 1})

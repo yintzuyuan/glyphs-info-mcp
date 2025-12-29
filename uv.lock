@@ -308,12 +308,10 @@ wheels = [
 
 [[package]]
 name = "glyphs-info-mcp"
-version = "1.0.0rc1"
+version = "1.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "beautifulsoup4" },
     { name = "httpx", extra = ["http2"] },
-    { name = "lxml" },
     { name = "markdown-it-py" },
     { name = "markdownify" },
     { name = "mcp", extra = ["cli"] },
@@ -354,10 +352,8 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "beautifulsoup4", specifier = ">=4.12.0" },
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "httpx", extras = ["http2"], specifier = ">=0.28.0" },
-    { name = "lxml", specifier = ">=5.0.0" },
     { name = "markdown-it-py", specifier = ">=3.0.0" },
     { name = "markdownify", specifier = ">=1.1.0" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },

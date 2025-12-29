@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "glyphs-info-mcp"
-version = "1.0.0"
+version = "1.1.0"
 description = "Unified MCP server for Glyphs handbook and API queries"
 authors = [
     {name = "Glyphs info MCP Contributors", email = "glyphs-info-mcp@example.com"}
@@ -34,9 +34,7 @@ dependencies = [
     "pathlib2>=2.3.7; python_version < '3.9'",
     "typing-extensions>=4.12.0",
     "markdownify>=1.1.0",
-    "readabilipy>=0.3.0",
-    "beautifulsoup4>=4.12.0",
-    "lxml>=5.0.0",
+    "readabilipy>=0.3.0",  # brings beautifulsoup4 and lxml as transitive deps
     "platformdirs>=4.0.0",
     "pyyaml>=6.0.0",
 ]
