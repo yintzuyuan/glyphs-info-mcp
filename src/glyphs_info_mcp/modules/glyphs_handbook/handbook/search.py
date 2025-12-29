@@ -87,11 +87,12 @@ class HandbookSearcher:
     def _extract_title(self, content: str) -> str:
         """Extract document title
 
-        Prioritizes level-1 heading (#), falls back to level-2 (##), then level-3 (###).
+        Prioritizes level-1 heading (#), falls back to ##, ###, then ####.
         Supports Markdown link syntax: ## [Title](#anchor) → Title
         """
         h2_title = None
         h3_title = None
+        h4_title = None
 
         def _parse_title(line_text: str, prefix: str) -> str:
             """Extract and clean title from line"""
@@ -113,7 +114,11 @@ class HandbookSearcher:
             if h3_title is None and stripped.startswith('### ') and not stripped.startswith('#### '):
                 h3_title = _parse_title(stripped, '### ')
 
-        return h2_title or h3_title or "Unnamed chapter"
+            # Record first level-4 heading as tertiary fallback
+            if h4_title is None and stripped.startswith('#### ') and not stripped.startswith('##### '):
+                h4_title = _parse_title(stripped, '#### ')
+
+        return h2_title or h3_title or h4_title or "Unnamed chapter"
 
     def _extract_excerpts(self, content: str, query: str) -> list[str]:
         """Extract relevant excerpts"""

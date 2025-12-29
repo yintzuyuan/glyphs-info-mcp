@@ -89,8 +89,8 @@ class ChapterFinder:
 
     def _analyze_file(self, filename: str) -> dict | None:
         """Analyze filename and extract info"""
-        # Match format: handbook_glyphsapp_com_topic_subtopic.md
-        match = re.match(r'handbook_glyphsapp_com_(.+)\.md', filename)
+        # Match format: topic_subtopic.md (simplified filename)
+        match = re.match(r'(.+)\.md', filename)
         if not match:
             return None
 

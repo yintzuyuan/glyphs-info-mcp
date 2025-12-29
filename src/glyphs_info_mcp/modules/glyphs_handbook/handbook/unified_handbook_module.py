@@ -268,9 +268,9 @@ class UnifiedHandbookModule(BaseMCPModule):
         - Automatic content cleanup and formatting
 
         Args:
-            filename: Filename (e.g., "handbook_glyphsapp_com_anchors.md")
+            filename: Filename (e.g., "anchors.md")
                      .md extension can be omitted
-                     "handbook_glyphsapp_com_" prefix can be omitted
+                     Legacy "handbook_glyphsapp_com_" prefix is auto-removed
 
         Returns:
             Complete file content or intelligently segmented content
@@ -278,7 +278,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         Examples:
             handbook_fetch("anchors")
             handbook_fetch("custom_parameters")
-            handbook_fetch("handbook_glyphsapp_com_anchors.md")
+            handbook_fetch("anchors.md")
         """
         if not self.is_initialized:
             return "Handbook module not initialized"
@@ -359,11 +359,12 @@ class UnifiedHandbookModule(BaseMCPModule):
             if "custom_parameter" in filename.lower():
                 return self._fetch_custom_parameters_intro()
 
-            # Normalize filename (remove prefix and suffix, then add back uniformly)
+            # Normalize filename (remove legacy prefix and suffix)
             clean_name = filename.removesuffix(".md").removeprefix(
                 "handbook_glyphsapp_com_"
             )
-            full_filename = f"handbook_glyphsapp_com_{clean_name}.md"
+            # New simplified filename format
+            full_filename = f"{clean_name}.md"
 
             return self._load_file_directly(full_filename)
 
