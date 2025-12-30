@@ -87,7 +87,7 @@ uv run glyphs-info-mcp
 You should see:
 
 ```
-✅ Glyphs info MCP Server initialized with 8 modules and 53 tools
+✅ Glyphs info MCP Server initialized with 8 unified tools
 ```
 
 ## ✨ Features
@@ -121,89 +121,114 @@ You should see:
 > **Network**: Handbook only needs network for initial cache, then works offline.
 > **Glyphs Required**: Reads from local Glyphs app (Headers from GlyphsCore.framework).
 
-### MCP Tools (53 total)
+### MCP Tools (8 Unified Entry Points)
 
-The server provides 8 modules:
+The server provides 8 unified tools with action-based routing, reducing context token cost by ~85%:
 
-- **Handbook** - Search and query handbook content
-- **Vocabulary** - UI terminology translation in 14 languages
-- **API (Python)** - Python API classes and methods
-- **API (Obj-C)** - Objective-C headers and protocols
-- **SDK** - SDK documentation and Xcode templates
-- **Plugins** - Local and official plugin search
-- **Scripts** - mekkablue script collection (358+)
-- **News** - Forum and tutorial search
+- **handbook** - Glyphs Handbook operations
+- **vocabulary** - UI terminology translation (14 languages)
+- **api** - Python and Objective-C API reference
+- **plugins** - Local and official plugin management
+- **scripts** - mekkablue script collection (358+)
+- **sdk** - SDK documentation and Xcode templates
+- **news** - Forum, tutorials, and news search
+- **lighttable** - Light Table version control API
 
 <details>
 <summary>Expand full tool list</summary>
 
-#### Handbook Module
+#### handbook
 
-| Tool | Description |
-|------|-------------|
-| `handbook_search_content` | Search handbook content |
-| `handbook_get_content` | Get specific chapter content |
-| `handbook_get_custom_parameter` | Get Custom Parameter details |
-| `handbook_list_parameters` | List all parameters |
+| Action | Description |
+|--------|-------------|
+| `search` | Search handbook content |
+| `get` | Get chapter content by filename |
+| `toc` | Get table of contents |
+| `children` | Get chapter children |
+| `parameter` | Get custom parameter details |
+| `list_parameters` | List all custom parameters |
+| `cache` | Cache management (info/update) |
 
-#### Vocabulary Module
+#### vocabulary
 
-| Tool | Description |
-|------|-------------|
-| `vocab_search_ui_term` | Search UI terms |
-| `vocab_get_translation` | Get term translation |
-| `vocab_translate_term` | Translate UI term |
-| `vocab_list_ui_categories` | List UI term categories |
+| Action | Description |
+|--------|-------------|
+| `translate` | Translate UI term |
+| `search` | Search UI terms |
+| `mapping` | Get multi-locale translations |
+| `categories` | List vocabulary categories |
 
-#### API Module - Python
+#### api
 
-| Tool | Description |
-|------|-------------|
-| `api_search_python` | Search Python API |
-| `api_get_python_class` | Get Python class info |
-| `api_get_python_member` | Get Python member info |
+| Action | Description |
+|--------|-------------|
+| `search_python` | Search Python API |
+| `get_class` | Get Python class info |
+| `get_member` | Get class member info |
+| `search_objc` | Search Obj-C headers |
+| `get_header` | Get Obj-C header content |
+| `list_protocols` | List plugin protocols |
+| `get_protocol` | Get protocol methods |
+| `convert_objc` | Convert Obj-C to Python name |
+| `convert_python` | Convert Python to Obj-C name |
+| `identify_method` | Identify method type |
+| `get_template` | Get method implementation template |
+| `search_vanilla` | Search Vanilla UI components |
+| `get_vanilla` | Get Vanilla UI component |
+| `list_vanilla` | List all Vanilla UI components |
+| `hierarchy` | Get class hierarchy |
+| `relationships` | Get class relationships |
+| `navigate` | Navigate class structure |
 
-#### API Module - Objective-C
+#### plugins
 
-| Tool | Description |
-|------|-------------|
-| `api_search_objc_headers` | Search Obj-C headers |
-| `api_get_objc_header` | Get Obj-C header content |
-| `api_list_plugin_protocols` | List plugin protocols |
-| `api_get_protocol_methods` | Get protocol methods |
+| Action | Description |
+|--------|-------------|
+| `search_local` | Search local plugins |
+| `search_official` | Search official registry |
+| `get_info` | Get plugin details |
+| `scan` | Scan repositories directory |
+| `categories` | List plugin categories |
 
-#### SDK Module
+#### scripts
 
-| Tool | Description |
-|------|-------------|
-| `sdk_search_content` | Search SDK content |
-| `sdk_get_content` | Get SDK content |
-| `sdk_list_xcode_templates` | List Xcode templates |
-| `sdk_get_xcode_template` | Get Xcode template |
+| Action | Description |
+|--------|-------------|
+| `search` | Search scripts |
+| `get` | Get script details |
+| `categories` | List script categories |
+| `list` | List scripts in category |
 
-#### Plugins Module
+#### sdk
 
-| Tool | Description |
-|------|-------------|
-| `plugins_search_local` | Search local plugins |
-| `plugins_search_official` | Search official plugins |
-| `plugins_get_info` | Get plugin info |
+| Action | Description |
+|--------|-------------|
+| `search` | Search SDK content |
+| `get` | Get SDK file content |
+| `list_templates` | List Xcode templates |
+| `get_template` | Get Xcode template |
+| `list_samples` | List Xcode samples |
+| `get_sample` | Get Xcode sample |
 
-#### Scripts Module (mekkablue)
+#### news
 
-| Tool | Description |
-|------|-------------|
-| `scripts_search` | Search scripts |
-| `scripts_get` | Get script content |
-| `scripts_list_categories` | List script categories |
+| Action | Description |
+|--------|-------------|
+| `search_forum` | Search forum discussions |
+| `search_tutorials` | Search tutorials |
+| `fetch_tutorial` | Fetch tutorial content |
+| `fetch_forum` | Fetch forum post |
+| `search_posts` | Search news posts |
+| `fetch_content` | Fetch news content |
 
-#### News Module
+#### lighttable
 
-| Tool | Description |
-|------|-------------|
-| `news_search_forum` | Search forum |
-| `news_search_tutorials` | Search tutorials |
-| `news_fetch_tutorial` | Fetch tutorial content |
+| Action | Description |
+|--------|-------------|
+| `search` | Search Light Table API |
+| `get_enum` | Get enum details |
+| `list_enums` | List all enums |
+| `list_all` | List all API items |
 
 </details>
 
@@ -213,15 +238,15 @@ The server provides 8 modules:
 
 ```python
 # Handbook queries
-handbook_search_content("kerning")
-handbook_get_content("anchors")
+handbook(action="search", query="kerning")
+handbook(action="get", filename="anchors.md")
 
 # API queries
-api_search_python("GSFont")
-api_get_python_class("GSGlyph")
+api(action="search_python", query="GSFont")
+api(action="get_class", class_name="GSGlyph")
 
 # UI terminology
-vocab_translate_term("Cancel", "zh-Hant")
+vocabulary(action="translate", term="Cancel", target="zh-Hant")
 ```
 
 ### Search Best Practices
@@ -332,4 +357,4 @@ MIT License - see [LICENSE](LICENSE) file.
 
 **Glyphs info MCP** - Making Glyphs knowledge queries simple and powerful
 
-*Last updated: 2025-12-29*
+*Last updated: 2025-12-30*

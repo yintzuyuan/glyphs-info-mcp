@@ -87,7 +87,7 @@ uv run glyphs-info-mcp
 應該看到：
 
 ```
-✅ Glyphs info MCP Server initialized with 8 modules and 53 tools
+✅ Glyphs info MCP Server initialized with 8 unified tools
 ```
 
 ## ✨ 特色功能
@@ -121,89 +121,114 @@ uv run glyphs-info-mcp
 > **需網路**：Handbook 僅初次需要網路建立快取，之後可離線使用。
 > **需安裝 Glyphs**：從本機 Glyphs 應用程式讀取資料（Headers 來自 GlyphsCore.framework）。
 
-### MCP 工具（共 53 個）
+### MCP 工具（8 個統一入口點）
 
-伺服器提供 8 個模組：
+伺服器提供 8 個統一工具，透過 action 參數路由，減少約 85% 的 context token 成本：
 
-- **Handbook** - 手冊內容搜尋與查詢
-- **Vocabulary** - 14 種語言 UI 術語翻譯
-- **API (Python)** - Python API 類別與方法查詢
-- **API (Obj-C)** - Objective-C Headers 與協定
-- **SDK** - SDK 文件與 Xcode 模板
-- **Plugins** - 本地與官方外掛搜尋
-- **Scripts** - mekkablue 腳本集（358+）
-- **News** - 論壇、教學文章搜尋
+- **handbook** - Glyphs 手冊操作
+- **vocabulary** - UI 術語翻譯（14 種語言）
+- **api** - Python 與 Objective-C API 參考
+- **plugins** - 本地與官方外掛管理
+- **scripts** - mekkablue 腳本集（358+）
+- **sdk** - SDK 文件與 Xcode 模板
+- **news** - 論壇、教學與新聞搜尋
+- **lighttable** - Light Table 版本控制 API
 
 <details>
 <summary>展開完整工具列表</summary>
 
-#### Handbook 模組
+#### handbook
 
-| 工具 | 描述 |
-|------|------|
-| `handbook_search_content` | 搜尋手冊內容 |
-| `handbook_get_content` | 取得特定章節內容 |
-| `handbook_get_custom_parameter` | 取得 Custom Parameter 詳情 |
-| `handbook_list_parameters` | 列出所有參數 |
+| Action | 描述 |
+|--------|------|
+| `search` | 搜尋手冊內容 |
+| `get` | 依檔名取得章節內容 |
+| `toc` | 取得目錄結構 |
+| `children` | 取得子章節 |
+| `parameter` | 取得自訂參數詳情 |
+| `list_parameters` | 列出所有自訂參數 |
+| `cache` | 快取管理（info/update） |
 
-#### Vocabulary 模組
+#### vocabulary
 
-| 工具 | 描述 |
-|------|------|
-| `vocab_search_ui_term` | 搜尋 UI 術語 |
-| `vocab_get_translation` | 取得術語翻譯 |
-| `vocab_translate_term` | 翻譯 UI 術語 |
-| `vocab_list_ui_categories` | 列出 UI 術語分類 |
+| Action | 描述 |
+|--------|------|
+| `translate` | 翻譯 UI 術語 |
+| `search` | 搜尋 UI 術語 |
+| `mapping` | 取得多語系翻譯對照 |
+| `categories` | 列出詞彙分類 |
 
-#### API 模組 - Python
+#### api
 
-| 工具 | 描述 |
-|------|------|
-| `api_search_python` | 搜尋 Python API |
-| `api_get_python_class` | 取得 Python 類別資訊 |
-| `api_get_python_member` | 取得 Python 成員資訊 |
+| Action | 描述 |
+|--------|------|
+| `search_python` | 搜尋 Python API |
+| `get_class` | 取得 Python 類別資訊 |
+| `get_member` | 取得類別成員資訊 |
+| `search_objc` | 搜尋 Obj-C Headers |
+| `get_header` | 取得 Obj-C Header 內容 |
+| `list_protocols` | 列出外掛協定 |
+| `get_protocol` | 取得協定方法 |
+| `convert_objc` | 轉換 Obj-C 為 Python 名稱 |
+| `convert_python` | 轉換 Python 為 Obj-C 名稱 |
+| `identify_method` | 辨識方法類型 |
+| `get_template` | 取得方法實作模板 |
+| `search_vanilla` | 搜尋 Vanilla UI 元件 |
+| `get_vanilla` | 取得 Vanilla UI 元件 |
+| `list_vanilla` | 列出所有 Vanilla UI 元件 |
+| `hierarchy` | 取得類別階層 |
+| `relationships` | 取得類別關係 |
+| `navigate` | 導覽類別結構 |
 
-#### API 模組 - Objective-C
+#### plugins
 
-| 工具 | 描述 |
-|------|------|
-| `api_search_objc_headers` | 搜尋 Obj-C Headers |
-| `api_get_objc_header` | 取得 Obj-C Header 內容 |
-| `api_list_plugin_protocols` | 列出外掛協定 |
-| `api_get_protocol_methods` | 取得協定方法 |
+| Action | 描述 |
+|--------|------|
+| `search_local` | 搜尋本地外掛 |
+| `search_official` | 搜尋官方外掛庫 |
+| `get_info` | 取得外掛詳情 |
+| `scan` | 掃描儲存庫目錄 |
+| `categories` | 列出外掛分類 |
 
-#### SDK 模組
+#### scripts
 
-| 工具 | 描述 |
-|------|------|
-| `sdk_search_content` | 搜尋 SDK 內容 |
-| `sdk_get_content` | 取得 SDK 內容 |
-| `sdk_list_xcode_templates` | 列出 Xcode 模板 |
-| `sdk_get_xcode_template` | 取得 Xcode 模板 |
+| Action | 描述 |
+|--------|------|
+| `search` | 搜尋腳本 |
+| `get` | 取得腳本詳情 |
+| `categories` | 列出腳本分類 |
+| `list` | 列出分類中的腳本 |
 
-#### Plugins 模組
+#### sdk
 
-| 工具 | 描述 |
-|------|------|
-| `plugins_search_local` | 搜尋本地外掛 |
-| `plugins_search_official` | 搜尋官方外掛 |
-| `plugins_get_info` | 取得外掛資訊 |
+| Action | 描述 |
+|--------|------|
+| `search` | 搜尋 SDK 內容 |
+| `get` | 取得 SDK 檔案內容 |
+| `list_templates` | 列出 Xcode 模板 |
+| `get_template` | 取得 Xcode 模板 |
+| `list_samples` | 列出 Xcode 範例 |
+| `get_sample` | 取得 Xcode 範例 |
 
-#### Scripts 模組 (mekkablue)
+#### news
 
-| 工具 | 描述 |
-|------|------|
-| `scripts_search` | 搜尋腳本 |
-| `scripts_get` | 取得腳本內容 |
-| `scripts_list_categories` | 列出腳本分類 |
+| Action | 描述 |
+|--------|------|
+| `search_forum` | 搜尋論壇討論 |
+| `search_tutorials` | 搜尋教學文章 |
+| `fetch_tutorial` | 取得教學內容 |
+| `fetch_forum` | 取得論壇貼文 |
+| `search_posts` | 搜尋新聞文章 |
+| `fetch_content` | 取得新聞內容 |
 
-#### News 模組
+#### lighttable
 
-| 工具 | 描述 |
-|------|------|
-| `news_search_forum` | 搜尋論壇 |
-| `news_search_tutorials` | 搜尋教學文章 |
-| `news_fetch_tutorial` | 取得教學內容 |
+| Action | 描述 |
+|--------|------|
+| `search` | 搜尋 Light Table API |
+| `get_enum` | 取得列舉詳情 |
+| `list_enums` | 列出所有列舉 |
+| `list_all` | 列出所有 API 項目 |
 
 </details>
 
@@ -213,15 +238,15 @@ uv run glyphs-info-mcp
 
 ```python
 # 手冊查詢
-handbook_search_content("kerning")
-handbook_get_content("anchors")
+handbook(action="search", query="kerning")
+handbook(action="get", filename="anchors.md")
 
 # API 查詢
-api_search_python("GSFont")
-api_get_python_class("GSGlyph")
+api(action="search_python", query="GSFont")
+api(action="get_class", class_name="GSGlyph")
 
 # UI 術語翻譯
-vocab_translate_term("Cancel", "zh-Hant")
+vocabulary(action="translate", term="Cancel", target="zh-Hant")
 ```
 
 ### 搜尋最佳實踐
@@ -332,4 +357,4 @@ MIT License - 詳見 [LICENSE](LICENSE) 檔案。
 
 **Glyphs info MCP** - 讓 Glyphs 知識查詢變得簡單而強大
 
-*最後更新：2025-12-29*
+*最後更新：2025-12-30*
