@@ -3,6 +3,8 @@ HandbookScraper - Glyphs Handbook automated scraping tool
 
 Scrapes from https://handbook.glyphsapp.com/single-page/document.md
 and splits into individual chapter files.
+
+Issue #17: Added TOC structure parsing from single-page version.
 """
 
 import asyncio
@@ -13,6 +15,13 @@ from typing import Dict, List, Optional
 
 import httpx
 from bs4 import BeautifulSoup, Tag
+
+from glyphs_info_mcp.modules.glyphs_handbook.handbook.toc_parser import (
+    TocEntry,
+    build_title_file_mapping,
+    build_toc_tree,
+    parse_headings,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -175,11 +184,19 @@ class HandbookScraper:
 
         Returns:
             Filename (with .md extension)
+
+        Note (Issue #17):
+            Only `/` (path separator) is converted to `_`
+            `-` (word connector) is PRESERVED
+
+            This allows distinguishing hierarchy levels:
+            - `/palette/fit-curve/` → `palette_fit-curve.md` (1 level deep)
+            - `/palette/fit/curve/` → `palette_fit_curve.md` (2 levels deep)
         """
-        # Remove leading/trailing slashes and replace path separators
+        # Remove leading/trailing slashes
         slug = url.strip("/")
-        # Replace slashes and hyphens with underscores
-        slug = slug.replace("/", "_").replace("-", "_")
+        # Only replace slashes with underscores, preserve hyphens
+        slug = slug.replace("/", "_")
 
         return f"{slug}.md"
 
@@ -272,6 +289,52 @@ class HandbookScraper:
             logger.info(f"Saved file: {file_path}")
 
         logger.info(f"Saved {len(chapters)} files to {output_dir}")
+
+    async def fetch_single_page_content(self) -> str:
+        """
+        Fetch single-page version content for TOC parsing
+
+        Returns:
+            Markdown content of single-page version
+
+        Note:
+            This content is only used for TOC parsing and discarded after.
+            The single-page version contains complete content but is too large
+            for AI context, so we only extract the heading structure from it.
+        """
+        single_page_url = f"{self.base_url}/single-page/document.md"
+        logger.info(f"Fetching single-page version for TOC: {single_page_url}")
+        return await self.fetch_page(single_page_url)
+
+    async def build_toc(self, cache_dir: Path) -> List[TocEntry]:
+        """
+        Build TOC structure from single-page version and cache files
+
+        Args:
+            cache_dir: Path to cache directory containing scraped .md files
+
+        Returns:
+            List of top-level TocEntry objects with hierarchical structure
+
+        Note:
+            1. Fetches single-page version to get heading order and levels
+            2. Maps headings to cache files using first-line matching
+            3. Single-page content is discarded after parsing (not stored)
+        """
+        # Step 1: Fetch and parse single-page headings
+        single_page_content = await self.fetch_single_page_content()
+        headings = parse_headings(single_page_content)
+        logger.info(f"Parsed {len(headings)} headings from single-page version")
+
+        # Step 2: Build title-to-file mapping from cache
+        mapping = build_title_file_mapping(cache_dir)
+        logger.info(f"Built mapping for {len(mapping)} cached files")
+
+        # Step 3: Build hierarchical tree
+        toc = build_toc_tree(headings, mapping)
+        logger.info(f"Built TOC with {len(toc)} top-level entries")
+
+        return toc
 
 
 # Convenience function

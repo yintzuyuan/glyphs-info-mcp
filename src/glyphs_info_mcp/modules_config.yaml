@@ -23,6 +23,8 @@ modules:
       - handbook_get_content
       - handbook_get_custom_parameter
       - handbook_list_parameters
+      - handbook_get_toc           # Issue #17: TOC structure
+      - handbook_get_chapter_children  # Issue #17: Chapter navigation
       - handbook_update_cache
       - handbook_get_cache_info
 

@@ -212,6 +212,9 @@ class UnifiedHandbookModule(BaseMCPModule):
             # Custom Parameters specific tools
             "handbook_get_custom_parameter": self.fetch_custom_parameter,
             "handbook_list_parameters": self.get_custom_parameters_list,
+            # TOC structure tools (Issue #17)
+            "handbook_get_toc": self.get_toc,
+            "handbook_get_chapter_children": self.get_chapter_children,
             # Cache management tools
             "handbook_update_cache": update_cache_wrapper,
             "handbook_get_cache_info": self.get_cache_info,
@@ -326,6 +329,8 @@ class UnifiedHandbookModule(BaseMCPModule):
                 "handbook_get_content",
                 "handbook_get_custom_parameter",
                 "handbook_list_parameters",
+                "handbook_get_toc",
+                "handbook_get_chapter_children",
                 "handbook_update_cache",
                 "handbook_get_cache_info",
             ],
@@ -334,6 +339,160 @@ class UnifiedHandbookModule(BaseMCPModule):
     def get_resources(self) -> dict[str, Any]:
         """Get MCP resources provided by this module"""
         return {}
+
+    def get_toc(self) -> str:
+        """
+        [HANDBOOK] Get complete Handbook table of contents structure
+
+        Returns the hierarchical structure of all Handbook chapters,
+        including parent-child relationships and corresponding file names.
+
+        Features (Issue #17):
+        - Complete chapter hierarchy with levels
+        - File mapping for each chapter
+        - Nested children structure
+
+        Returns:
+            Formatted TOC structure or error message
+
+        Examples:
+            get_toc()  # Returns complete TOC tree
+        """
+        if not self.is_initialized:
+            return "Handbook module not initialized"
+
+        try:
+            toc_data = self.cache_manager.load_toc_structure()
+
+            if not toc_data:
+                return (
+                    "❌ TOC structure not found.\n\n"
+                    "💡 The cache may need to be regenerated with TOC support.\n"
+                    "Run `handbook_update_cache(force=True)` to regenerate."
+                )
+
+            # Format output
+            output = ["# 📖 Handbook Table of Contents\n"]
+            output.append(f"**Total entries**: {toc_data.get('total_entries', 'N/A')}")
+            output.append(f"**Generated**: {toc_data.get('generated_at', 'N/A')}\n")
+            output.append("---\n")
+
+            chapters = toc_data.get("chapters", [])
+            output.append(self._format_toc_tree(chapters))
+
+            return "\n".join(output)
+
+        except Exception as e:
+            logger.error(f"Failed to get TOC: {e}")
+            return f"❌ Failed to get TOC: {str(e)}"
+
+    def _format_toc_tree(
+        self, entries: list[dict], indent: int = 0
+    ) -> str:
+        """Format TOC entries as indented tree"""
+        lines = []
+        indent_str = "  " * indent
+
+        for entry in entries:
+            title = entry.get("title", "Unknown")
+            file = entry.get("file", "")
+            level = entry.get("level", 0)
+
+            # Format entry line
+            if file:
+                lines.append(f"{indent_str}- **{title}** (`{file}`)")
+            else:
+                lines.append(f"{indent_str}- **{title}** (index)")
+
+            # Recursively format children
+            children = entry.get("children", [])
+            if children:
+                lines.append(self._format_toc_tree(children, indent + 1))
+
+        return "\n".join(lines)
+
+    def get_chapter_children(self, chapter_title: str) -> str:
+        """
+        [HANDBOOK] Get children of a specific chapter
+
+        Args:
+            chapter_title: Title of the parent chapter (partial match supported)
+
+        Returns:
+            List of child chapters or error message
+
+        Examples:
+            get_chapter_children("Interpolation")
+            get_chapter_children("Drawing")
+        """
+        if not self.is_initialized:
+            return "Handbook module not initialized"
+
+        try:
+            toc_data = self.cache_manager.load_toc_structure()
+
+            if not toc_data:
+                return "❌ TOC structure not found."
+
+            chapters = toc_data.get("chapters", [])
+            matches = self._find_chapters_by_title(chapters, chapter_title)
+
+            if not matches:
+                return (
+                    f"❌ No chapter found matching '{chapter_title}'\n\n"
+                    "💡 Use `handbook_get_toc()` to see all available chapters."
+                )
+
+            # Format results
+            output = [f"# 📂 Children of '{chapter_title}'\n"]
+
+            for match in matches:
+                title = match.get("title", "Unknown")
+                children = match.get("children", [])
+
+                if not children:
+                    output.append(f"**{title}** has no children (leaf chapter).\n")
+                else:
+                    output.append(f"## {title}\n")
+                    for child in children:
+                        child_title = child.get("title", "Unknown")
+                        child_file = child.get("file", "")
+                        grandchildren = child.get("children", [])
+
+                        if child_file:
+                            output.append(f"- **{child_title}** (`{child_file}`)")
+                        else:
+                            output.append(f"- **{child_title}** (index)")
+
+                        if grandchildren:
+                            output.append(f"  - ({len(grandchildren)} sub-chapters)")
+
+                    output.append("")
+
+            return "\n".join(output)
+
+        except Exception as e:
+            logger.error(f"Failed to get chapter children: {e}")
+            return f"❌ Failed to get chapter children: {str(e)}"
+
+    def _find_chapters_by_title(
+        self, entries: list[dict], title: str
+    ) -> list[dict]:
+        """Find chapters matching title (case-insensitive partial match)"""
+        matches = []
+        title_lower = title.lower()
+
+        for entry in entries:
+            entry_title = entry.get("title", "").lower()
+            if title_lower in entry_title:
+                matches.append(entry)
+
+            # Search children recursively
+            children = entry.get("children", [])
+            if children:
+                matches.extend(self._find_chapters_by_title(children, title))
+
+        return matches
 
     def _unified_search(self, query: str, max_results: int) -> str:
         """Unified search implementation: pure content search (TOC matching removed)"""
