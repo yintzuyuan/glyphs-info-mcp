@@ -20,6 +20,7 @@ import importlib.util
 from pathlib import Path
 
 from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
+from glyphs_info_mcp.shared.core.scoring_weights import SearchLimits
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ class UnifiedHandbookModule(BaseMCPModule):
             return False
 
     def core_search(
-        self, query: str, max_results: int = 5, **kwargs: Any
+        self, query: str, max_results: int = SearchLimits.DEFAULT_MAX_RESULTS, **kwargs: Any
     ) -> list[dict[str, Any]]:
         """Core search function - for unified search engine use only
 
@@ -212,13 +213,16 @@ class UnifiedHandbookModule(BaseMCPModule):
             # Custom Parameters specific tools
             "handbook_get_custom_parameter": self.fetch_custom_parameter,
             "handbook_list_parameters": self.get_custom_parameters_list,
+            # TOC structure tools (Issue #17)
+            "handbook_get_toc": self.get_toc,
+            "handbook_get_chapter_children": self.get_chapter_children,
             # Cache management tools
             "handbook_update_cache": update_cache_wrapper,
             "handbook_get_cache_info": self.get_cache_info,
         }
 
     def handbook_search(
-        self, query: str, search_scope: str = "all", max_results: int = 5
+        self, query: str, search_scope: str = "all", max_results: int = SearchLimits.DEFAULT_MAX_RESULTS
     ) -> str:
         """
         [HANDBOOK] Search Glyphs handbook for related content
@@ -243,7 +247,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         # Prefer enhanced searcher (new feature)
         if self.use_enhanced_search and hasattr(self, "searcher"):
             # Directly use enhanced searcher's smart search functionality
-            return self.searcher.search(query, search_scope)
+            return self.searcher.search(query, search_scope, max_results)
 
         # If unified search engine available, delegate to it
         elif self.search_engine:
@@ -326,6 +330,8 @@ class UnifiedHandbookModule(BaseMCPModule):
                 "handbook_get_content",
                 "handbook_get_custom_parameter",
                 "handbook_list_parameters",
+                "handbook_get_toc",
+                "handbook_get_chapter_children",
                 "handbook_update_cache",
                 "handbook_get_cache_info",
             ],
@@ -335,11 +341,293 @@ class UnifiedHandbookModule(BaseMCPModule):
         """Get MCP resources provided by this module"""
         return {}
 
+    def get_toc(self, chapter: str = "") -> str:
+        """
+        [HANDBOOK] Get Handbook table of contents
+
+        Returns top-level chapters by default (~170 tokens).
+        Specify a chapter name to expand that section with its children.
+
+        Args:
+            chapter: Optional chapter name to expand (partial match supported)
+
+        Returns:
+            Formatted TOC structure or error message
+
+        Examples:
+            get_toc()                    # Top-level chapters only
+            get_toc("Interpolation")     # Expand Interpolation section
+            get_toc("Edit View")         # Expand Edit View section
+        """
+        if not self.is_initialized:
+            return "Handbook module not initialized"
+
+        try:
+            toc_data = self.cache_manager.load_toc_structure()
+
+            if not toc_data:
+                return (
+                    "❌ TOC structure not found.\n\n"
+                    "💡 The cache may need to be regenerated with TOC support.\n"
+                    "Run `handbook_update_cache(force=True)` to regenerate."
+                )
+
+            chapters = toc_data.get("chapters", [])
+
+            # If chapter specified, show focused view
+            if chapter:
+                return self._format_focused_toc(chapters, chapter)
+
+            # Default: show top-level summary only
+            return self._format_top_level_toc(chapters)
+
+        except Exception as e:
+            logger.error(f"Failed to get TOC: {e}")
+            return f"❌ Failed to get TOC: {str(e)}"
+
+    def _format_top_level_toc(self, chapters: list[dict]) -> str:
+        """Format top-level chapters only (compact view)"""
+        lines = ["# Handbook TOC (18 chapters)\n"]
+
+        for ch in chapters:
+            title = ch.get("title", "Unknown")
+            file = ch.get("file", "")
+            children_count = len(ch.get("children", []))
+
+            if children_count > 0:
+                lines.append(f"- {title} ({file}) [{children_count} sub]")
+            else:
+                lines.append(f"- {title} ({file})")
+
+        lines.append("\n💡 Use `handbook_get_toc(chapter)` to expand a section")
+        return "\n".join(lines)
+
+    def _format_focused_toc(self, chapters: list[dict], target: str) -> str:
+        """Format TOC focused on a specific chapter with context"""
+        target_lower = target.lower()
+
+        # Find the target chapter and its index (top-level only)
+        target_idx = -1
+        target_chapter = None
+        for i, ch in enumerate(chapters):
+            if target_lower in ch.get("title", "").lower():
+                target_idx = i
+                target_chapter = ch
+                break
+
+        if target_chapter is None:
+            # Use recursive search for nested chapters
+            matches = self._find_chapters_by_title(chapters, target)
+            if matches:
+                # Find parent context for the first match
+                match = matches[0]
+                parent = self._find_parent_chapter(chapters, match)
+                if parent:
+                    return self._format_chapter_with_children(parent, target)
+                # Match is a deeply nested entry without clear parent context
+                return self._format_matched_entry(match, target)
+            return f"❌ No chapter found matching '{target}'"
+
+        lines = [f"# TOC: {target_chapter['title']}\n"]
+
+        # Show previous chapter (context)
+        if target_idx > 0:
+            prev = chapters[target_idx - 1]
+            lines.append(f"← {prev['title']} ({prev.get('file', '')})")
+
+        # Show target chapter with full children
+        lines.append(f"\n**{target_chapter['title']}** ({target_chapter.get('file', '')})")
+        for child in target_chapter.get("children", []):
+            child_title = child.get("title", "")
+            child_file = child.get("file", "")
+            grandchildren = child.get("children", [])
+            if grandchildren:
+                lines.append(f"  - {child_title} ({child_file}) [{len(grandchildren)} sub]")
+            else:
+                lines.append(f"  - {child_title} ({child_file})")
+
+        # Show next chapter (context)
+        if target_idx < len(chapters) - 1:
+            next_ch = chapters[target_idx + 1]
+            lines.append(f"\n→ {next_ch['title']} ({next_ch.get('file', '')})")
+
+        return "\n".join(lines)
+
+    def _format_chapter_with_children(self, chapter: dict, highlight: str) -> str:
+        """Format a chapter with its children, highlighting the target"""
+        highlight_lower = highlight.lower()
+        lines = [f"# TOC: {chapter['title']}\n"]
+        lines.append(f"**{chapter['title']}** ({chapter.get('file', '')})")
+
+        for child in chapter.get("children", []):
+            child_title = child.get("title", "")
+            child_file = child.get("file", "")
+            grandchildren = child.get("children", [])
+
+            # Highlight matching child
+            if highlight_lower in child_title.lower():
+                if grandchildren:
+                    lines.append(f"  → **{child_title}** ({child_file}) [{len(grandchildren)} sub]")
+                else:
+                    lines.append(f"  → **{child_title}** ({child_file})")
+            else:
+                if grandchildren:
+                    lines.append(f"  - {child_title} ({child_file}) [{len(grandchildren)} sub]")
+                else:
+                    lines.append(f"  - {child_title} ({child_file})")
+
+        return "\n".join(lines)
+
+    def get_chapter_children(self, chapter_title: str) -> str:
+        """
+        [HANDBOOK] Get children of a specific chapter
+
+        Args:
+            chapter_title: Title of the parent chapter (partial match supported)
+
+        Returns:
+            List of child chapters or error message
+
+        Examples:
+            get_chapter_children("Interpolation")
+            get_chapter_children("Drawing")
+        """
+        if not self.is_initialized:
+            return "Handbook module not initialized"
+
+        try:
+            toc_data = self.cache_manager.load_toc_structure()
+
+            if not toc_data:
+                return "❌ TOC structure not found."
+
+            chapters = toc_data.get("chapters", [])
+            matches = self._find_chapters_by_title(chapters, chapter_title)
+
+            if not matches:
+                return (
+                    f"❌ No chapter found matching '{chapter_title}'\n\n"
+                    "💡 Use `handbook_get_toc()` to see all available chapters."
+                )
+
+            # Format results
+            output = [f"# 📂 Children of '{chapter_title}'\n"]
+
+            for match in matches:
+                title = match.get("title", "Unknown")
+                children = match.get("children", [])
+
+                if not children:
+                    output.append(f"**{title}** has no children (leaf chapter).\n")
+                else:
+                    output.append(f"## {title}\n")
+                    for child in children:
+                        child_title = child.get("title", "Unknown")
+                        child_file = child.get("file", "")
+                        grandchildren = child.get("children", [])
+
+                        if child_file:
+                            output.append(f"- **{child_title}** (`{child_file}`)")
+                        else:
+                            output.append(f"- **{child_title}** (index)")
+
+                        if grandchildren:
+                            output.append(f"  - ({len(grandchildren)} sub-chapters)")
+
+                    output.append("")
+
+            return "\n".join(output)
+
+        except Exception as e:
+            logger.error(f"Failed to get chapter children: {e}")
+            return f"❌ Failed to get chapter children: {str(e)}"
+
+    def _find_chapters_by_title(
+        self, entries: list[dict], title: str
+    ) -> list[dict]:
+        """Find chapters matching title (case-insensitive partial match)"""
+        matches = []
+        title_lower = title.lower()
+
+        for entry in entries:
+            entry_title = entry.get("title", "").lower()
+            if title_lower in entry_title:
+                matches.append(entry)
+
+            # Search children recursively
+            children = entry.get("children", [])
+            if children:
+                matches.extend(self._find_chapters_by_title(children, title))
+
+        return matches
+
+    def _find_parent_chapter(
+        self, chapters: list[dict], target: dict
+    ) -> dict | None:
+        """Find the parent chapter of a nested entry"""
+        for ch in chapters:
+            children = ch.get("children", [])
+            if target in children:
+                return ch
+            # Search deeper
+            for child in children:
+                grandchildren = child.get("children", [])
+                if target in grandchildren:
+                    return ch  # Return top-level parent for context
+                # Continue searching
+                if grandchildren:
+                    result = self._find_parent_in_children(child, target)
+                    if result:
+                        return ch
+        return None
+
+    def _find_parent_in_children(self, parent: dict, target: dict) -> dict | None:
+        """Helper to find parent in nested children"""
+        for child in parent.get("children", []):
+            if child is target:
+                return parent
+            grandchildren = child.get("children", [])
+            if target in grandchildren:
+                return child
+            if grandchildren:
+                result = self._find_parent_in_children(child, target)
+                if result:
+                    return result
+        return None
+
+    def _format_matched_entry(self, entry: dict, highlight: str) -> str:
+        """Format a matched entry with its children (only entries with files)"""
+        lines = [f"# TOC: {entry['title']}\n"]
+
+        # Show entry itself if it has a file
+        entry_file = entry.get("file", "")
+        if entry_file:
+            lines.append(f"**{entry['title']}** ({entry_file})")
+
+        # Show children that have files
+        children = entry.get("children", [])
+        children_with_files = [c for c in children if c.get("file")]
+
+        if children_with_files:
+            for child in children_with_files:
+                child_title = child.get("title", "")
+                child_file = child.get("file", "")
+                grandchildren = [gc for gc in child.get("children", []) if gc.get("file")]
+                if grandchildren:
+                    lines.append(f"  - {child_title} ({child_file}) [{len(grandchildren)} sub]")
+                else:
+                    lines.append(f"  - {child_title} ({child_file})")
+
+        if not entry_file and not children_with_files:
+            lines.append("(No associated files for this entry)")
+
+        return "\n".join(lines)
+
     def _unified_search(self, query: str, max_results: int) -> str:
         """Unified search implementation: pure content search (TOC matching removed)"""
         try:
             # Directly use searcher for content search
-            result = self.searcher.search(query)
+            result = self.searcher.search(query, max_results=max_results)
 
             if result and not result.startswith("No results found"):
                 return result

@@ -16,6 +16,7 @@ from glyphs_info_mcp.shared.core.query_utils import highlight_keyword, tokenize_
 from glyphs_info_mcp.shared.core.scoring_weights import (
     MatchTypeWeights,
     MultiWordWeights,
+    SearchLimits,
 )
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class EnhancedHandbookSearcher:
         except Exception as e:
             logger.error(f"Failed to load file list: {e}")
 
-    def search(self, query: str, search_scope: str = 'all') -> str:
+    def search(self, query: str, search_scope: str = 'all', max_results: int = SearchLimits.DEFAULT_MAX_RESULTS) -> str:
         """Smart search handbook content
 
         Args:
@@ -56,6 +57,7 @@ class EnhancedHandbookSearcher:
                 - 'titles': Search titles only
                 - 'content': Search content only
                 - 'all': Search all content (default)
+            max_results: Maximum number of results (default: 5)
 
         Returns:
             Formatted search results string
@@ -72,7 +74,7 @@ class EnhancedHandbookSearcher:
         if not results:
             return f"No content related to '{query}' found in handbook. Searched {len(self.files)} files."
 
-        return self._format_search_results(query, results)
+        return self._format_search_results(query, results, max_results)
 
     def _extended_search(self, query: str, search_scope: str = 'all') -> list[dict]:
         """Execute extended search supporting multi-word, title, and content search
@@ -578,7 +580,7 @@ class EnhancedHandbookSearcher:
         if not excerpts:
             return self._extract_excerpts_legacy(content, query)
 
-        return excerpts[:3]  # Return max 3 sections
+        return excerpts[:SearchLimits.MAX_EXCERPTS_PER_RESULT]
 
     def _extract_excerpts_legacy(self, content: str, query: str) -> list[str]:
         """Extract relevant sections (legacy logic, used as fallback)"""
@@ -607,13 +609,25 @@ class EnhancedHandbookSearcher:
             if excerpt not in unique_excerpts:
                 unique_excerpts.append(excerpt)
 
-        return unique_excerpts[:3]  # Return max 3 sections
+        return unique_excerpts[:SearchLimits.MAX_EXCERPTS_PER_RESULT]
 
-    def _format_search_results(self, query: str, results: list[dict]) -> str:
-        """Format search results"""
-        output = [f"🔍 **Smart Search Results** - Found {len(results)} related files:\n"]
+    def _format_search_results(self, query: str, results: list[dict], max_results: int = SearchLimits.DEFAULT_MAX_RESULTS) -> str:
+        """Format search results
 
-        for i, result in enumerate(results, 1):
+        Args:
+            query: Search keyword
+            results: List of search results
+            max_results: Maximum number of results to display
+
+        Returns:
+            Formatted search results string
+        """
+        total_found = len(results)
+        display_results = results[:max_results]
+
+        output = [f"🔍 **Smart Search Results** - Showing {len(display_results)} of {total_found} related files:\n"]
+
+        for i, result in enumerate(display_results, 1):
             # Display relevance score and match type
             score = result.get('relevance_score', 0)
             match_type = result.get('match_type', 'unknown')

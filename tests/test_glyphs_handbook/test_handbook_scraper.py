@@ -37,7 +37,16 @@ class TestExtractFilenameFromTitle:
 
 
 class TestUrlToFilename:
-    """Tests for _url_to_filename method"""
+    """Tests for _url_to_filename method
+
+    New behavior (Issue #17):
+    - `/` (path separator) is converted to `_`
+    - `-` (word connector) is PRESERVED
+
+    This allows distinguishing hierarchy levels:
+    - `/palette/fit-curve/` → `palette_fit-curve.md` (1 level deep)
+    - `/palette/fit/curve/` → `palette_fit_curve.md` (2 levels deep)
+    """
 
     def setup_method(self) -> None:
         """Set up test fixtures"""
@@ -48,30 +57,50 @@ class TestUrlToFilename:
         filename = self.scraper._url_to_filename("/create/")
         assert filename == "create.md"
 
-    def test_nested_url(self) -> None:
-        """Should convert nested URL to filename with underscores"""
+    def test_nested_url_preserves_hyphen(self) -> None:
+        """Should convert / to _ but PRESERVE hyphens"""
         filename = self.scraper._url_to_filename("/palette/fit-curve/")
-        assert filename == "palette_fit_curve.md"
+        assert filename == "palette_fit-curve.md"
 
-    def test_deeply_nested_url(self) -> None:
-        """Should handle deeply nested URLs"""
+    def test_deeply_nested_url_preserves_hyphen(self) -> None:
+        """Should handle deeply nested URLs while preserving hyphens"""
         filename = self.scraper._url_to_filename("/layout/feature-code/")
-        assert filename == "layout_feature_code.md"
+        assert filename == "layout_feature-code.md"
 
-    def test_url_with_hyphen(self) -> None:
-        """Should preserve hyphens converted to underscores"""
+    def test_url_with_hyphen_only(self) -> None:
+        """Should preserve hyphens in single-level URLs"""
         filename = self.scraper._url_to_filename("/custom-parameter-descriptions/")
-        assert filename == "custom_parameter_descriptions.md"
+        assert filename == "custom-parameter-descriptions.md"
 
     def test_url_without_trailing_slash(self) -> None:
         """Should handle URLs without trailing slash"""
         filename = self.scraper._url_to_filename("/palette/fit-curve")
-        assert filename == "palette_fit_curve.md"
+        assert filename == "palette_fit-curve.md"
 
     def test_url_without_leading_slash(self) -> None:
         """Should handle URLs without leading slash"""
         filename = self.scraper._url_to_filename("palette/fit-curve/")
-        assert filename == "palette_fit_curve.md"
+        assert filename == "palette_fit-curve.md"
+
+    def test_hierarchy_distinction(self) -> None:
+        """Should allow distinguishing hierarchy levels
+
+        This is the key test for Issue #17:
+        - Underscore `_` = path separator (hierarchy)
+        - Hyphen `-` = word connector (same level)
+        """
+        # 1 level deep: palette/fit-curve
+        filename1 = self.scraper._url_to_filename("/palette/fit-curve/")
+        # 2 levels deep: import-export/export
+        filename2 = self.scraper._url_to_filename("/import-export/export/")
+
+        # Different patterns should be distinguishable
+        assert filename1 == "palette_fit-curve.md"
+        assert filename2 == "import-export_export.md"
+
+        # Count underscores to verify hierarchy depth
+        assert filename1.count("_") == 1  # 1 level
+        assert filename2.count("_") == 1  # 1 level (import-export is single segment)
 
 
 class TestExtractNavLinksFromHtml:

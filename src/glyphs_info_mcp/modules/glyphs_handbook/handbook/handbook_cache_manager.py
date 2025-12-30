@@ -2,14 +2,21 @@
 HandbookCacheManager - Glyphs Handbook cache manager
 
 Manages stable cache and dynamic update cache path selection and update logic.
+
+Issue #17: Added TOC structure generation and storage.
 """
+
+from __future__ import annotations
 
 import importlib.util
 import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from glyphs_info_mcp.modules.glyphs_handbook.handbook.toc_parser import TocEntry
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +171,70 @@ class HandbookCacheManager:
         )
         logger.info(f"Saved cache info: {info_file}")
 
+    def _save_toc_structure(
+        self,
+        toc: List[TocEntry],
+        target_dir: Path,
+    ) -> None:
+        """
+        Save TOC structure to JSON file
+
+        Args:
+            toc: List of TocEntry objects
+            target_dir: Target cache directory
+
+        Note (Issue #17):
+            TOC structure is generated from single-page version headings
+            and cached file first-line matching. The single-page content
+            is discarded after TOC generation.
+        """
+        toc_file = target_dir / "toc_structure.json"
+        toc_data = {
+            "version": "1.0",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "total_entries": self._count_toc_entries(toc),
+            "chapters": [entry.to_dict() for entry in toc],
+        }
+
+        toc_file.write_text(
+            json.dumps(toc_data, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        logger.info(f"Saved TOC structure: {toc_file} ({toc_data['total_entries']} entries)")
+
+    def _count_toc_entries(self, entries: List[TocEntry]) -> int:
+        """Count total entries in TOC tree (including children)"""
+        count = len(entries)
+        for entry in entries:
+            if hasattr(entry, "children") and entry.children:
+                count += self._count_toc_entries(entry.children)
+        return count
+
+    def load_toc_structure(self, cache_dir: Optional[Path] = None) -> Dict[str, Any]:
+        """
+        Load TOC structure from cache
+
+        Args:
+            cache_dir: Cache directory (uses active cache if not specified)
+
+        Returns:
+            TOC structure dictionary, or empty dict if not found
+        """
+        if cache_dir is None:
+            cache_dir = self.get_active_cache_path()
+
+        toc_file = cache_dir / "toc_structure.json"
+
+        if not toc_file.exists():
+            logger.warning(f"TOC structure not found: {toc_file}")
+            return {}
+
+        try:
+            return json.loads(toc_file.read_text(encoding="utf-8"))
+        except Exception as e:
+            logger.error(f"Failed to load TOC structure: {e}")
+            return {}
+
     async def update_fresh_cache(self, force: bool = False) -> bool:
         """
         Update fresh cache
@@ -190,11 +261,15 @@ class HandbookCacheManager:
                 self.fresh_cache_dir.mkdir(parents=True, exist_ok=True)
                 scraper.save_to_directory(chapters, self.fresh_cache_dir)
 
+                # Build and save TOC structure (Issue #17)
+                toc = await scraper.build_toc(self.fresh_cache_dir)
+                self._save_toc_structure(toc, self.fresh_cache_dir)
+
                 # Save cache info
                 self._save_cache_info(
                     self.fresh_cache_dir,
                     len(chapters),
-                    scraper_version="2.0",  # New per-page scraping version
+                    scraper_version="2.1",  # Version with TOC support
                 )
 
                 logger.info(
@@ -230,11 +305,15 @@ class HandbookCacheManager:
                 self.stable_cache_dir.mkdir(parents=True, exist_ok=True)
                 scraper.save_to_directory(chapters, self.stable_cache_dir)
 
+                # Build and save TOC structure (Issue #17)
+                toc = await scraper.build_toc(self.stable_cache_dir)
+                self._save_toc_structure(toc, self.stable_cache_dir)
+
                 # Save cache info
                 self._save_cache_info(
                     self.stable_cache_dir,
                     len(chapters),
-                    scraper_version="2.0",  # New per-page scraping version
+                    scraper_version="2.1",  # Version with TOC support
                     source_url=source_url,
                 )
 

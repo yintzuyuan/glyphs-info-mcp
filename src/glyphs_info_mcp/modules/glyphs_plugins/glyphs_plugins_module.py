@@ -111,19 +111,25 @@ class GlyphsPluginsModule(BaseMCPModule):
             "plugins_list_categories": self._list_categories_tool,
         }
 
-    def _search_local_tool(self, query: str, category: str = "all") -> str:
+    def _search_local_tool(
+        self,
+        query: str,
+        category: str = "all"
+    ) -> str:
         """
         [LOCAL] Search locally installed Glyphs plugins and scripts
 
         Search scope: ~/Library/Application Support/Glyphs 3/Repositories
         Supported types: Plugin Bundle, Scripts Collection, Python Library
 
+        Output format: Compact summary (use `plugins_get_info` for full details)
+
         Args:
             query: Search keyword (matches name, ID, description)
             category: Type filter (all/plugin/scripts/library, default: all)
 
         Returns:
-            List of matching local plugins with name, version, type, and path
+            Compact list of matching plugins with key info only
         """
         if not self.plugins_accessor or not self.scanner:
             return "❌ Plugin accessor not initialized"
@@ -133,68 +139,56 @@ class GlyphsPluginsModule(BaseMCPModule):
 
         try:
             query_lower = query.lower()
-            results = []
+            results: list[dict] = []
 
             # Search Plugin Bundles
             if category in ("all", "plugin"):
                 for plugin in self.plugins_accessor.list_all_plugins():
                     if self._match_plugin(plugin, query_lower):
-                        results.append(
-                            f"## 🔌 {plugin.name}\n"
-                            f"- **Type**: {plugin.type}\n"
-                            f"- **Version**: {plugin.version}\n"
-                            f"- **Bundle ID**: {plugin.bundle_id}\n"
-                            f"- **Path**: {plugin.path}\n"
-                            + (
-                                f"- **Git**: {plugin.git_url}\n"
-                                if plugin.git_url
-                                else ""
-                            )
-                            + (
-                                f"- **Description**: {plugin.readme[:200]}...\n"
-                                if plugin.readme
-                                else ""
-                            )
-                        )
+                        results.append({
+                            "icon": "🔌",
+                            "name": plugin.name,
+                            "type": plugin.type,
+                            "version": plugin.version,
+                        })
 
             # Search Scripts Collections
             if category in ("all", "scripts"):
                 for scripts in self.plugins_accessor.list_all_scripts():
-                    if query_lower in scripts.name.lower():
-                        results.append(
-                            f"## 📜 {scripts.name}\n"
-                            f"- **Type**: Scripts Collection\n"
-                            f"- **Script Count**: {scripts.script_count}\n"
-                            f"- **Path**: {scripts.path}\n"
-                            + (
-                                f"- **Description**: {scripts.readme[:200]}...\n"
-                                if scripts.readme
-                                else ""
-                            )
-                        )
+                    if query_lower in scripts.name.lower() or (scripts.readme and query_lower in scripts.readme.lower()):
+                        results.append({
+                            "icon": "📜",
+                            "name": scripts.name,
+                            "type": "Scripts",
+                            "version": f"{scripts.script_count} scripts",
+                        })
 
             # Search Libraries
             if category in ("all", "library"):
                 for lib_name in self.plugins_accessor.list_all_libraries():
                     if query_lower in lib_name.lower():
-                        # Get path from internal index
-                        lib_path = self.plugins_accessor._libraries_index.get(
-                            lib_name, ""
-                        )
-                        results.append(
-                            f"## 📚 {lib_name}\n"
-                            f"- **Type**: Python Library\n"
-                            f"- **Path**: {lib_path}\n"
-                        )
+                        results.append({
+                            "icon": "📚",
+                            "name": lib_name,
+                            "type": "Library",
+                            "version": "-",
+                        })
 
             if not results:
                 return f"🔍 No local plugins found matching '{query}'"
 
-            return (
-                f"# 🔍 Local Plugin Search Results: {query}\n\n"
-                + f"Found {len(results)} results\n\n"
-                + "\n\n".join(results)
-            )
+            # Format compact output
+            output = [f"🔍 **Local Search: '{query}'** - Found {len(results)} results\n"]
+            output.append("| # | Type | Name | Version |")
+            output.append("|---|------|------|---------|")
+
+            for i, r in enumerate(results, 1):
+                output.append(f"| {i} | {r['icon']} {r['type']} | {r['name']} | {r['version']} |")
+
+            output.append("")
+            output.append("💡 Use `plugins_get_info(name)` for full details (README, path, source code)")
+
+            return "\n".join(output)
 
         except Exception as e:
             return f"❌ Search failed: {e}"
@@ -210,7 +204,6 @@ class GlyphsPluginsModule(BaseMCPModule):
     def _search_official_tool(
         self,
         query: str,
-        max_results: int = 10,
         filter_by_author: str | None = None
     ) -> str:
         """
@@ -220,13 +213,14 @@ class GlyphsPluginsModule(BaseMCPModule):
         Cache mechanism: 24-hour auto-refresh
         Features: Relevance scoring, author filtering, local installation status
 
+        Output format: Compact summary (use `plugins_get_info` for full details)
+
         Args:
             query: Search keyword (matches name, description)
-            max_results: Maximum number of results (default: 10)
             filter_by_author: Filter by author (optional)
 
         Returns:
-            Official plugin list with name, description, repository URL, installation status
+            Compact list of official plugins with key info only
         """
         if not self.official_registry:
             return "❌ Official registry accessor not initialized"
@@ -235,10 +229,9 @@ class GlyphsPluginsModule(BaseMCPModule):
             return "❌ Local plugin matcher not initialized"
 
         try:
-            # Use OfficialRegistry's core_search (Phase 2 + Phase 4)
+            # Use OfficialRegistry's core_search (no limit - show all results)
             results = self.official_registry.core_search(
                 query=query,
-                max_results=max_results,
                 filter_by_author=filter_by_author
             )
 
@@ -249,36 +242,24 @@ class GlyphsPluginsModule(BaseMCPModule):
             local_plugins = self.local_matcher.scan_local_plugins()
             results = self.local_matcher.mark_installed_status(results, local_plugins)
 
-            # Format output
+            # Format compact output
             output = []
-            output.append(f"## 🔍 Search Results: {query}")
-            output.append(f"Found {len(results)} plugins\n")
+            output.append(f"🔍 **Official Registry: '{query}'** - Found {len(results)} results\n")
+            output.append("| # | Status | Name | Author | Description |")
+            output.append("|---|--------|------|--------|-------------|")
 
             for i, plugin in enumerate(results, 1):
-                # Phase 3: Show installation status
-                status_icon = "✅" if plugin.get("installed") else "⬜️"
-                output.append(f"### {i}. {status_icon} {plugin['title']}")
-
-                output.append(f"**Author**: {plugin['owner']}")
-                output.append(f"**Repository**: {plugin['repo_name']}")
-                output.append(f"**URL**: {plugin['url']}")
-
-                if plugin['description']:
-                    output.append(f"**Description**: {plugin['description']}")
-
-                if plugin['score'] > 0:
-                    output.append(f"**Relevance**: {plugin['score']:.2f}")
-
-                # Phase 3: Show installation path
-                if plugin.get("installed"):
-                    output.append(f"**Installation Path**: `{plugin.get('local_path')}`")
-
-                output.append("")  # Empty line
+                status = "✅" if plugin.get("installed") else "⬜️"
+                name = plugin['title'][:25] + "..." if len(plugin['title']) > 25 else plugin['title']
+                author = plugin['owner'][:15] + "..." if len(plugin['owner']) > 15 else plugin['owner']
+                desc = plugin['description'][:40] + "..." if plugin['description'] and len(plugin['description']) > 40 else (plugin['description'] or "-")
+                output.append(f"| {i} | {status} | {name} | {author} | {desc} |")
 
             # Statistics
             installed_count = sum(1 for p in results if p.get("installed"))
-            output.append(f"---")
-            output.append(f"**Statistics**: {installed_count}/{len(results)} installed")
+            output.append("")
+            output.append(f"📊 {installed_count}/{len(results)} installed locally")
+            output.append("💡 Use `plugins_get_info(name, source='official')` for full details")
 
             return "\n".join(output)
 

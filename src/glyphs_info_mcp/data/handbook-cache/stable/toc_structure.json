@@ -1,0 +1,768 @@
+{
+  "version": "1.0",
+  "generated_at": "2025-12-30T12:13:49.198908+00:00",
+  "total_entries": 124,
+  "chapters": [
+    {
+      "title": "Glyphs",
+      "level": 2,
+      "file": "glyphs.md",
+      "children": []
+    },
+    {
+      "title": "Create",
+      "level": 2,
+      "file": "create.md",
+      "children": []
+    },
+    {
+      "title": "Settings",
+      "level": 2,
+      "file": "settings.md",
+      "children": [
+        {
+          "title": "Updates",
+          "level": 3,
+          "file": "settings_updates.md",
+          "children": []
+        },
+        {
+          "title": "Appearance",
+          "level": 3,
+          "file": "settings_appearance.md",
+          "children": []
+        },
+        {
+          "title": "User Settings",
+          "level": 3,
+          "file": "settings_user-settings.md",
+          "children": []
+        },
+        {
+          "title": "Sample Strings",
+          "level": 3,
+          "file": "settings_sample-strings.md",
+          "children": []
+        },
+        {
+          "title": "Sharing",
+          "level": 3,
+          "file": "settings_sharing.md",
+          "children": []
+        },
+        {
+          "title": "Addons",
+          "level": 3,
+          "file": "settings_addons.md",
+          "children": []
+        },
+        {
+          "title": "Shortcuts",
+          "level": 3,
+          "file": "settings_shortcuts.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Edit View",
+      "level": 2,
+      "file": "edit-view.md",
+      "children": [
+        {
+          "title": "Drawing Paths",
+          "level": 3,
+          "file": "drawing-paths.md",
+          "children": []
+        },
+        {
+          "title": "Editing Paths",
+          "level": 3,
+          "file": "editing-paths.md",
+          "children": []
+        },
+        {
+          "title": "Graphic Attributes",
+          "level": 3,
+          "file": "graphic-attributes.md",
+          "children": []
+        },
+        {
+          "title": "Anchors",
+          "level": 3,
+          "file": "anchors.md",
+          "children": []
+        },
+        {
+          "title": "Guides",
+          "level": 3,
+          "file": "guides.md",
+          "children": []
+        },
+        {
+          "title": "Info Box",
+          "level": 3,
+          "file": "info-box.md",
+          "children": []
+        },
+        {
+          "title": "Glyph Display",
+          "level": 3,
+          "file": "glyph-display.md",
+          "children": []
+        },
+        {
+          "title": "Background",
+          "level": 3,
+          "file": "background.md",
+          "children": []
+        },
+        {
+          "title": "Entering Text",
+          "level": 3,
+          "file": "entering-text.md",
+          "children": []
+        },
+        {
+          "title": "Measuring",
+          "level": 3,
+          "file": "measuring.md",
+          "children": []
+        },
+        {
+          "title": "Annotating",
+          "level": 3,
+          "file": "annotation-tool.md",
+          "children": []
+        },
+        {
+          "title": "Images",
+          "level": 3,
+          "file": "font-view_images.md",
+          "children": []
+        },
+        {
+          "title": "Previewing & Testing",
+          "level": 3,
+          "file": "previewing-and-testing.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Palette",
+      "level": 2,
+      "file": "palette.md",
+      "children": [
+        {
+          "title": "Dimensions",
+          "level": 3,
+          "file": "palette_dimensions.md",
+          "children": []
+        },
+        {
+          "title": "Fit Curve",
+          "level": 3,
+          "file": "palette_fit-curve.md",
+          "children": []
+        },
+        {
+          "title": "Layers",
+          "level": 3,
+          "file": "palette_layers.md",
+          "children": []
+        },
+        {
+          "title": "Transformations",
+          "level": 3,
+          "file": "palette_transformations.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Font View",
+      "level": 2,
+      "file": "font-view.md",
+      "children": [
+        {
+          "title": "Viewing Glyphs",
+          "level": 3,
+          "file": "viewing-glyphs.md",
+          "children": []
+        },
+        {
+          "title": "Managing the Glyph Set",
+          "level": 3,
+          "file": "glyph-set.md",
+          "children": []
+        },
+        {
+          "title": "Glyph Properties",
+          "level": 3,
+          "file": "glyph.md",
+          "children": []
+        },
+        {
+          "title": "Names & Unicode",
+          "level": 3,
+          "file": "glyph-names.md",
+          "children": []
+        },
+        {
+          "title": "Batch-Processing",
+          "level": 3,
+          "file": "batch-processing.md",
+          "children": []
+        },
+        {
+          "title": "Filtering Font View",
+          "level": 3,
+          "file": "filtering.md",
+          "children": []
+        },
+        {
+          "title": "Glyph Order",
+          "level": 3,
+          "file": "glyph-order.md",
+          "children": []
+        },
+        {
+          "title": "Images",
+          "level": 3,
+          "file": "font-view_images.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Font Info",
+      "level": 2,
+      "file": "font-info.md",
+      "children": [
+        {
+          "title": "Font",
+          "level": 3,
+          "file": "font.md",
+          "children": []
+        },
+        {
+          "title": "Masters",
+          "level": 3,
+          "file": "masters.md",
+          "children": []
+        },
+        {
+          "title": "Exports",
+          "level": 3,
+          "file": "exports.md",
+          "children": []
+        },
+        {
+          "title": "Features",
+          "level": 3,
+          "file": "layout.md",
+          "children": []
+        },
+        {
+          "title": "Other Settings",
+          "level": 3,
+          "file": "other-settings.md",
+          "children": []
+        },
+        {
+          "title": "Notes",
+          "level": 3,
+          "file": "notes.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Import & Export",
+      "level": 2,
+      "file": "import-export.md",
+      "children": [
+        {
+          "title": "Exporting Font Files",
+          "level": 3,
+          "file": "export.md",
+          "children": []
+        },
+        {
+          "title": "Source Formats",
+          "level": 3,
+          "file": "source-formats.md",
+          "children": []
+        },
+        {
+          "title": "Opening Font Files",
+          "level": 3,
+          "file": "import.md",
+          "children": []
+        },
+        {
+          "title": "Importing Font Data",
+          "level": 3,
+          "file": "import_font-data.md",
+          "children": []
+        },
+        {
+          "title": "Vector Drawing Applications",
+          "level": 3,
+          "file": "import-export_vector-drawing-applications.md",
+          "children": []
+        },
+        {
+          "title": "File Format Interoperability",
+          "level": 3,
+          "file": "file-format-interoperability.md",
+          "children": []
+        },
+        {
+          "title": "Projects",
+          "level": 3,
+          "file": "projects.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Spacing & Kerning",
+      "level": 2,
+      "file": "spacing-and-kerning.md",
+      "children": [
+        {
+          "title": "Spacing",
+          "level": 3,
+          "file": "spacing.md",
+          "children": []
+        },
+        {
+          "title": "Kerning",
+          "level": 3,
+          "file": "kerning.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Reusing Shapes",
+      "level": 2,
+      "file": "reusing-shapes.md",
+      "children": [
+        {
+          "title": "Components",
+          "level": 3,
+          "file": "components.md",
+          "children": []
+        },
+        {
+          "title": "Smart Components",
+          "level": 3,
+          "file": "components_smart.md",
+          "children": []
+        },
+        {
+          "title": "Corner Components",
+          "level": 3,
+          "file": "components_corner.md",
+          "children": []
+        },
+        {
+          "title": "Cap Components",
+          "level": 3,
+          "file": "components_cap.md",
+          "children": []
+        },
+        {
+          "title": "Segment Components",
+          "level": 3,
+          "file": "components_segment.md",
+          "children": []
+        },
+        {
+          "title": "Brushes",
+          "level": 3,
+          "file": "components_brushes.md",
+          "children": []
+        },
+        {
+          "title": "Pixel Tool",
+          "level": 3,
+          "file": "pixel-tool.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Interpolation",
+      "level": 2,
+      "file": "interpolation.md",
+      "children": [
+        {
+          "title": "Interpolation Applications",
+          "level": 3,
+          "file": "interpolation_applications.md",
+          "children": []
+        },
+        {
+          "title": "Setting up Axes",
+          "level": 3,
+          "file": "interpolation_axes.md",
+          "children": []
+        },
+        {
+          "title": "Setting up Masters",
+          "level": 3,
+          "file": "interpolation_masters.md",
+          "children": []
+        },
+        {
+          "title": "Setting up Instances",
+          "level": 3,
+          "file": "interpolation_setup-instances.md",
+          "children": []
+        },
+        {
+          "title": "Outline Compatibility",
+          "level": 3,
+          "file": "interpolation_outline-compatibility.md",
+          "children": []
+        },
+        {
+          "title": "Intermediate Layers",
+          "level": 3,
+          "file": "intermediate-layers.md",
+          "children": []
+        },
+        {
+          "title": "Switching Shapes",
+          "level": 3,
+          "file": "switching-shapes.md",
+          "children": []
+        },
+        {
+          "title": "Editing Multiple Masters",
+          "level": 3,
+          "file": "editing-multiple-masters.md",
+          "children": []
+        },
+        {
+          "title": "Working with Multiple Fonts",
+          "level": 3,
+          "file": "working-with-multiple-fonts.md",
+          "children": []
+        },
+        {
+          "title": "Variable Font Options",
+          "level": 3,
+          "file": "variable-font-options.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Filters",
+      "level": 2,
+      "file": "filters.md",
+      "children": [
+        {
+          "title": "Applying Filters",
+          "level": 3,
+          "file": "filters_applying.md",
+          "children": []
+        },
+        {
+          "title": "Built-in Filters",
+          "level": 3,
+          "file": "filters_built-in.md",
+          "children": [
+            {
+              "title": "Shape Order",
+              "level": 4,
+              "file": "filters_shape-order.md",
+              "children": []
+            },
+            {
+              "title": "Extrude",
+              "level": 4,
+              "file": "filters_extrude.md",
+              "children": []
+            },
+            {
+              "title": "Hatch Outline",
+              "level": 4,
+              "file": "filters_hatch-outline.md",
+              "children": []
+            },
+            {
+              "title": "Offset Curve",
+              "level": 4,
+              "file": "filters_offset-curve.md",
+              "children": []
+            },
+            {
+              "title": "Roughen",
+              "level": 4,
+              "file": "filters_roughen.md",
+              "children": []
+            },
+            {
+              "title": "Round Corners",
+              "level": 4,
+              "file": "filters_round-corners.md",
+              "children": []
+            },
+            {
+              "title": "Rounded Font",
+              "level": 4,
+              "file": "filters_rounded-font.md",
+              "children": []
+            },
+            {
+              "title": "Transformations",
+              "level": 4,
+              "file": "transformations.md",
+              "children": []
+            },
+            {
+              "title": "Add Extremes",
+              "level": 4,
+              "file": "filters_add-extremes.md",
+              "children": []
+            },
+            {
+              "title": "Remove Overlap",
+              "level": 4,
+              "file": "filters_remove-overlap.md",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Feature Code",
+      "level": 2,
+      "file": "layout_feature-code.md",
+      "children": [
+        {
+          "title": "Tokens",
+          "level": 3,
+          "file": "layout_tokens.md",
+          "children": []
+        },
+        {
+          "title": "Conditional Feature Code",
+          "level": 3,
+          "file": "layout_conditional-feature-code.md",
+          "children": []
+        },
+        {
+          "title": "Variable GPOS",
+          "level": 3,
+          "file": "layout_variable-gpos.md",
+          "children": []
+        },
+        {
+          "title": "Deleting Glyphs",
+          "level": 3,
+          "file": "layout_deleting-glyphs.md",
+          "children": []
+        },
+        {
+          "title": "Standalone Lookups",
+          "level": 3,
+          "file": "layout_standalone-lookups.md",
+          "children": []
+        },
+        {
+          "title": "Optional Closing Lookup Name",
+          "level": 3,
+          "file": "layout_optional-closing-lookup-name.md",
+          "children": []
+        },
+        {
+          "title": "Multiple Languages Syntax",
+          "level": 3,
+          "file": "layout_multiple-languages-syntax.md",
+          "children": []
+        },
+        {
+          "title": "Multiple Substitution With Classes",
+          "level": 3,
+          "file": "layout_multiple-substitution-with-classes.md",
+          "children": []
+        },
+        {
+          "title": "Lookup Flags",
+          "level": 3,
+          "file": "layout_lookup-flags.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "PostScript Hinting",
+      "level": 2,
+      "file": "postscript-hinting.md",
+      "children": [
+        {
+          "title": "Font-Wide Hints",
+          "level": 3,
+          "file": "postscript-hinting_font-wide-hints.md",
+          "children": []
+        },
+        {
+          "title": "Autohinting",
+          "level": 3,
+          "file": "truetype-hinting_autohinting.md",
+          "children": []
+        },
+        {
+          "title": "Manual hinting",
+          "level": 3,
+          "file": "postscript-hinting_manual-hinting.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "TrueType Hinting",
+      "level": 2,
+      "file": "truetype-hinting.md",
+      "children": [
+        {
+          "title": "Autohinting",
+          "level": 3,
+          "file": "truetype-hinting_autohinting.md",
+          "children": []
+        },
+        {
+          "title": "Font-level Hints",
+          "level": 3,
+          "file": "truetype-hinting_font-level-hints.md",
+          "children": []
+        },
+        {
+          "title": "Glyph-level Hints",
+          "level": 3,
+          "file": "truetype-hinting_glyph-level-hints.md",
+          "children": []
+        },
+        {
+          "title": "Instructions",
+          "level": 3,
+          "file": "truetype-hinting_instructions.md",
+          "children": []
+        },
+        {
+          "title": "Advanced TrueType Hinting",
+          "level": 3,
+          "file": "truetype-hinting_advanced.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Color Fonts",
+      "level": 2,
+      "file": "color-fonts.md",
+      "children": [
+        {
+          "title": "Working with Color Fonts",
+          "level": 3,
+          "file": "color-fonts_general.md",
+          "children": []
+        },
+        {
+          "title": "Layered Color Fonts",
+          "level": 3,
+          "file": "color-fonts_layered.md",
+          "children": []
+        },
+        {
+          "title": "COLR/CPAL Fonts",
+          "level": 3,
+          "file": "color-fonts_colr-cpal.md",
+          "children": []
+        },
+        {
+          "title": "sbix Fonts",
+          "level": 3,
+          "file": "color-fonts_sbix.md",
+          "children": []
+        },
+        {
+          "title": "SVG Color Fonts",
+          "level": 3,
+          "file": "color-fonts_svg.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Extensions",
+      "level": 2,
+      "file": "extensions.md",
+      "children": [
+        {
+          "title": "Plugin Manager",
+          "level": 3,
+          "file": "plugin-manager.md",
+          "children": []
+        },
+        {
+          "title": "Scripts",
+          "level": 3,
+          "file": "scripts.md",
+          "children": []
+        },
+        {
+          "title": "Plug-ins",
+          "level": 3,
+          "file": "plugins.md",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Appendix",
+      "level": 2,
+      "file": "appendix.md",
+      "children": [
+        {
+          "title": "Text Tokens",
+          "level": 3,
+          "file": "tokens_text.md",
+          "children": []
+        },
+        {
+          "title": "Regular Expressions",
+          "level": 3,
+          "file": "regular-expressions.md",
+          "children": []
+        },
+        {
+          "title": "Custom Feature Code Snippets",
+          "level": 3,
+          "file": "custom-feature-code-snippets.md",
+          "children": []
+        },
+        {
+          "title": "Automatic Feature Generation",
+          "level": 3,
+          "file": "automatic-feature-generation.md",
+          "children": []
+        },
+        {
+          "title": "Custom Parameters",
+          "level": 3,
+          "file": "custom-parameter-descriptions.md",
+          "children": []
+        }
+      ]
+    }
+  ]
+}
