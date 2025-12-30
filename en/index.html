@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Glyphs info MCP - Glyphs 字型設計統一 MCP 伺服器</title>
-  <meta name="description" content="整合 Glyphs 手冊查詢、API 參考和外掛管理的統一 MCP 伺服器，專為字型設計軟體打造。">
-  <link rel="stylesheet" href="style.css">
+  <title>Glyphs info MCP - Unified MCP Server for Glyphs Font Design</title>
+  <meta name="description" content="A unified MCP server integrating Glyphs handbook queries, API reference, and plugin management for font design software.">
+  <link rel="canonical" href="https://yintzuyuan.github.io/glyphs-info-mcp/en/">
+  <link rel="alternate" hreflang="en" href="https://yintzuyuan.github.io/glyphs-info-mcp/en/">
+  <link rel="alternate" hreflang="zh-Hant" href="https://yintzuyuan.github.io/glyphs-info-mcp/zh-Hant/">
+  <link rel="alternate" hreflang="x-default" href="https://yintzuyuan.github.io/glyphs-info-mcp/en/">
+  <link rel="stylesheet" href="/glyphs-info-mcp/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
@@ -20,10 +24,10 @@
         <span>Glyphs info MCP</span>
       </div>
       <nav class="nav-links">
-        <a href="#features">功能</a>
-        <a href="#installation">安裝</a>
+        <a href="#features">Features</a>
+        <a href="#installation">Install</a>
         <a href="https://github.com/yintzuyuan/glyphs-info-mcp" target="_blank">GitHub</a>
-        <a href="index.html" class="lang-switch">EN</a>
+        <a href="/glyphs-info-mcp/zh-Hant/" class="lang-switch" data-lang="zh-Hant">繁中</a>
       </nav>
     </div>
   </header>
@@ -32,12 +36,12 @@
   <section class="hero">
     <div class="container">
       <h1 class="animate-in">Glyphs info MCP</h1>
-      <p class="tagline animate-in delay-1">整合 <a href="https://glyphsapp.com" target="_blank">Glyphs</a> 手冊、API 參考和外掛管理的統一 MCP 伺服器，專為字型設計打造。</p>
+      <p class="tagline animate-in delay-1">A unified MCP server integrating <a href="https://glyphsapp.com" target="_blank">Glyphs</a> handbook, API reference, and plugin management for font design.</p>
 
       <!-- Install Command -->
       <div class="install-box animate-in delay-2">
         <code>uvx glyphs-info-mcp</code>
-        <button class="copy-btn" data-copy="uvx glyphs-info-mcp" title="複製到剪貼簿">
+        <button class="copy-btn" data-copy="uvx glyphs-info-mcp" title="Copy to clipboard">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -47,7 +51,7 @@
 
       <!-- Buttons -->
       <div class="btn-group animate-in delay-3">
-        <a href="#installation" class="btn btn-primary">開始使用</a>
+        <a href="#installation" class="btn btn-primary">Get Started</a>
         <a href="https://github.com/yintzuyuan/glyphs-info-mcp" class="btn btn-secondary" target="_blank">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
@@ -60,19 +64,19 @@
       <div class="stats animate-in delay-4">
         <div class="stat">
           <div class="stat-value">8</div>
-          <div class="stat-label">模組</div>
+          <div class="stat-label">Modules</div>
         </div>
         <div class="stat">
           <div class="stat-value">53</div>
-          <div class="stat-label">工具</div>
+          <div class="stat-label">Tools</div>
         </div>
         <div class="stat">
           <div class="stat-value">14</div>
-          <div class="stat-label">語言</div>
+          <div class="stat-label">Languages</div>
         </div>
         <div class="stat">
           <div class="stat-value">358+</div>
-          <div class="stat-label">腳本</div>
+          <div class="stat-label">Scripts</div>
         </div>
       </div>
     </div>
@@ -81,37 +85,37 @@
   <!-- Features Section -->
   <section id="features" class="features">
     <div class="container">
-      <h2 class="section-title">功能特色</h2>
+      <h2 class="section-title">Features</h2>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon"><i class="ph ph-magnifying-glass"></i></div>
-          <h3>統一搜尋</h3>
-          <p>智慧查詢路由，自動偵測內容類型，跨模組搜尋。</p>
+          <h3>Unified Search</h3>
+          <p>Smart query routing with automatic content type detection across all modules.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="ph ph-globe"></i></div>
-          <h3>多語系介面</h3>
-          <p>支援 14 種語言的 Glyphs UI 術語翻譯。</p>
+          <h3>Multilingual UI</h3>
+          <p>Support for Glyphs UI terminology translation in 14 languages.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="ph ph-book-open-text"></i></div>
-          <h3>完整手冊</h3>
-          <p>完整的 Glyphs 官方手冊內容，129 個章節離線可用。</p>
+          <h3>Complete Handbook</h3>
+          <p>Full Glyphs official handbook content with 129 chapters available offline.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="ph ph-code"></i></div>
-          <h3>完整 API 參考</h3>
-          <p>Python 和 Objective-C API 文件，含類別階層結構。</p>
+          <h3>Full API Reference</h3>
+          <p>Python and Objective-C API documentation with class hierarchies.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="ph ph-plugs-connected"></i></div>
-          <h3>MCP 協定</h3>
-          <p>標準化工具介面，相容 Claude Desktop 和其他 MCP 客戶端。</p>
+          <h3>MCP Protocol</h3>
+          <p>Standardized tool interface compatible with Claude Desktop and other MCP clients.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="ph ph-graph"></i></div>
-          <h3>智慧交叉引用</h3>
-          <p>自動連結手冊、API 和腳本之間的相關內容。</p>
+          <h3>Smart Cross-referencing</h3>
+          <p>Automatic linking of related content across handbook, API, and scripts.</p>
         </div>
       </div>
     </div>
@@ -120,12 +124,12 @@
   <!-- Installation Section -->
   <section id="installation" class="installation">
     <div class="container">
-      <h2 class="section-title">安裝方式</h2>
+      <h2 class="section-title">Installation</h2>
 
       <!-- Step 1 -->
       <div class="code-block">
         <div class="code-header">
-          <span class="code-title">步驟一：安裝 uv 套件管理器</span>
+          <span class="code-title">Step 1: Install uv package manager</span>
           <button class="copy-btn" data-copy="curl -LsSf https://astral.sh/uv/install.sh | sh">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -141,7 +145,7 @@
       <!-- Step 2 -->
       <div class="code-block">
         <div class="code-header">
-          <span class="code-title">步驟二：設定 Claude Desktop</span>
+          <span class="code-title">Step 2: Configure Claude Desktop</span>
           <button class="copy-btn" data-copy='{
   "mcpServers": {
     "glyphs-info": {
@@ -169,54 +173,54 @@
         </div>
       </div>
 
-      <p style="text-align: center; color: var(--text-muted);">重新啟動 Claude Desktop 即可開始使用！</p>
+      <p style="text-align: center; color: var(--text-muted);">Restart Claude Desktop and you're ready to go!</p>
     </div>
   </section>
 
   <!-- Modules Section -->
   <section class="modules">
     <div class="container">
-      <h2 class="section-title">模組總覽</h2>
+      <h2 class="section-title">Modules</h2>
       <div class="modules-grid">
         <div class="module-card">
           <div class="module-icon"><i class="ph ph-book-open"></i></div>
-          <div class="module-name">手冊</div>
-          <div class="module-desc">搜尋與查詢手冊內容</div>
+          <div class="module-name">Handbook</div>
+          <div class="module-desc">Search & query handbook content</div>
         </div>
         <div class="module-card">
           <div class="module-icon"><i class="ph ph-translate"></i></div>
-          <div class="module-name">詞彙</div>
-          <div class="module-desc">14 種語言的 UI 術語</div>
+          <div class="module-name">Vocabulary</div>
+          <div class="module-desc">UI terminology in 14 languages</div>
         </div>
         <div class="module-card">
           <div class="module-icon"><i class="ph ph-file-py"></i></div>
           <div class="module-name">Python API</div>
-          <div class="module-desc">類別、方法與屬性</div>
+          <div class="module-desc">Classes, methods & properties</div>
         </div>
         <div class="module-card">
           <div class="module-icon"><i class="ph ph-brackets-curly"></i></div>
           <div class="module-name">Obj-C API</div>
-          <div class="module-desc">標頭檔與協定</div>
+          <div class="module-desc">Headers & protocols</div>
         </div>
         <div class="module-card">
           <div class="module-icon"><i class="ph ph-package"></i></div>
           <div class="module-name">SDK</div>
-          <div class="module-desc">文件與 Xcode 範本</div>
+          <div class="module-desc">Documentation & Xcode templates</div>
         </div>
         <div class="module-card">
           <div class="module-icon"><i class="ph ph-plug"></i></div>
-          <div class="module-name">外掛</div>
-          <div class="module-desc">本地與官方外掛搜尋</div>
+          <div class="module-name">Plugins</div>
+          <div class="module-desc">Local & official plugin search</div>
         </div>
         <div class="module-card">
           <div class="module-icon"><i class="ph ph-scroll"></i></div>
-          <div class="module-name">腳本</div>
-          <div class="module-desc">mekkablue 腳本集 (358+)</div>
+          <div class="module-name">Scripts</div>
+          <div class="module-desc">mekkablue collection (358+)</div>
         </div>
         <div class="module-card">
           <div class="module-icon"><i class="ph ph-newspaper"></i></div>
-          <div class="module-name">新聞</div>
-          <div class="module-desc">論壇與教學搜尋</div>
+          <div class="module-name">News</div>
+          <div class="module-desc">Forum & tutorial search</div>
         </div>
       </div>
     </div>
@@ -227,14 +231,14 @@
     <div class="container">
       <div class="footer-links">
         <a href="https://github.com/yintzuyuan/glyphs-info-mcp" target="_blank">GitHub</a>
-        <a href="https://github.com/yintzuyuan/glyphs-info-mcp#readme" target="_blank">文件</a>
-        <a href="https://github.com/yintzuyuan/glyphs-info-mcp/issues" target="_blank">問題回報</a>
+        <a href="https://github.com/yintzuyuan/glyphs-info-mcp#readme" target="_blank">Documentation</a>
+        <a href="https://github.com/yintzuyuan/glyphs-info-mcp/issues" target="_blank">Issues</a>
         <a href="https://pypi.org/project/glyphs-info-mcp/" target="_blank">PyPI</a>
       </div>
-      <p class="copyright">MIT 授權 &copy; 2025 TzuYuan Yin</p>
+      <p class="copyright">MIT License &copy; 2025 TzuYuan Yin</p>
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="/glyphs-info-mcp/script.js"></script>
 </body>
 </html>

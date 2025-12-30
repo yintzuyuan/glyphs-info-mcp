@@ -103,3 +103,22 @@ window.addEventListener('scroll', () => {
 
   lastScroll = currentScroll;
 });
+
+// Language preference storage
+(function() {
+  'use strict';
+
+  var LANG_PREF_KEY = 'glyphs-info-mcp-lang';
+
+  // Save language preference when user clicks language switch
+  document.querySelectorAll('.lang-switch[data-lang]').forEach(function(link) {
+    link.addEventListener('click', function() {
+      var targetLang = this.dataset.lang;
+      try {
+        localStorage.setItem(LANG_PREF_KEY, targetLang);
+      } catch (e) {
+        // localStorage unavailable
+      }
+    });
+  });
+})();
