@@ -8,6 +8,7 @@ from typing import Any
 
 from glyphs_info_mcp.modules.glyphs_handbook.handbook.utils import extract_title
 from glyphs_info_mcp.shared.core.query_utils import highlight_keyword
+from glyphs_info_mcp.shared.core.scoring_weights import SearchLimits
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +41,16 @@ class HandbookSearcher:
         except Exception as e:
             logger.error(f"Failed to load file list: {e}")
 
-    def search(self, query: str) -> str:
-        """Search handbook content"""
+    def search(self, query: str, max_results: int = SearchLimits.DEFAULT_MAX_RESULTS) -> str:
+        """Search handbook content
+
+        Args:
+            query: Search keyword
+            max_results: Maximum number of results (default: 5)
+
+        Returns:
+            Formatted search results string
+        """
         if not query.strip():
             return "Please provide a search keyword"
 
@@ -82,7 +91,7 @@ class HandbookSearcher:
             return f"No content related to '{query}' found in handbook. Searched {len(self.files)} files."
 
         # Format results
-        return self._format_results(query, results)
+        return self._format_results(query, results, max_results)
 
     def _extract_excerpts(self, content: str, query: str) -> list[str]:
         """Extract relevant excerpts"""
@@ -111,13 +120,22 @@ class HandbookSearcher:
             if excerpt not in unique_excerpts:
                 unique_excerpts.append(excerpt)
 
-        return unique_excerpts[:3]  # Return max 3 excerpts
+        return unique_excerpts[:SearchLimits.MAX_EXCERPTS_PER_RESULT]
 
-    def _format_results(self, query: str, results: list[dict[str, Any]]) -> str:
-        """Format search results"""
-        output = [f"🔍 Found {len(results)} related results in handbook:\n"]
+    def _format_results(self, query: str, results: list[dict[str, Any]], max_results: int = SearchLimits.DEFAULT_MAX_RESULTS) -> str:
+        """Format search results
 
-        for i, result in enumerate(results[:5], 1):  # Show max 5 results
+        Args:
+            query: Search keyword
+            results: List of search results
+            max_results: Maximum number of results to display
+        """
+        total_found = len(results)
+        display_results = results[:max_results]
+
+        output = [f"🔍 Found {total_found} results, showing {len(display_results)}:\n"]
+
+        for i, result in enumerate(display_results, 1):
             output.append(f"**{i}. {result['title']}**")
             output.append(f"📄 File: {result['file']}")
 

@@ -20,6 +20,7 @@ import importlib.util
 from pathlib import Path
 
 from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
+from glyphs_info_mcp.shared.core.scoring_weights import SearchLimits
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ class UnifiedHandbookModule(BaseMCPModule):
             return False
 
     def core_search(
-        self, query: str, max_results: int = 5, **kwargs: Any
+        self, query: str, max_results: int = SearchLimits.DEFAULT_MAX_RESULTS, **kwargs: Any
     ) -> list[dict[str, Any]]:
         """Core search function - for unified search engine use only
 
@@ -221,7 +222,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         }
 
     def handbook_search(
-        self, query: str, search_scope: str = "all", max_results: int = 5
+        self, query: str, search_scope: str = "all", max_results: int = SearchLimits.DEFAULT_MAX_RESULTS
     ) -> str:
         """
         [HANDBOOK] Search Glyphs handbook for related content
@@ -246,7 +247,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         # Prefer enhanced searcher (new feature)
         if self.use_enhanced_search and hasattr(self, "searcher"):
             # Directly use enhanced searcher's smart search functionality
-            return self.searcher.search(query, search_scope)
+            return self.searcher.search(query, search_scope, max_results)
 
         # If unified search engine available, delegate to it
         elif self.search_engine:
@@ -560,7 +561,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         """Unified search implementation: pure content search (TOC matching removed)"""
         try:
             # Directly use searcher for content search
-            result = self.searcher.search(query)
+            result = self.searcher.search(query, max_results=max_results)
 
             if result and not result.startswith("No results found"):
                 return result

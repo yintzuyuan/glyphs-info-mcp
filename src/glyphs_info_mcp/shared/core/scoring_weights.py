@@ -97,6 +97,20 @@ class MultiWordWeights:
     PARTIAL_WORD: Final[float] = 0.1  # Single word partial match
 
 
+class SearchLimits:
+    """Search result limit constants
+
+    Controls the maximum number of results and excerpts returned.
+    Used to optimize context token usage in LLM conversations.
+    """
+
+    # Maximum number of search results to display
+    DEFAULT_MAX_RESULTS: Final[int] = 5
+
+    # Maximum number of excerpts per result
+    MAX_EXCERPTS_PER_RESULT: Final[int] = 3
+
+
 # === Backward compatibility aliases ===
 # Maintain compatibility with existing OfficialRegistry constants
 

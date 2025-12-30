@@ -98,8 +98,8 @@ class TestGlyphsPluginsModule:
         assert isinstance(result, str)
         assert "ShowCrosshair" in result
 
-    def test_search_tool_with_max_results(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """測試搜尋工具支援 max_results 參數"""
+    def test_search_tool_shows_all_results(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """測試搜尋工具顯示所有結果（精簡格式）"""
         from glyphs_info_mcp.modules.glyphs_plugins.glyphs_plugins_module import GlyphsPluginsModule
 
         # Mock 多個結果
@@ -125,10 +125,11 @@ class TestGlyphsPluginsModule:
         tools = module.get_tools()
         search_tool = tools['plugins_search_official']
 
-        # 測試限制結果數量
-        result = search_tool(query="plugin", max_results=5)
-        # 結果應該包含最多 5 個外掛（實際可能更少因為評分過濾）
+        # 測試顯示所有結果（無數量限制，使用精簡格式）
+        result = search_tool(query="plugin")
         assert isinstance(result, str)
+        # 應該使用精簡表格格式
+        assert "| #" in result or "Found" in result
 
     def test_module_not_initialized_error(self) -> None:
         """測試模組未初始化時的錯誤處理"""

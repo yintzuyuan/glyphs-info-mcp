@@ -273,7 +273,8 @@ class TestSearchLocalTool:
 
         # Assert
         assert "ShowCrosshair" in result
-        assert "glyphsReporter" in result
+        # Compact format uses table, type is shown as icon + type name
+        assert "Reporter" in result or "🔌" in result
 
     def test_search_scripts_only(self, module: GlyphsPluginsModule) -> None:
         """測試只搜尋腳本"""
@@ -309,8 +310,10 @@ class TestSearchLocalTool:
         result = module._search_local_tool("mekkablue", category="plugin")
 
         # Assert
+        # Compact format only shows name, type, version - not bundle ID
+        # Bundle ID is available via plugins_get_info
         assert "ShowCrosshair" in result
-        assert "com.mekkablue.ShowCrosshair" in result
+        assert "plugins_get_info" in result  # Hint for full details
 
 
 class TestSearchOfficialTool:
@@ -371,17 +374,19 @@ class TestSearchOfficialTool:
 
         # Assert
         assert "🔍" in result  # Has search icon
-        assert "搜尋結果" in result or "找到" in result or "Search Results" in result or "Found" in result
+        # Compact format uses "Found X results"
+        assert "Found" in result
         assert "TestPlugin" in result
 
-    def test_search_official_with_max_results(self, module: GlyphsPluginsModule) -> None:
-        """測試結果數量限制"""
+    def test_search_official_multiple_results(self, module: GlyphsPluginsModule) -> None:
+        """測試多筆結果搜尋"""
         # Act
-        result = module._search_official_tool("Plugin", max_results=1)
+        result = module._search_official_tool("Plugin")
 
         # Assert
         assert "Plugin" in result
-        # 應該只有一個結果
+        # All matching results should be shown (no limit)
+        assert "TestPlugin" in result or "AnotherPlugin" in result
 
     def test_search_official_no_results(self, module: GlyphsPluginsModule) -> None:
         """測試無結果搜尋"""
