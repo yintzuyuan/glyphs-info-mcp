@@ -3,8 +3,13 @@
 """
 Glyphs MCP Server - Modular Architecture
 Combines all three independent modules: vocabulary, handbook, and api
+
+Supports two modes:
+- Legacy mode (UNIFIED_TOOLS=false): Exposes all 60 individual tools
+- Unified mode (UNIFIED_TOOLS=true): Exposes 8 unified entry points (default)
 """
 
+import os
 import sys
 import asyncio
 import logging
@@ -13,8 +18,12 @@ from pathlib import Path
 from typing import Any
 
 from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
+from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
 
 from glyphs_info_mcp.config import MODULES_CONFIG, MODULES_DIR
+
+# Configuration: Use unified tools by default (reduces context token cost by ~85%)
+USE_UNIFIED_TOOLS = os.environ.get("UNIFIED_TOOLS", "true").lower() == "true"
 
 # Setup logger - Must output to stderr because MCP stdio transport uses stdout
 logging.basicConfig(
@@ -168,38 +177,54 @@ def main() -> None:
         # Initialize all modules
         modules = {}
         total_tools = 0
-        
+
+        # Create unified tools router if using unified mode
+        router = UnifiedToolsRouter() if USE_UNIFIED_TOOLS else None
+
         for module_path, module_name in module_configs:
             if not module_path.exists():
                 logger.error(f"Module directory not found: {module_path}")
                 continue
-                
+
             module = import_module(module_path, module_name)
             if module is None:
                 logger.error(f"Failed to load {module_name} module")
                 continue
-                
+
             # Initialize the module
             if not module.initialize():
                 logger.error(f"Failed to initialize {module_name} module")
                 continue
-                
+
             modules[module_name] = module
             # Update global modules for resource access
             _modules[module_name] = module
-            
-            # Register module tools with FastMCP
-            for tool_name, tool_func in module.get_tools().items():
-                mcp.tool(name=tool_name)(tool_func)
-                total_tools += 1
-            
+
+            # Register module with router if using unified mode
+            if router is not None:
+                router.set_module(module_name, module)
+
+            # In legacy mode, register individual tools
+            if not USE_UNIFIED_TOOLS:
+                for tool_name, tool_func in module.get_tools().items():
+                    mcp.tool(name=tool_name)(tool_func)
+                    total_tools += 1
+
             logger.info(f"✅ {module_name.title()} module loaded successfully")
-        
+
         if not modules:
             logger.error("No modules loaded successfully")
             sys.exit(1)
-        
-        logger.info(f"✅ Glyphs MCP Server initialized with {len(modules)} modules and {total_tools} tools")
+
+        # In unified mode, register unified entry points
+        if USE_UNIFIED_TOOLS and router is not None:
+            for tool_name, tool_func in router.get_tools().items():
+                mcp.tool(name=tool_name)(tool_func)
+                total_tools += 1
+            logger.info(f"✅ Unified tools mode: 8 entry points registered (60 tools consolidated)")
+
+        mode_str = "unified" if USE_UNIFIED_TOOLS else "legacy"
+        logger.info(f"✅ Glyphs MCP Server initialized ({mode_str} mode) with {len(modules)} modules and {total_tools} tools")
 
         # Start the FastMCP server with STDIO transport (for Claude Desktop)
         mcp.run(transport="stdio")
