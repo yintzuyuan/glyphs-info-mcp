@@ -193,11 +193,3 @@ def get_handbook_cache_path() -> Path:
     """
     return PACKAGE_DATA_DIR / "handbook-cache" / "stable"
 
-
-def get_api_structure_path() -> Path:
-    """Get API structure JSON path.
-
-    Returns:
-        Path to api_structure.json
-    """
-    return PACKAGE_DATA_DIR / "api_structure.json"

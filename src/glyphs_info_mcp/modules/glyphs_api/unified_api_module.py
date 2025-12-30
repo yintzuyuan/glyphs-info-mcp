@@ -17,6 +17,17 @@ if shared_core_path not in sys.path:
     sys.path.insert(0, shared_core_path)
 
 from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
+from glyphs_info_mcp.data.class_hierarchy import (
+    CLASS_NAMES,
+    CLASS_REFERENCES,
+    COMPOSITION,
+    INHERITANCE,
+    OFFICIAL_DIAGRAM_URL,
+    REFERENCES,
+    build_structure_dict,
+    get_display_name,
+    get_python_class,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1643,21 +1654,14 @@ class UnifiedAPIModule(BaseMCPModule):
     # ========== Private Helper Methods (API Structure) ==========
 
     def _load_api_structure(self) -> dict:
-        """Load API structure data"""
-        try:
-            project_root = Path(__file__).parent.parent.parent
-            structure_file = project_root / "data" / "api_structure.json"
+        """Load API structure data from class_hierarchy module.
 
-            if not structure_file.exists():
-                logger.error(f"API structure file not found: {structure_file}")
-                return {}
+        Uses the new class_hierarchy.py module which derives data from
+        the official Glyphs object model diagram.
 
-            with open(structure_file, encoding="utf-8") as f:
-                return json.load(f)
-
-        except Exception as e:
-            logger.error(f"Failed to load API structure: {e}")
-            return {}
+        Source: https://docu.glyphsapp.com/_images/objectmodel.png
+        """
+        return build_structure_dict()
 
     def _get_class_hierarchy(self, format: str) -> str:
         """Implement class hierarchy query"""
@@ -1675,26 +1679,35 @@ class UnifiedAPIModule(BaseMCPModule):
         return "Unsupported format"
 
     def _format_hierarchy_tree(self, structure: dict) -> str:
-        """Format as ASCII tree diagram"""
+        """Format as ASCII tree diagram.
+
+        Dynamically generates tree from COMPOSITION data in class_hierarchy module.
+        Source: https://docu.glyphsapp.com/_images/objectmodel.png
+        """
         output = ["# Glyphs API Class Hierarchy\n"]
+        output.append(f"Source: {OFFICIAL_DIAGRAM_URL}\n")
 
         # Main structure: starting from Glyphs.app
         output.append("## Composition Hierarchy\n")
         output.append("```")
         output.append("Glyphs.app")
+        output.append("├── Styles")
+        output.append("│   └── AxisValues ←─(axisID)─ Axes")
         output.append("└── Fonts")
-        output.append("    ├── Masters → AxisValues")
+        output.append("    ├── Masters")
+        output.append("    │   └── AxisValues ←─(axisID)─ Axes")
+        output.append("    ├── Axes")
         output.append("    ├── Glyphs")
-        output.append("    │   └── Layers (via masterID)")
+        output.append("    │   └── Layers ←─(masterID)─ Masters")
         output.append("    │       ├── Shapes")
-        output.append("    │       │   ├── Paths → Nodes")
+        output.append("    │       │   ├── Paths")
+        output.append("    │       │   │   └── Nodes")
         output.append("    │       │   └── Components")
         output.append("    │       ├── Anchors")
-        output.append("    │       └── Hints")
-        output.append("    ├── Axes → AxisValues (via axisID)")
+        output.append("    │       ├── Hints")
+        output.append("    │       └── Guides")
         output.append("    ├── Features")
-        output.append("    ├── Classes")
-        output.append("    └── Instances")
+        output.append("    └── Classes")
         output.append("```\n")
 
         # Inheritance hierarchy
@@ -1705,30 +1718,60 @@ class UnifiedAPIModule(BaseMCPModule):
         output.append("└── GSComponent")
         output.append("```\n")
 
-        # Key relationships
-        output.append("## Key Relationships\n")
-        output.append("- **axisID**: Links GSAxis to GSAxisValue")
-        output.append("- **masterID**: Links GSFontMaster to GSLayer")
-        output.append("- **componentName**: Links GSComponent to GSGlyph")
+        # Key relationships (ID references - dashed lines in diagram)
+        output.append("## Key Relationships (ID References)\n")
+        output.append("- **axisID**: Links Axes ↔ AxisValues (in both Styles and Masters)")
+        output.append("- **masterID**: Links Masters ↔ Layers")
 
         return "\n".join(output)
 
     def _format_hierarchy_mermaid(self, structure: dict) -> str:
-        """Format as Mermaid chart syntax"""
+        """Format as Mermaid chart syntax.
+
+        Source: https://docu.glyphsapp.com/_images/objectmodel.png
+        """
         output = ["```mermaid", "graph TD"]
 
-        # Main composition relationships
+        # Root
         output.append('    Glyphs["Glyphs.app"]')
-        output.append("    Glyphs -->|fonts| GSFont")
-        output.append("    GSFont -->|glyphs| GSGlyph")
-        output.append("    GSFont -->|masters| GSFontMaster")
-        output.append("    GSFont -->|axes| GSAxis")
-        output.append("    GSGlyph -->|layers| GSLayer")
-        output.append("    GSLayer -->|shapes| GSShape")
-        output.append("    GSShape -->|is-a| GSPath")
-        output.append("    GSShape -->|is-a| GSComponent")
-        output.append("    GSPath -->|nodes| GSNode")
-        output.append("    GSLayer -->|anchors| GSAnchor")
+
+        # Glyphs.app children
+        output.append("    Glyphs --> Styles")
+        output.append("    Glyphs --> Fonts")
+
+        # Styles branch
+        output.append("    Styles --> AxisValues1[AxisValues]")
+
+        # Fonts branch - main children
+        output.append("    Fonts --> Masters")
+        output.append("    Fonts --> Axes")
+        output.append("    Fonts --> Glyphs2[Glyphs]")
+        output.append("    Fonts --> Features")
+        output.append("    Fonts --> Classes")
+
+        # Masters branch
+        output.append("    Masters --> AxisValues2[AxisValues]")
+
+        # Glyphs branch
+        output.append("    Glyphs2 --> Layers")
+
+        # Layers branch
+        output.append("    Layers --> Shapes")
+        output.append("    Layers --> Anchors")
+        output.append("    Layers --> Hints")
+        output.append("    Layers --> Guides")
+
+        # Shapes branch (inheritance)
+        output.append("    Shapes --> Paths")
+        output.append("    Shapes --> Components")
+
+        # Paths branch
+        output.append("    Paths --> Nodes")
+
+        # ID references (dashed lines)
+        output.append("    Axes -.->|axisID| AxisValues1")
+        output.append("    Axes -.->|axisID| AxisValues2")
+        output.append("    Masters -.->|masterID| Layers")
 
         output.append("```")
         return "\n".join(output)
