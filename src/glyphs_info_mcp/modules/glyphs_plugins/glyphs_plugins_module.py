@@ -155,7 +155,7 @@ class GlyphsPluginsModule(BaseMCPModule):
             # Search Scripts Collections
             if category in ("all", "scripts"):
                 for scripts in self.plugins_accessor.list_all_scripts():
-                    if query_lower in scripts.name.lower():
+                    if query_lower in scripts.name.lower() or (scripts.readme and query_lower in scripts.readme.lower()):
                         results.append({
                             "icon": "📜",
                             "name": scripts.name,

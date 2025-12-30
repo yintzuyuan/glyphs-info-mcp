@@ -6,12 +6,17 @@ Manages stable cache and dynamic update cache path selection and update logic.
 Issue #17: Added TOC structure generation and storage.
 """
 
+from __future__ import annotations
+
 import importlib.util
 import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from glyphs_info_mcp.modules.glyphs_handbook.handbook.toc_parser import TocEntry
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +173,7 @@ class HandbookCacheManager:
 
     def _save_toc_structure(
         self,
-        toc: List[Any],  # List[TocEntry]
+        toc: List[TocEntry],
         target_dir: Path,
     ) -> None:
         """
@@ -197,7 +202,7 @@ class HandbookCacheManager:
         )
         logger.info(f"Saved TOC structure: {toc_file} ({toc_data['total_entries']} entries)")
 
-    def _count_toc_entries(self, entries: List[Any]) -> int:
+    def _count_toc_entries(self, entries: List[TocEntry]) -> int:
         """Count total entries in TOC tree (including children)"""
         count = len(entries)
         for entry in entries:

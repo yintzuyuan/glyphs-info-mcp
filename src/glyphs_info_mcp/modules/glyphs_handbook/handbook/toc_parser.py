@@ -68,13 +68,7 @@ def parse_headings(content: str) -> list[tuple[str, int]]:
         # Must start with ## (skip # document title)
         if line.startswith("##"):
             # Count the number of # characters
-            level = 0
-            for char in line:
-                if char == "#":
-                    level += 1
-                else:
-                    break
-
+            level = len(line) - len(line.lstrip("#"))
             headings.append((line, level))
 
     return headings

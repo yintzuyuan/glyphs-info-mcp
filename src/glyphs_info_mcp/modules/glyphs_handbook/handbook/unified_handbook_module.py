@@ -406,7 +406,7 @@ class UnifiedHandbookModule(BaseMCPModule):
         """Format TOC focused on a specific chapter with context"""
         target_lower = target.lower()
 
-        # Find the target chapter and its index
+        # Find the target chapter and its index (top-level only)
         target_idx = -1
         target_chapter = None
         for i, ch in enumerate(chapters):
@@ -416,12 +416,16 @@ class UnifiedHandbookModule(BaseMCPModule):
                 break
 
         if target_chapter is None:
-            # Search in children
-            for ch in chapters:
-                for child in ch.get("children", []):
-                    if target_lower in child.get("title", "").lower():
-                        # Found in children, show parent context
-                        return self._format_chapter_with_children(ch, target)
+            # Use recursive search for nested chapters
+            matches = self._find_chapters_by_title(chapters, target)
+            if matches:
+                # Find parent context for the first match
+                match = matches[0]
+                parent = self._find_parent_chapter(chapters, match)
+                if parent:
+                    return self._format_chapter_with_children(parent, target)
+                # Match is a deeply nested entry without clear parent context
+                return self._format_matched_entry(match, target)
             return f"❌ No chapter found matching '{target}'"
 
         lines = [f"# TOC: {target_chapter['title']}\n"]
@@ -556,6 +560,68 @@ class UnifiedHandbookModule(BaseMCPModule):
                 matches.extend(self._find_chapters_by_title(children, title))
 
         return matches
+
+    def _find_parent_chapter(
+        self, chapters: list[dict], target: dict
+    ) -> dict | None:
+        """Find the parent chapter of a nested entry"""
+        for ch in chapters:
+            children = ch.get("children", [])
+            if target in children:
+                return ch
+            # Search deeper
+            for child in children:
+                grandchildren = child.get("children", [])
+                if target in grandchildren:
+                    return ch  # Return top-level parent for context
+                # Continue searching
+                if grandchildren:
+                    result = self._find_parent_in_children(child, target)
+                    if result:
+                        return ch
+        return None
+
+    def _find_parent_in_children(self, parent: dict, target: dict) -> dict | None:
+        """Helper to find parent in nested children"""
+        for child in parent.get("children", []):
+            if child is target:
+                return parent
+            grandchildren = child.get("children", [])
+            if target in grandchildren:
+                return child
+            if grandchildren:
+                result = self._find_parent_in_children(child, target)
+                if result:
+                    return result
+        return None
+
+    def _format_matched_entry(self, entry: dict, highlight: str) -> str:
+        """Format a matched entry with its children (only entries with files)"""
+        lines = [f"# TOC: {entry['title']}\n"]
+
+        # Show entry itself if it has a file
+        entry_file = entry.get("file", "")
+        if entry_file:
+            lines.append(f"**{entry['title']}** ({entry_file})")
+
+        # Show children that have files
+        children = entry.get("children", [])
+        children_with_files = [c for c in children if c.get("file")]
+
+        if children_with_files:
+            for child in children_with_files:
+                child_title = child.get("title", "")
+                child_file = child.get("file", "")
+                grandchildren = [gc for gc in child.get("children", []) if gc.get("file")]
+                if grandchildren:
+                    lines.append(f"  - {child_title} ({child_file}) [{len(grandchildren)} sub]")
+                else:
+                    lines.append(f"  - {child_title} ({child_file})")
+
+        if not entry_file and not children_with_files:
+            lines.append("(No associated files for this entry)")
+
+        return "\n".join(lines)
 
     def _unified_search(self, query: str, max_results: int) -> str:
         """Unified search implementation: pure content search (TOC matching removed)"""
