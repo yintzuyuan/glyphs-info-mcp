@@ -340,23 +340,23 @@ class UnifiedHandbookModule(BaseMCPModule):
         """Get MCP resources provided by this module"""
         return {}
 
-    def get_toc(self) -> str:
+    def get_toc(self, chapter: str = "") -> str:
         """
-        [HANDBOOK] Get complete Handbook table of contents structure
+        [HANDBOOK] Get Handbook table of contents
 
-        Returns the hierarchical structure of all Handbook chapters,
-        including parent-child relationships and corresponding file names.
+        Returns top-level chapters by default (~170 tokens).
+        Specify a chapter name to expand that section with its children.
 
-        Features (Issue #17):
-        - Complete chapter hierarchy with levels
-        - File mapping for each chapter
-        - Nested children structure
+        Args:
+            chapter: Optional chapter name to expand (partial match supported)
 
         Returns:
             Formatted TOC structure or error message
 
         Examples:
-            get_toc()  # Returns complete TOC tree
+            get_toc()                    # Top-level chapters only
+            get_toc("Interpolation")     # Expand Interpolation section
+            get_toc("Edit View")         # Expand Edit View section
         """
         if not self.is_initialized:
             return "Handbook module not initialized"
@@ -371,43 +371,105 @@ class UnifiedHandbookModule(BaseMCPModule):
                     "Run `handbook_update_cache(force=True)` to regenerate."
                 )
 
-            # Format output
-            output = ["# 📖 Handbook Table of Contents\n"]
-            output.append(f"**Total entries**: {toc_data.get('total_entries', 'N/A')}")
-            output.append(f"**Generated**: {toc_data.get('generated_at', 'N/A')}\n")
-            output.append("---\n")
-
             chapters = toc_data.get("chapters", [])
-            output.append(self._format_toc_tree(chapters))
 
-            return "\n".join(output)
+            # If chapter specified, show focused view
+            if chapter:
+                return self._format_focused_toc(chapters, chapter)
+
+            # Default: show top-level summary only
+            return self._format_top_level_toc(chapters)
 
         except Exception as e:
             logger.error(f"Failed to get TOC: {e}")
             return f"❌ Failed to get TOC: {str(e)}"
 
-    def _format_toc_tree(
-        self, entries: list[dict], indent: int = 0
-    ) -> str:
-        """Format TOC entries as indented tree"""
-        lines = []
-        indent_str = "  " * indent
+    def _format_top_level_toc(self, chapters: list[dict]) -> str:
+        """Format top-level chapters only (compact view)"""
+        lines = ["# Handbook TOC (18 chapters)\n"]
 
-        for entry in entries:
-            title = entry.get("title", "Unknown")
-            file = entry.get("file", "")
-            level = entry.get("level", 0)
+        for ch in chapters:
+            title = ch.get("title", "Unknown")
+            file = ch.get("file", "")
+            children_count = len(ch.get("children", []))
 
-            # Format entry line
-            if file:
-                lines.append(f"{indent_str}- **{title}** (`{file}`)")
+            if children_count > 0:
+                lines.append(f"- {title} ({file}) [{children_count} sub]")
             else:
-                lines.append(f"{indent_str}- **{title}** (index)")
+                lines.append(f"- {title} ({file})")
 
-            # Recursively format children
-            children = entry.get("children", [])
-            if children:
-                lines.append(self._format_toc_tree(children, indent + 1))
+        lines.append("\n💡 Use `handbook_get_toc(chapter)` to expand a section")
+        return "\n".join(lines)
+
+    def _format_focused_toc(self, chapters: list[dict], target: str) -> str:
+        """Format TOC focused on a specific chapter with context"""
+        target_lower = target.lower()
+
+        # Find the target chapter and its index
+        target_idx = -1
+        target_chapter = None
+        for i, ch in enumerate(chapters):
+            if target_lower in ch.get("title", "").lower():
+                target_idx = i
+                target_chapter = ch
+                break
+
+        if target_chapter is None:
+            # Search in children
+            for ch in chapters:
+                for child in ch.get("children", []):
+                    if target_lower in child.get("title", "").lower():
+                        # Found in children, show parent context
+                        return self._format_chapter_with_children(ch, target)
+            return f"❌ No chapter found matching '{target}'"
+
+        lines = [f"# TOC: {target_chapter['title']}\n"]
+
+        # Show previous chapter (context)
+        if target_idx > 0:
+            prev = chapters[target_idx - 1]
+            lines.append(f"← {prev['title']} ({prev.get('file', '')})")
+
+        # Show target chapter with full children
+        lines.append(f"\n**{target_chapter['title']}** ({target_chapter.get('file', '')})")
+        for child in target_chapter.get("children", []):
+            child_title = child.get("title", "")
+            child_file = child.get("file", "")
+            grandchildren = child.get("children", [])
+            if grandchildren:
+                lines.append(f"  - {child_title} ({child_file}) [{len(grandchildren)} sub]")
+            else:
+                lines.append(f"  - {child_title} ({child_file})")
+
+        # Show next chapter (context)
+        if target_idx < len(chapters) - 1:
+            next_ch = chapters[target_idx + 1]
+            lines.append(f"\n→ {next_ch['title']} ({next_ch.get('file', '')})")
+
+        return "\n".join(lines)
+
+    def _format_chapter_with_children(self, chapter: dict, highlight: str) -> str:
+        """Format a chapter with its children, highlighting the target"""
+        highlight_lower = highlight.lower()
+        lines = [f"# TOC: {chapter['title']}\n"]
+        lines.append(f"**{chapter['title']}** ({chapter.get('file', '')})")
+
+        for child in chapter.get("children", []):
+            child_title = child.get("title", "")
+            child_file = child.get("file", "")
+            grandchildren = child.get("children", [])
+
+            # Highlight matching child
+            if highlight_lower in child_title.lower():
+                if grandchildren:
+                    lines.append(f"  → **{child_title}** ({child_file}) [{len(grandchildren)} sub]")
+                else:
+                    lines.append(f"  → **{child_title}** ({child_file})")
+            else:
+                if grandchildren:
+                    lines.append(f"  - {child_title} ({child_file}) [{len(grandchildren)} sub]")
+                else:
+                    lines.append(f"  - {child_title} ({child_file})")
 
         return "\n".join(lines)
 
