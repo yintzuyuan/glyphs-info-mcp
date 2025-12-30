@@ -179,10 +179,10 @@ def build_structure_dict() -> dict:
     Returns:
         Dictionary with class hierarchy information
     """
-    classes = {}
+    classes: dict[str, dict[str, str | list[str]]] = {}
 
     for display_name, python_class in CLASS_NAMES.items():
-        class_info = {
+        class_info: dict[str, str | list[str]] = {
             "type": "singleton" if display_name == "Glyphs.app" else "class",
             "python_class": python_class,
             "display_name": display_name,
