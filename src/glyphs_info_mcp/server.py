@@ -20,7 +20,7 @@ from typing import Any
 from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
 from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
 
-from glyphs_info_mcp.config import MODULES_CONFIG, MODULES_DIR
+from glyphs_info_mcp.config import MODULES_CONFIG, MODULES_DIR, is_module_enabled
 
 # Configuration: Use unified tools by default (reduces context token cost by ~85%)
 USE_UNIFIED_TOOLS = os.environ.get("UNIFIED_TOOLS", "true").lower() == "true"
@@ -54,13 +54,20 @@ def load_module_configs() -> list[tuple[Path, str]]:
         module_configs = []
 
         for module in config['modules']:
-            # Check if module is enabled (defaults to True)
+            module_name = module['name']
+
+            # Check if module is enabled in YAML (defaults to True)
             if not module.get('enabled', True):
-                logger.info(f"⏭️  Skipping disabled module: {module['name']}")
+                logger.info(f"⏭️  Skipping module (disabled in YAML): {module_name}")
+                continue
+
+            # Check if module is enabled via environment variables (Issue #29)
+            if not is_module_enabled(module_name):
+                logger.info(f"⏭️  Skipping module (disabled via env): {module_name}")
                 continue
 
             module_path = MODULES_DIR / module['directory']
-            module_configs.append((module_path, module['name']))
+            module_configs.append((module_path, module_name))
 
         logger.info(f"✅ Loaded {len(module_configs)} module configs from YAML")
         return module_configs
@@ -68,12 +75,13 @@ def load_module_configs() -> list[tuple[Path, str]]:
     except Exception as e:
         logger.error(f"❌ Failed to load modules_config.yaml: {e}")
         logger.warning("⚠️  Falling back to hardcoded module list")
-        # Fallback to original hardcoded list
-        return [
+        # Fallback to original hardcoded list (also respects env var filters)
+        fallback = [
             (MODULES_DIR / "glyphs_vocabulary", "vocabulary"),
             (MODULES_DIR / "glyphs_handbook", "handbook"),
-            (MODULES_DIR / "glyphs_api", "api")
+            (MODULES_DIR / "glyphs_api", "api"),
         ]
+        return [(p, n) for p, n in fallback if is_module_enabled(n)]
 
 def import_module(module_path: Path, module_name: str) -> BaseMCPModule | None:
     """Dynamically import a module
