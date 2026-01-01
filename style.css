@@ -263,7 +263,23 @@ header {
 .section-title {
   text-align: center;
   font-size: 1.75rem;
+  margin-bottom: var(--space-md);
+}
+
+.section-subtitle {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
   margin-bottom: var(--space-xl);
+}
+
+.section-subtitle a {
+  color: var(--accent);
+}
+
+.section-title + .modules-grid,
+.section-title + .features-grid {
+  margin-top: var(--space-xl);
 }
 
 .features-grid {
