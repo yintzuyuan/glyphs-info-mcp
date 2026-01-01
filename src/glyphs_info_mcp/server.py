@@ -229,7 +229,11 @@ def main() -> None:
             for tool_name, tool_func in router.get_tools().items():
                 mcp.tool(name=tool_name)(tool_func)
                 total_tools += 1
-            logger.info(f"✅ Unified tools mode: 8 entry points registered (60 tools consolidated)")
+
+            logger.info(
+                f"✅ Unified tools mode: {total_tools} entry points registered (60 tools consolidated)"
+            )
+            logger.info(f"📦 Enabled modules: {', '.join(router._modules.keys())}")
 
         mode_str = "unified" if USE_UNIFIED_TOOLS else "legacy"
         logger.info(f"✅ Glyphs MCP Server initialized ({mode_str} mode) with {len(modules)} modules and {total_tools} tools")

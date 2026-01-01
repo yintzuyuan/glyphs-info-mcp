@@ -203,3 +203,85 @@ class TestIsModuleEnabled:
             with caplog.at_level(logging.INFO):
                 is_module_enabled("handbook")
                 assert "whitelist" in caplog.text.lower() or "enabled" in caplog.text.lower()
+
+
+class MockModule:
+    """Mock module for testing"""
+
+    def __init__(self, name: str):
+        self.name = name
+
+
+class TestUnifiedToolsDynamicRegistration:
+    """測試統一工具動態註冊機制"""
+
+    def test_all_modules_enabled_registers_all_tools(self) -> None:
+        """所有模組啟用時註冊 8 個工具"""
+        from glyphs_info_mcp.config import VALID_MODULE_NAMES
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        router = UnifiedToolsRouter()
+        # 模擬載入所有 8 個模組
+        for module_name in VALID_MODULE_NAMES:
+            router.set_module(module_name, MockModule(module_name))
+
+        tools = router.get_tools()
+        assert len(tools) == 8
+        assert set(tools.keys()) == {
+            "handbook",
+            "vocabulary",
+            "api",
+            "plugins",
+            "scripts",
+            "sdk",
+            "news",
+            "lighttable",
+        }
+
+    def test_whitelist_filters_tools(self) -> None:
+        """白名單模式只註冊對應工具"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        router = UnifiedToolsRouter()
+        router.set_module("handbook", MockModule("handbook"))
+        router.set_module("api", MockModule("api"))
+
+        tools = router.get_tools()
+        assert len(tools) == 2
+        assert set(tools.keys()) == {"handbook", "api"}
+
+    def test_blacklist_excludes_tools(self) -> None:
+        """黑名單模式排除指定工具"""
+        from glyphs_info_mcp.config import VALID_MODULE_NAMES
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        router = UnifiedToolsRouter()
+        # 載入除了 news 和 plugins 外的所有模組
+        for module_name in VALID_MODULE_NAMES:
+            if module_name not in ["glyphs_news", "glyphs_plugins"]:
+                router.set_module(module_name, MockModule(module_name))
+
+        tools = router.get_tools()
+        assert len(tools) == 6
+        assert "news" not in tools
+        assert "plugins" not in tools
+
+    def test_empty_modules_returns_empty_tools(self) -> None:
+        """無模組時不註冊任何工具"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        router = UnifiedToolsRouter()
+        tools = router.get_tools()
+        assert len(tools) == 0
+
+    def test_module_tool_mapping_consistency(self) -> None:
+        """驗證模組與工具對應表的一致性"""
+        from glyphs_info_mcp.config import VALID_MODULE_NAMES
+        from glyphs_info_mcp.unified_tools import MODULE_TOOL_MAPPING
+
+        mapped_modules = set(MODULE_TOOL_MAPPING.keys())
+        assert mapped_modules == VALID_MODULE_NAMES, (
+            f"MODULE_TOOL_MAPPING 與 VALID_MODULE_NAMES 不一致。"
+            f"Missing: {VALID_MODULE_NAMES - mapped_modules}, "
+            f"Extra: {mapped_modules - VALID_MODULE_NAMES}"
+        )

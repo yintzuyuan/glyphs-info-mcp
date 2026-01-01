@@ -243,10 +243,20 @@ class TestUnifiedToolsGetTools:
     """Test get_unified_tools function"""
 
     def test_get_unified_tools_returns_8_tools(self) -> None:
-        """Test that get_unified_tools returns exactly 8 tools"""
+        """Test that get_unified_tools returns exactly 8 tools when all modules are loaded"""
+        from glyphs_info_mcp.config import VALID_MODULE_NAMES
         from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
 
         router = UnifiedToolsRouter()
+
+        # Mock loading all 8 modules
+        class MockModule:
+            def __init__(self, name: str):
+                self.name = name
+
+        for module_name in VALID_MODULE_NAMES:
+            router.set_module(module_name, MockModule(module_name))
+
         tools = router.get_tools()
 
         assert len(tools) == 8
