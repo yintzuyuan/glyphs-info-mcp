@@ -340,6 +340,22 @@ python --version  # 需要 3.10+
 # export GLYPHS_REPOSITORIES_PATH=~/Library/Application\ Support/Glyphs\ 3/Repositories
 ```
 
+或在 Claude Desktop 配置中使用 `env` 欄位：
+
+```json
+{
+  "mcpServers": {
+    "glyphs-info": {
+      "command": "uvx",
+      "args": ["glyphs-info-mcp"],
+      "env": {
+        "GLYPHS_APP_PATH": "/Applications/Glyphs 3.app"
+      }
+    }
+  }
+}
+```
+
 ## 🔗 相關資源
 
 - [Glyphs 官方網站](https://glyphsapp.com/)

@@ -340,6 +340,22 @@ All paths are auto-detected. Only set these if using non-standard locations:
 # export GLYPHS_REPOSITORIES_PATH=~/Library/Application\ Support/Glyphs\ 3/Repositories
 ```
 
+Or use the `env` field in Claude Desktop configuration:
+
+```json
+{
+  "mcpServers": {
+    "glyphs-info": {
+      "command": "uvx",
+      "args": ["glyphs-info-mcp"],
+      "env": {
+        "GLYPHS_APP_PATH": "/Applications/Glyphs 3.app"
+      }
+    }
+  }
+}
+```
+
 ## 🔗 Resources
 
 - [Glyphs Official Website](https://glyphsapp.com/)
