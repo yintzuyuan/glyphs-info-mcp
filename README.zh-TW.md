@@ -356,6 +356,46 @@ python --version  # 需要 3.10+
 }
 ```
 
+### 模組啟用/禁用
+
+預設情況下所有模組都會啟用。若要控制特定模組，可使用環境變數：
+
+**可用模組**：`vocabulary`、`handbook`、`api`、`glyphs_plugins`、`glyphs_news`、`glyphs_sdk`、`light_table_api`、`mekkablue_scripts`
+
+**白名單模式**（只啟用指定模組）：
+
+```json
+{
+  "mcpServers": {
+    "glyphs-info": {
+      "command": "uvx",
+      "args": ["glyphs-info-mcp"],
+      "env": {
+        "GLYPHS_ENABLED_MODULES": "handbook,api"
+      }
+    }
+  }
+}
+```
+
+**黑名單模式**（排除指定模組）：
+
+```json
+{
+  "mcpServers": {
+    "glyphs-info": {
+      "command": "uvx",
+      "args": ["glyphs-info-mcp"],
+      "env": {
+        "GLYPHS_DISABLED_MODULES": "glyphs_news,glyphs_plugins"
+      }
+    }
+  }
+}
+```
+
+> 若同時設定白名單和黑名單，白名單優先。
+
 ## 🔗 相關資源
 
 - [Glyphs 官方網站](https://glyphsapp.com/)

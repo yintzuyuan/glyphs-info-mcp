@@ -7,9 +7,10 @@ This module provides centralized path management for:
 - External data sources (Glyphs app, Repositories)
 """
 
+import logging
+import os
 from functools import cache
 from pathlib import Path
-import os
 
 import platformdirs
 
@@ -192,4 +193,111 @@ def get_handbook_cache_path() -> Path:
         Path to bundled handbook cache directory
     """
     return PACKAGE_DATA_DIR / "handbook-cache" / "stable"
+
+
+# =============================================================================
+# Module Filter Configuration (Issue #29)
+# =============================================================================
+
+logger = logging.getLogger(__name__)
+
+ENABLED_MODULES_ENV = "GLYPHS_ENABLED_MODULES"
+"""Environment variable for whitelist (only enable these modules)."""
+
+DISABLED_MODULES_ENV = "GLYPHS_DISABLED_MODULES"
+"""Environment variable for blacklist (disable these modules)."""
+
+VALID_MODULE_NAMES: set[str] = {
+    "vocabulary",
+    "handbook",
+    "api",
+    "glyphs_plugins",
+    "glyphs_news",
+    "glyphs_sdk",
+    "light_table_api",
+    "mekkablue_scripts",
+}
+"""All valid module names."""
+
+# Track if we've already logged the whitelist precedence warning
+_whitelist_precedence_logged = False
+
+
+def parse_module_list(env_value: str) -> set[str]:
+    """Parse comma-separated module list from environment variable.
+
+    Args:
+        env_value: Comma-separated module names (e.g., "handbook,api,vocabulary")
+
+    Returns:
+        Set of valid module names. Invalid names are logged as warnings and ignored.
+    """
+    if not env_value or not env_value.strip():
+        return set()
+
+    modules: set[str] = set()
+    invalid_names: list[str] = []
+
+    for name in env_value.split(","):
+        name = name.strip()
+        if not name:
+            continue
+
+        if name in VALID_MODULE_NAMES:
+            modules.add(name)
+        else:
+            invalid_names.append(name)
+
+    if invalid_names:
+        logger.warning(
+            f"Unknown module names: {', '.join(invalid_names)}. "
+            f"Valid names: {', '.join(sorted(VALID_MODULE_NAMES))}"
+        )
+
+    return modules
+
+
+def is_module_enabled(module_name: str) -> bool:
+    """Check if a module should be enabled based on environment variables.
+
+    Logic:
+    - If whitelist is set: only modules in whitelist are enabled
+    - If only blacklist is set: modules not in blacklist are enabled
+    - If neither is set: all modules are enabled
+    - Whitelist takes precedence over blacklist
+
+    Args:
+        module_name: The module name to check
+
+    Returns:
+        True if the module should be enabled, False otherwise
+    """
+    global _whitelist_precedence_logged
+
+    # Invalid module names are always disabled
+    if module_name not in VALID_MODULE_NAMES:
+        return False
+
+    whitelist_env = os.getenv(ENABLED_MODULES_ENV, "")
+    blacklist_env = os.getenv(DISABLED_MODULES_ENV, "")
+
+    whitelist = parse_module_list(whitelist_env)
+    blacklist = parse_module_list(blacklist_env)
+
+    # Case 1: Whitelist is set (takes precedence)
+    if whitelist:
+        if blacklist and not _whitelist_precedence_logged:
+            logger.info(
+                f"Both {ENABLED_MODULES_ENV} and {DISABLED_MODULES_ENV} are set. "
+                f"Using whitelist (enabled modules), blacklist will be ignored."
+            )
+            _whitelist_precedence_logged = True
+        return module_name in whitelist
+
+    # Case 2: Only blacklist is set
+    if blacklist:
+        return module_name not in blacklist
+
+    # Case 3: Neither is set - all modules enabled
+    return True
 

@@ -356,6 +356,46 @@ Or use the `env` field in Claude Desktop configuration:
 }
 ```
 
+### Module Enable/Disable
+
+By default, all modules are enabled. To control specific modules, use environment variables:
+
+**Available modules**: `vocabulary`, `handbook`, `api`, `glyphs_plugins`, `glyphs_news`, `glyphs_sdk`, `light_table_api`, `mekkablue_scripts`
+
+**Whitelist mode** (enable only specified modules):
+
+```json
+{
+  "mcpServers": {
+    "glyphs-info": {
+      "command": "uvx",
+      "args": ["glyphs-info-mcp"],
+      "env": {
+        "GLYPHS_ENABLED_MODULES": "handbook,api"
+      }
+    }
+  }
+}
+```
+
+**Blacklist mode** (disable specified modules):
+
+```json
+{
+  "mcpServers": {
+    "glyphs-info": {
+      "command": "uvx",
+      "args": ["glyphs-info-mcp"],
+      "env": {
+        "GLYPHS_DISABLED_MODULES": "glyphs_news,glyphs_plugins"
+      }
+    }
+  }
+}
+```
+
+> If both whitelist and blacklist are set, whitelist takes precedence.
+
 ## 🔗 Resources
 
 - [Glyphs Official Website](https://glyphsapp.com/)
