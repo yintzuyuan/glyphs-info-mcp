@@ -10,9 +10,22 @@ the underlying module implementations.
 """
 
 import logging
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 logger = logging.getLogger(__name__)
+
+
+# Module name to unified tool name mapping
+MODULE_TOOL_MAPPING: dict[str, str] = {
+    "handbook": "handbook",
+    "vocabulary": "vocabulary",
+    "api": "api",
+    "glyphs_plugins": "plugins",
+    "mekkablue_scripts": "scripts",
+    "glyphs_sdk": "sdk",
+    "glyphs_news": "news",
+    "light_table_api": "lighttable",
+}
 
 
 class UnifiedToolsRouter:
@@ -43,12 +56,13 @@ class UnifiedToolsRouter:
         self._modules[name] = module
 
     def get_tools(self) -> dict[str, Callable[..., Any]]:
-        """Get all unified tool entry points.
+        """Get all unified tool entry points (only for loaded modules).
 
         Returns:
-            Dictionary of tool_name -> callable
+            Dictionary of tool_name -> callable (filtered by loaded modules)
         """
-        return {
+        # Complete tool definition
+        all_tools = {
             "handbook": self.handbook,
             "vocabulary": self.vocabulary,
             "api": self.api,
@@ -58,6 +72,16 @@ class UnifiedToolsRouter:
             "news": self.news,
             "lighttable": self.lighttable,
         }
+
+        # Only return tools for loaded modules
+        available_tools = {
+            tool_name: cast(Callable[..., Any], all_tools[tool_name])
+            for module_name, tool_name in MODULE_TOOL_MAPPING.items()
+            if module_name in self._modules
+        }
+
+        logger.info(f"Registered {len(available_tools)}/{len(all_tools)} unified tools")
+        return available_tools
 
     # ========== Handbook Entry Point ==========
 
