@@ -10,7 +10,7 @@ the underlying module implementations.
 """
 
 import logging
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ class UnifiedToolsRouter:
 
         # Only return tools for loaded modules
         available_tools = {
-            tool_name: all_tools[tool_name]
+            tool_name: cast(Callable[..., Any], all_tools[tool_name])
             for module_name, tool_name in MODULE_TOOL_MAPPING.items()
             if module_name in self._modules
         }
