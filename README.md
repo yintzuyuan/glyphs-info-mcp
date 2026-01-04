@@ -141,6 +141,33 @@ MCP resources provide direct access to plugin development templates through Clau
 - Python: `____PluginClassName____`, `____PluginName____`, `____PluginMenuName____`
 - Xcode: `___PACKAGENAMEASIDENTIFIER___`, `___FILENAME___`, `___PACKAGENAME___`, `___FULLUSERNAME___`
 
+### Python Plugin Samples (Issue #37)
+
+6 complete Python plugin examples with source code:
+
+- `glyphs://python-sample/callback_for_context_menu` - Context menu callback example
+- `glyphs://python-sample/document_exported` - Document export hook
+- `glyphs://python-sample/multipletools` - Multiple tools in one plugin
+- `glyphs://python-sample/plugin_preferences` - Plugin preferences handling
+- `glyphs://python-sample/plugin_with_window` - Plugin with custom window
+- `glyphs://python-sample/smiley_panel_plugin` - Panel plugin example
+
+### Xcode Plugin Samples (Issue #37)
+
+4 complete Xcode/Objective-C plugin examples:
+
+- `glyphs://xcode-sample/custom_parameter_ui` - Custom parameter UI
+- `glyphs://xcode-sample/inspector_demo` - Inspector panel demo
+- `glyphs://xcode-sample/photo_font` - PhotoFont plugin
+- `glyphs://xcode-sample/plugin_with_window` - Plugin with window
+
+**Access Methods for Samples**:
+
+- **Via Claude Desktop**: Resources automatically appear in the MCP resources list
+- **Via Tools**:
+  - Python: `sdk(action='list_python_samples')` and `sdk(action='get_python_sample', sample_name='...')`
+  - Xcode: `sdk(action='list_samples')` and `sdk(action='get_sample', sample_name='...')`
+
 ## 📋 Feature Overview
 
 ### Operating Requirements
@@ -247,10 +274,14 @@ The server provides 8 unified tools with action-based routing, reducing context 
 |--------|-------------|
 | `search` | Search SDK content |
 | `get` | Get SDK file content |
-| `list_templates` | List Xcode templates |
-| `get_template` | Get Xcode template |
+| `list_xcode_templates` | List Xcode templates |
+| `get_xcode_template` | Get Xcode template |
+| `list_python_templates` | List Python templates |
+| `get_python_template` | Get Python template |
 | `list_samples` | List Xcode samples |
 | `get_sample` | Get Xcode sample |
+| `list_python_samples` | List Python samples |
+| `get_python_sample` | Get Python sample |
 
 #### news
 
@@ -455,4 +486,4 @@ MIT License - see [LICENSE](LICENSE) file.
 
 **Glyphs info MCP** - Making Glyphs knowledge queries simple and powerful
 
-*Last updated: 2025-12-30*
+*Last updated: 2026-01-05*

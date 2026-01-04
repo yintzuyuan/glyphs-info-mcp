@@ -141,6 +141,33 @@ MCP 資源透過 Claude Desktop 提供外掛開發範本的直接存取。
 - Python：`____PluginClassName____`、`____PluginName____`、`____PluginMenuName____`
 - Xcode：`___PACKAGENAMEASIDENTIFIER___`、`___FILENAME___`、`___PACKAGENAME___`、`___FULLUSERNAME___`
 
+### Python 外掛範例（Issue #37）
+
+6 個完整的 Python 外掛範例專案：
+
+- `glyphs://python-sample/callback_for_context_menu` - 右鍵選單回呼範例
+- `glyphs://python-sample/document_exported` - 文件匯出 Hook
+- `glyphs://python-sample/multipletools` - 多工具整合外掛
+- `glyphs://python-sample/plugin_preferences` - 外掛偏好設定處理
+- `glyphs://python-sample/plugin_with_window` - 帶視窗的外掛
+- `glyphs://python-sample/smiley_panel_plugin` - 面板外掛範例
+
+### Xcode 外掛範例（Issue #37）
+
+4 個完整的 Xcode/Objective-C 外掛範例：
+
+- `glyphs://xcode-sample/custom_parameter_ui` - 自訂參數 UI
+- `glyphs://xcode-sample/inspector_demo` - Inspector 面板示範
+- `glyphs://xcode-sample/photo_font` - PhotoFont 外掛
+- `glyphs://xcode-sample/plugin_with_window` - 帶視窗的外掛
+
+**範例存取方式**：
+
+- **透過 Claude Desktop**：資源自動顯示在 MCP 資源清單中
+- **透過工具**：
+  - Python：`sdk(action='list_python_samples')` 和 `sdk(action='get_python_sample', sample_name='...')`
+  - Xcode：`sdk(action='list_samples')` 和 `sdk(action='get_sample', sample_name='...')`
+
 ## 📋 功能總覽
 
 ### 運作條件一覽
@@ -247,10 +274,14 @@ MCP 資源透過 Claude Desktop 提供外掛開發範本的直接存取。
 |--------|------|
 | `search` | 搜尋 SDK 內容 |
 | `get` | 取得 SDK 檔案內容 |
-| `list_templates` | 列出 Xcode 模板 |
-| `get_template` | 取得 Xcode 模板 |
+| `list_xcode_templates` | 列出 Xcode 模板 |
+| `get_xcode_template` | 取得 Xcode 模板 |
+| `list_python_templates` | 列出 Python 模板 |
+| `get_python_template` | 取得 Python 模板 |
 | `list_samples` | 列出 Xcode 範例 |
 | `get_sample` | 取得 Xcode 範例 |
+| `list_python_samples` | 列出 Python 範例 |
+| `get_python_sample` | 取得 Python 範例 |
 
 #### news
 
@@ -455,4 +486,4 @@ MIT License - 詳見 [LICENSE](LICENSE) 檔案。
 
 **Glyphs info MCP** - 讓 Glyphs 知識查詢變得簡單而強大
 
-*最後更新：2025-12-30*
+*最後更新：2026-01-05*
