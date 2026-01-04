@@ -686,6 +686,133 @@ class GlyphsSDKModule(BaseMCPModule):
             return f"❌ Error getting Xcode sample: {e}"
 
     # ============================================================================
+    # Python Samples Tools (Issue #38)
+    # ============================================================================
+
+    def _list_python_samples_tool(self) -> str:
+        """
+        [SDK] List all Python sample plugins
+
+        Display available Python sample plugins demonstrating various plugin types
+        and implementation patterns. Samples include complete working code.
+
+        Sample types:
+        - Script samples (standalone Python scripts)
+        - Plugin samples (.glyphsPlugin bundles)
+        - Palette samples (.glyphsPalette bundles)
+        - Tool samples (.glyphsTool bundles)
+
+        Related resources:
+        - Use sdk(action="get_python_sample") to view specific sample's complete code
+        - Use api(action="search_python") to view API definitions used
+
+        Returns:
+            Sample list with name, type, and file information
+        """
+        if not self.native_accessor:
+            return "❌ Native Accessor not initialized"
+
+        try:
+            samples = self.native_accessor.list_python_samples()
+
+            if not samples:
+                return "No Python sample plugins found"
+
+            result = "## 🐍 Python Sample Plugin List\n\n"
+            result += f"Found {len(samples)} sample plugins\n\n"
+
+            for sample in samples:
+                result += f"### {sample['name']}\n"
+                result += f"- **Type**: {sample['type']}\n"
+                result += f"- **Bundle**: {'✅ Yes' if sample['has_bundle'] else '❌ No (standalone script)'}\n"
+                result += f"- **Source files**: {sample['source_file_count']}\n"
+
+                if sample.get("readme"):
+                    # Only show first 200 characters of README
+                    readme_preview = sample["readme"][:200].strip()
+                    result += f"- **Description**: {readme_preview}{'...' if len(sample['readme']) > 200 else ''}\n"
+
+                result += f"- **Path**: `{sample['path']}`\n\n"
+
+            result += "\n💡 **Usage tips**:\n"
+            result += "- Use `sdk(action=\"get_python_sample\", sample_name=\"...\")` to view specific sample's complete code\n"
+            result += "- Bundle samples can be installed directly to ~/Library/Application Support/Glyphs 3/Plugins/\n"
+            result += "- Standalone scripts can be run from Script menu or used as reference\n"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error listing Python samples: {e}"
+
+    def _get_python_sample_tool(self, sample_name: str) -> str:
+        """
+        [SDK] Get complete information of a specific Python sample
+
+        Retrieves complete content of Python sample plugin, including:
+        - README documentation
+        - Complete Python source code files
+        - Plugin structure information
+
+        Args:
+            sample_name: Sample name (e.g., "Plugin With Window" or "Callback for context menu")
+
+        Returns:
+            Sample documentation, file structure, and complete source code
+        """
+        if not self.native_accessor:
+            return "❌ Native Accessor not initialized"
+
+        if not sample_name:
+            return "Please provide a sample name"
+
+        try:
+            sample = self.native_accessor.get_python_sample(sample_name)
+
+            if not sample:
+                available = self.native_accessor.list_python_samples()
+                names = [s["name"] for s in available]
+                return f"❌ Sample not found: {sample_name}\n\nAvailable samples:\n" + "\n".join(
+                    f"- {n}" for n in names
+                )
+
+            result = f"## 🐍 {sample['name']}\n\n"
+            result += f"**Type**: {sample['type']}\n"
+            result += f"**Bundle**: {'✅ Yes' if sample['has_bundle'] else '❌ No (standalone script)'}\n"
+            result += f"**Source files**: {sample['source_file_count']}\n\n"
+
+            # Show README
+            if sample.get("readme"):
+                result += "### 📖 README\n\n"
+                result += f"{sample['readme']}\n\n"
+
+            # List source files
+            result += f"### 📁 Source Files ({sample['source_file_count']})\n\n"
+            for file_info in sample["source_files"]:
+                result += f"- `{file_info['path']}`\n"
+
+            # Show source code content
+            result += "\n### 💻 Source Code\n\n"
+            source_code = sample.get("source_code", {})
+
+            for file_path, content in source_code.items():
+                result += f"#### `{file_path}`\n\n"
+                result += f"```python\n{content}\n```\n\n"
+
+            # Show load errors if any
+            if sample.get("partial_load"):
+                load_errors = sample.get("load_errors", [])
+                result += "### ⚠️ Load Warnings\n\n"
+                result += "Some files could not be loaded:\n\n"
+                for error in load_errors:
+                    result += f"- `{error['file']}`: {error['error']}\n"
+                result += "\n"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error getting Python sample: {e}"
+
+    # ============================================================================
     # MCP Resources Implementation (Issue #33)
     # ============================================================================
 
