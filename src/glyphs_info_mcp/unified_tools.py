@@ -502,6 +502,8 @@ class UnifiedToolsRouter:
         - get_sample: Get Xcode sample (sample_name)
         - list_python_templates: List Python plugin templates (template_type)
         - get_python_template: Get Python template details (template_id)
+        - list_python_samples: List Python sample plugins (Issue #38)
+        - get_python_sample: Get Python sample details (sample_name) (Issue #38)
 
         Args:
             action: Operation to perform
@@ -549,8 +551,13 @@ class UnifiedToolsRouter:
                 return module._list_python_templates_tool(template_type=template_type if template_type else None)
             elif action == "get_python_template":
                 return module._get_python_template_tool(template_id=template_id)
+            # Python Samples (Issue #38)
+            elif action == "list_python_samples":
+                return module._list_python_samples_tool()
+            elif action == "get_python_sample":
+                return module._get_python_sample_tool(sample_name=sample_name)
             else:
-                return f"## Invalid Action\n\nUnknown action: `{action}`\n\nAvailable actions: search, get, list_xcode_templates, get_xcode_template, list_samples, get_sample, list_python_templates, get_python_template"
+                return f"## Invalid Action\n\nUnknown action: `{action}`\n\nAvailable actions: search, get, list_xcode_templates, get_xcode_template, list_samples, get_sample, list_python_templates, get_python_template, list_python_samples, get_python_sample"
 
         except Exception as e:
             logger.error(f"SDK action '{action}' failed: {e}")
