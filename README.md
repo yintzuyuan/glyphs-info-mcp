@@ -98,6 +98,48 @@ You should see:
 - 🔌 **Full API Reference** - Python and Objective-C API documentation
 - 🧠 **Smart Cross-referencing** - Automatic linking of related content
 - 🛠️ **MCP Protocol Compatible** - Standardized tool interface
+- 📦 **Plugin Templates as Resources** - Python and Xcode templates for plugin development
+
+## 🎁 MCP Resources
+
+MCP resources provide direct access to plugin development templates through Claude Desktop.
+
+### Python Plugin Templates (Issue #33)
+
+8 Python templates for converting scripts to plugins:
+
+- `glyphs://plugin-template/filter_without_dialog` - Filter without UI
+- `glyphs://plugin-template/filter_dialog_with_vanilla` - Filter with Vanilla UI
+- `glyphs://plugin-template/filter_dialog_with_xib` - Filter with XIB UI
+- `glyphs://plugin-template/reporter_without_dialog` - Reporter plugin
+- `glyphs://plugin-template/palette_with_vanilla` - Palette with Vanilla
+- `glyphs://plugin-template/general_without_dialog` - General plugin
+- `glyphs://plugin-template/fileformat` - File format plugin
+- `glyphs://plugin-template/selecttool` - SelectTool plugin
+
+### Xcode Plugin Templates (Issue #34)
+
+7 Xcode templates for native Objective-C plugin development:
+
+- `glyphs://xcode-template/reporter` - Reporter plugins (.glyphsReporter)
+- `glyphs://xcode-template/filter` - Filter plugins (.glyphsFilter)
+- `glyphs://xcode-template/palette` - Palette plugins (.glyphsPalette)
+- `glyphs://xcode-template/tool` - Tool plugins (.glyphsTool)
+- `glyphs://xcode-template/file_format` - File format plugins
+- `glyphs://xcode-template/plugin` - General plugins
+- `glyphs://xcode-template/plugin_base` - Base template
+
+**Access Methods**:
+
+- **Via Claude Desktop**: Resources automatically appear in the MCP resources list
+- **Via Tools**:
+  - Python: `sdk(action='list_python_templates')` and `sdk(action='get_python_template', template_id='...')`
+  - Xcode: `sdk(action='list_xcode_templates')` and `sdk(action='get_xcode_template', template_id='...')`
+
+**Placeholder Formats**:
+
+- Python: `____PluginClassName____`, `____PluginName____`, `____PluginMenuName____`
+- Xcode: `___PACKAGENAMEASIDENTIFIER___`, `___FILENAME___`, `___PACKAGENAME___`, `___FULLUSERNAME___`
 
 ## 📋 Feature Overview
 

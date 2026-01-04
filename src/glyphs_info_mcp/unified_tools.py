@@ -482,10 +482,10 @@ class UnifiedToolsRouter:
         action: str,
         query: str = "",
         file_path: str = "",
-        template_name: str = "",  # For Xcode templates
+        template_name: str = "",  # For Xcode templates (old style, deprecated)
         sample_name: str = "",    # For Xcode samples
-        template_id: str = "",    # NEW: For Python templates
-        template_type: str = "",  # NEW: For filtering Python templates
+        template_id: str = "",    # For Python and Xcode templates (new style)
+        template_type: str = "",  # For filtering templates
         max_results: int = 5,
     ) -> str:
         """
@@ -494,8 +494,10 @@ class UnifiedToolsRouter:
         Actions:
         - search: Search SDK content (query, max_results)
         - get: Get SDK file content (file_path)
-        - list_templates: List Xcode templates
-        - get_template: Get Xcode template (template_name)
+        - list_templates: List Xcode templates (DEPRECATED - use list_xcode_templates)
+        - get_template: Get Xcode template (DEPRECATED - use get_xcode_template)
+        - list_xcode_templates: List Xcode templates (template_type)
+        - get_xcode_template: Get Xcode template details (template_id)
         - list_samples: List Xcode samples
         - get_sample: Get Xcode sample (sample_name)
         - list_python_templates: List Python plugin templates (template_type)
@@ -505,15 +507,16 @@ class UnifiedToolsRouter:
             action: Operation to perform
             query: Search keywords
             file_path: SDK file path
-            template_name: Xcode template name
+            template_name: Xcode template name (deprecated)
             sample_name: Xcode sample name
-            template_id: Python template ID (e.g., "filter_without_dialog")
+            template_id: Template ID (e.g., "reporter", "filter_without_dialog")
             template_type: Filter by template type (e.g., "filter", "reporter")
             max_results: Maximum results (default: 5)
 
         Examples:
             sdk(action="search", query="reporter plugin")
-            sdk(action="get_template", template_name="Glyphs Reporter")
+            sdk(action="list_xcode_templates", template_type="reporter")
+            sdk(action="get_xcode_template", template_id="reporter")
             sdk(action="list_python_templates", template_type="filter")
             sdk(action="get_python_template", template_id="filter_without_dialog")
         """
@@ -526,20 +529,28 @@ class UnifiedToolsRouter:
                 return module._sdk_search_tool(query=query, max_results=max_results)
             elif action == "get":
                 return module._fetch_sdk_content_tool(file_path=file_path)
+            # Xcode Templates (new style - Issue #34)
+            elif action == "list_xcode_templates":
+                return module._list_xcode_templates_tool(template_type=template_type if template_type else None)
+            elif action == "get_xcode_template":
+                return module._get_xcode_template_tool(template_id=template_id)
+            # Xcode Templates (old style - deprecated but kept for compatibility)
             elif action == "list_templates":
-                return module._list_xcode_templates_tool()
+                return module._list_xcode_templates_by_native_tool()
             elif action == "get_template":
-                return module._get_xcode_template_tool(template_name=template_name)
+                return module._get_xcode_template_by_name_tool(template_name=template_name)
+            # Xcode Samples
             elif action == "list_samples":
                 return module._list_xcode_samples_tool()
             elif action == "get_sample":
                 return module._get_xcode_sample_tool(sample_name=sample_name)
+            # Python Templates (Issue #33)
             elif action == "list_python_templates":
                 return module._list_python_templates_tool(template_type=template_type if template_type else None)
             elif action == "get_python_template":
                 return module._get_python_template_tool(template_id=template_id)
             else:
-                return f"## Invalid Action\n\nUnknown action: `{action}`\n\nAvailable actions: search, get, list_templates, get_template, list_samples, get_sample, list_python_templates, get_python_template"
+                return f"## Invalid Action\n\nUnknown action: `{action}`\n\nAvailable actions: search, get, list_xcode_templates, get_xcode_template, list_samples, get_sample, list_python_templates, get_python_template"
 
         except Exception as e:
             logger.error(f"SDK action '{action}' failed: {e}")

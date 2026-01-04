@@ -19,7 +19,12 @@ import importlib.util
 
 from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
 from glyphs_info_mcp.shared.core.sdk_native_accessor import SDKNativeAccessor
-from glyphs_info_mcp.shared.core.plugin_templates_resources import PluginTemplatesResourceManager
+from glyphs_info_mcp.shared.core.plugin_templates_resources import (
+    PluginTemplatesResourceManager,
+)
+from glyphs_info_mcp.shared.core.xcode_templates_resources import (
+    XcodeTemplatesResourceManager,
+)
 
 
 def _import_sdk_module(module_name: str) -> ModuleType:
@@ -68,6 +73,9 @@ class GlyphsSDKModule(BaseMCPModule):
         # Plugin Templates Manager (Issue #33)
         self.templates_manager: PluginTemplatesResourceManager | None = None
 
+        # Xcode Templates Manager (Issue #34)
+        self.xcode_templates_manager: XcodeTemplatesResourceManager | None = None
+
     def initialize(self) -> bool:
         """
         Initialize module, build or load index
@@ -100,6 +108,14 @@ class GlyphsSDKModule(BaseMCPModule):
             template_count = len(self.templates_manager.get_templates())
             print(
                 f"[{self.name}] Loaded {template_count} Python templates as resources",
+                file=sys.stderr,
+            )
+
+            # Initialize Xcode Templates Manager (Issue #34)
+            self.xcode_templates_manager = XcodeTemplatesResourceManager(self.sdk_path)
+            xcode_template_count = len(self.xcode_templates_manager.get_templates())
+            print(
+                f"[{self.name}] Loaded {xcode_template_count} Xcode templates as resources",
                 file=sys.stderr,
             )
 
@@ -141,8 +157,8 @@ class GlyphsSDKModule(BaseMCPModule):
         return {
             "sdk_search_content": self._sdk_search_tool,
             "sdk_get_content": self._fetch_sdk_content_tool,
-            "sdk_list_xcode_templates": self._list_xcode_templates_tool,
-            "sdk_get_xcode_template": self._get_xcode_template_tool,
+            "sdk_list_xcode_templates": self._list_xcode_templates_by_native_tool,
+            "sdk_get_xcode_template": self._get_xcode_template_by_name_tool,
             "sdk_list_xcode_samples": self._list_xcode_samples_tool,
             "sdk_get_xcode_sample": self._get_xcode_sample_tool,
             # Python Templates Tools (Issue #33)
@@ -378,9 +394,12 @@ class GlyphsSDKModule(BaseMCPModule):
     # Xcode resource tool methods
     # ============================================================================
 
-    def _list_xcode_templates_tool(self) -> str:
+    def _list_xcode_templates_by_native_tool(self) -> str:
         """
-        [SDK] List all Xcode plugin templates
+        [SDK] List all Xcode plugin templates (legacy native API)
+
+        DEPRECATED: Use _list_xcode_templates_tool for the new resource-based API.
+        This method is kept for backward compatibility with the old API.
 
         Display available Objective-C plugin development templates for advanced developers using Xcode.
         These templates use Objective-C language and require Xcode development environment.
@@ -430,9 +449,12 @@ class GlyphsSDKModule(BaseMCPModule):
         except Exception as e:
             return f"❌ Error listing Xcode templates: {e}"
 
-    def _get_xcode_template_tool(self, template_name: str) -> str:
+    def _get_xcode_template_by_name_tool(self, template_name: str) -> str:
         """
-        [SDK] Get complete content of a specific Xcode template
+        [SDK] Get complete content of a specific Xcode template (legacy API)
+
+        DEPRECATED: Use _get_xcode_template_tool with template_id instead.
+        This method is kept for backward compatibility with the old API.
 
         Retrieve Xcode template file structure and source code, including:
         - .h header files
@@ -611,10 +633,15 @@ class GlyphsSDKModule(BaseMCPModule):
         """Get MCP resources provided by SDK module
 
         Returns dictionary of resource URIs mapped to handler functions that
-        provide Python plugin templates as MCP resources.
+        provide Python and Xcode plugin templates as MCP resources.
 
-        Resource URI format: glyphs://plugin-template/{template_id}
-        Example: glyphs://plugin-template/filter_without_dialog
+        Resource URI formats:
+        - Python: glyphs://plugin-template/{template_id}
+        - Xcode: glyphs://xcode-template/{template_id}
+
+        Examples:
+        - glyphs://plugin-template/filter_without_dialog
+        - glyphs://xcode-template/reporter
 
         Returns:
             Dictionary of resource URI -> callable mapping
@@ -622,30 +649,39 @@ class GlyphsSDKModule(BaseMCPModule):
         Note:
             - Each template gets its own resource URI
             - Handlers are closures that capture template_id
-            - Returns empty dict if templates_manager not initialized
+            - Returns empty dict if managers not initialized
         """
-        if not self.templates_manager:
-            print(
-                f"[{self.name}] Plugin Templates Manager not initialized",
-                file=sys.stderr,
-            )
-            return {}
-
         resources = {}
-        templates = self.templates_manager.get_templates()
 
-        # Register each template as a resource
-        for template_id, template_info in templates.items():
-            uri = f"glyphs://plugin-template/{template_id}"
+        # Python Templates Resources (Issue #33)
+        if self.templates_manager:
+            python_templates = self.templates_manager.get_templates()
+            for template_id in python_templates:
+                uri = f"glyphs://plugin-template/{template_id}"
 
-            # Create closure to capture template_id (avoid late binding)
-            def make_resource_handler(tid: str) -> Callable[[], str]:
-                def resource_handler() -> str:
-                    return self._get_template_resource(tid)
-                resource_handler.__name__ = f"get_template_{tid}"
-                return resource_handler
+                # Create closure to capture template_id (avoid late binding)
+                def make_resource_handler(tid: str) -> Callable[[], str]:
+                    def resource_handler() -> str:
+                        return self._get_template_resource(tid)
+                    resource_handler.__name__ = f"get_template_{tid}"
+                    return resource_handler
 
-            resources[uri] = make_resource_handler(template_id)
+                resources[uri] = make_resource_handler(template_id)
+
+        # Xcode Templates Resources (Issue #34)
+        if self.xcode_templates_manager:
+            xcode_templates = self.xcode_templates_manager.get_templates()
+            for template_id in xcode_templates:
+                uri = f"glyphs://xcode-template/{template_id}"
+
+                # Create closure to capture template_id (avoid late binding)
+                def make_xcode_resource_handler(tid: str) -> Callable[[], str]:
+                    def resource_handler() -> str:
+                        return self._get_xcode_template_resource(tid)
+                    resource_handler.__name__ = f"get_xcode_template_{tid}"
+                    return resource_handler
+
+                resources[uri] = make_xcode_resource_handler(template_id)
 
         print(
             f"[{self.name}] Prepared {len(resources)} template resources",
@@ -868,3 +904,252 @@ class GlyphsSDKModule(BaseMCPModule):
 
         except Exception as e:
             return f"❌ Error getting Python template: {e}"
+
+    # ============================================================================
+    # Xcode Templates Tool Methods (Issue #34)
+    # ============================================================================
+
+    def _get_xcode_template_resource(self, template_id: str) -> str:
+        """Internal handler to get Xcode template resource content
+
+        Formats template as Markdown with code blocks for MCP resource display.
+
+        Args:
+            template_id: Template identifier (e.g., "reporter", "filter")
+
+        Returns:
+            Formatted template content with metadata and usage instructions
+        """
+        if not self.xcode_templates_manager:
+            return "❌ Xcode Templates manager not initialized"
+
+        template = self.xcode_templates_manager.get_template_by_id(template_id)
+        if not template:
+            return f"❌ Template not found: {template_id}"
+
+        # Format template as MCP resource (Markdown)
+        result = f"# {template['name']}\n\n"
+        result += f"**Type**: {template['type']}\n"
+        result += f"**File Count**: {template['file_count']}\n\n"
+
+        if template.get("description"):
+            result += f"## Description\n\n{template['description']}\n\n"
+
+        # Display file structure
+        result += f"## File Structure\n\n"
+        for file_info in template.get("files", []):
+            result += f"- `{file_info['path']}` ({file_info['type']})\n"
+        result += "\n"
+
+        # Display source code
+        source_files = template.get("source_files", {})
+        if source_files:
+            result += f"## Template Files\n\n"
+            for file_path, content in source_files.items():
+                ext = Path(file_path).suffix
+                lang = (
+                    "objective-c"
+                    if ext in [".h", ".m"]
+                    else "xml" if ext == ".plist" else "text"
+                )
+                result += f"### `{file_path}`\n\n"
+                result += f"```{lang}\n{content}\n```\n\n"
+
+        # Placeholder instructions
+        result += f"## Xcode Placeholders\n\n"
+        result += "Replace the following placeholders in Xcode:\n"
+        result += "- `___PACKAGENAMEASIDENTIFIER___`: Your bundle identifier (e.g., com.YourName.PluginName)\n"
+        result += "- `___FILENAME___`: File name without extension\n"
+        result += "- `___PACKAGENAME___`: Plugin display name\n"
+        result += "- `___FULLUSERNAME___`: Your full name\n"
+        result += "- `___DATE___`: Current date\n"
+        result += "- `___COPYRIGHT___`: Copyright notice\n\n"
+
+        result += f"---\n\n"
+        result += f"**Template ID**: `{template_id}`\n"
+        result += f"**MCP Resource**: `glyphs://xcode-template/{template_id}`\n"
+
+        return result
+
+    def _list_xcode_templates_tool(self, template_type: str | None = None) -> str:
+        """[SDK] List Xcode plugin templates for native Objective-C development
+
+        Lists available Xcode templates for creating Glyphs plugins using Objective-C.
+        These templates provide the standard Xcode project structure and boilerplate
+        code for different plugin types.
+
+        Purpose: Help developers discover available Xcode templates for plugin development
+
+        Template types:
+        - reporter: Reporter plugins (visualization helpers)
+        - filter: Filter plugins (font effect processors)
+        - palette: Palette plugins (sidebar panels)
+        - tool: Tool plugins (custom editing tools)
+        - file_format: File format plugins (import/export)
+        - plugin: General plugins
+        - plugin_base: Base template
+
+        Related workflow:
+        1. Use this tool to browse available templates
+        2. Use get_xcode_template to view template details
+        3. Access templates as MCP resources for development
+        4. Create Xcode project from template
+
+        Args:
+            template_type: Filter by plugin type (optional)
+
+        Returns:
+            List of available Xcode plugin templates with type and description
+        """
+        if not self.xcode_templates_manager:
+            return "❌ Xcode Templates Manager not initialized"
+
+        try:
+            if template_type:
+                templates = self.xcode_templates_manager.get_templates_by_type(
+                    template_type
+                )
+            else:
+                templates = self.xcode_templates_manager.get_templates()
+
+            if not templates:
+                filter_msg = f" of type '{template_type}'" if template_type else ""
+                return f"No Xcode templates found{filter_msg}"
+
+            result = "## 📱 Xcode Plugin Templates\n\n"
+            result += f"Found {len(templates)} template(s)\n\n"
+
+            # Group by type for better readability
+            by_type: dict[str, list] = {}
+            for tid, info in templates.items():
+                ttype = info["type"]
+                if ttype not in by_type:
+                    by_type[ttype] = []
+                by_type[ttype].append((tid, info))
+
+            # Display grouped results
+            for ttype in sorted(by_type.keys()):
+                result += f"### {ttype} Templates\n\n"
+                for tid, info in by_type[ttype]:
+                    result += f"#### `{tid}`\n"
+                    result += f"- **Name**: {info['name']}\n"
+                    result += f"- **Files**: {info['file_count']}\n"
+                    if info.get("description"):
+                        result += f"- **Description**: {info['description']}\n"
+                    result += f"- **MCP Resource**: `glyphs://xcode-template/{tid}`\n"
+                    result += "\n"
+
+            result += "\n💡 **Usage**:\n"
+            result += "- Use `sdk(action='get_xcode_template', template_id='...')` for details\n"
+            result += "- Access as MCP resource: `glyphs://xcode-template/{template_id}`\n"
+            result += "- Templates require Xcode for Objective-C development\n"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error listing Xcode templates: {e}"
+
+    def _get_xcode_template_tool(self, template_id: str) -> str:
+        """[SDK] Get detailed information about an Xcode plugin template
+
+        Retrieves complete template code and metadata for a specific Xcode template.
+        This is the primary way to view template content before using it for development.
+
+        The template includes:
+        - Complete .h (header) and .m (implementation) files with placeholders
+        - .plist configuration files
+        - Project structure information
+        - Placeholder replacement instructions
+
+        Xcode Placeholder format:
+        - ___PACKAGENAMEASIDENTIFIER___: Bundle identifier
+        - ___FILENAME___: File name
+        - ___PACKAGENAME___: Plugin name
+        - ___FULLUSERNAME___: Developer name
+        - ___DATE___: Date
+        - ___COPYRIGHT___: Copyright
+
+        Development workflow:
+        1. Get template using this tool or MCP resource
+        2. Create new Xcode project from template
+        3. Replace placeholders (Xcode does this automatically)
+        4. Implement your custom plugin logic
+        5. Build and install to ~/Library/Application Support/Glyphs 3/Plugins/
+        6. Restart Glyphs and test
+
+        Args:
+            template_id: Template identifier (from list_xcode_templates)
+
+        Returns:
+            Complete template code with metadata and usage instructions
+        """
+        if not self.xcode_templates_manager:
+            return "❌ Xcode Templates Manager not initialized"
+
+        if not template_id:
+            return "Please provide a template_id"
+
+        try:
+            template = self.xcode_templates_manager.get_template_by_id(template_id)
+
+            if not template:
+                available = self.xcode_templates_manager.get_templates()
+                ids = list(available.keys())
+                return (
+                    f"❌ Template not found: {template_id}\n\nAvailable templates:\n"
+                    + "\n".join(f"- {tid}" for tid in sorted(ids))
+                )
+
+            result = f"## 📱 {template['name']}\n\n"
+            result += f"**Type**: {template['type']}\n"
+            result += f"**Template ID**: `{template_id}`\n"
+            result += f"**File Count**: {template['file_count']}\n\n"
+
+            if template.get("description"):
+                result += f"### Description\n\n{template['description']}\n\n"
+
+            # File structure
+            result += f"### File Structure\n\n"
+            for file_info in template.get("files", []):
+                result += f"- `{file_info['path']}` ({file_info['type']})\n"
+            result += "\n"
+
+            # Source code
+            source_files = template.get("source_files", {})
+            if source_files:
+                result += f"### Template Code\n\n"
+                for file_path, content in source_files.items():
+                    ext = Path(file_path).suffix
+                    lang = (
+                        "objective-c"
+                        if ext in [".h", ".m"]
+                        else "xml" if ext == ".plist" else "text"
+                    )
+                    result += f"#### `{file_path}`\n\n"
+                    result += f"```{lang}\n{content}\n```\n\n"
+
+            # Placeholders
+            result += f"### Xcode Placeholders to Replace\n\n"
+            result += "- `___PACKAGENAMEASIDENTIFIER___`: Your bundle identifier (e.g., com.YourName.PluginName)\n"
+            result += "- `___FILENAME___`: File name without extension\n"
+            result += "- `___PACKAGENAME___`: Plugin display name\n"
+            result += "- `___FULLUSERNAME___`: Your full name (for copyright)\n"
+            result += "- `___DATE___`: Current date\n"
+            result += "- `___COPYRIGHT___`: Copyright notice\n\n"
+
+            result += f"### File Information\n\n"
+            result += f"- **Path**: `{template['path']}`\n"
+            result += f"- **MCP Resource**: `glyphs://xcode-template/{template_id}`\n\n"
+
+            result += "💡 **Next Steps**:\n"
+            result += "1. Use this template in Xcode: File > New > Project...\n"
+            result += "2. Xcode will automatically replace placeholders\n"
+            result += "3. Implement your plugin logic in the template methods\n"
+            result += "4. Build the plugin (Cmd+B)\n"
+            result += "5. Install to ~/Library/Application Support/Glyphs 3/Plugins/\n"
+            result += "6. Restart Glyphs and test your plugin!\n"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error getting Xcode template: {e}"
