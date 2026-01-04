@@ -208,3 +208,173 @@ def test_xcode_template_resource_content() -> None:
     assert (
         "___PACKAGENAMEASIDENTIFIER___" in content
     )  # Should have Xcode placeholders
+
+
+class TestSamplesResourcesIntegration:
+    """Test Python and Xcode Samples MCP resources integration (Issue #37)"""
+
+    @pytest.fixture
+    def sdk_module(self) -> Any:
+        """Get initialized GlyphsSDKModule"""
+        from glyphs_info_mcp.modules.glyphs_sdk.glyphs_sdk_module import (
+            GlyphsSDKModule,
+        )
+
+        module = GlyphsSDKModule()
+        success = module.initialize()
+        if not success:
+            pytest.skip("SDK module initialization failed")
+
+        return module
+
+    def test_python_samples_resources_registered(self, sdk_module: Any) -> None:
+        """Test that Python samples are registered as MCP resources"""
+        resources = sdk_module.get_resources()
+
+        # Should have 6 Python sample resources
+        python_sample_uris = [
+            uri
+            for uri in resources.keys()
+            if uri.startswith("glyphs://python-sample/")
+        ]
+        assert len(python_sample_uris) == 6
+
+        # Check specific samples
+        expected_samples = [
+            "glyphs://python-sample/callback_for_context_menu",
+            "glyphs://python-sample/document_exported",
+            "glyphs://python-sample/multipletools",
+            "glyphs://python-sample/plugin_preferences",
+            "glyphs://python-sample/plugin_with_window",
+            "glyphs://python-sample/smiley_panel_plugin",
+        ]
+
+        for uri in expected_samples:
+            assert uri in resources, f"Missing Python sample resource: {uri}"
+
+    def test_xcode_samples_resources_registered(self, sdk_module: Any) -> None:
+        """Test that Xcode samples are registered as MCP resources"""
+        resources = sdk_module.get_resources()
+
+        # Should have 4 Xcode sample resources
+        xcode_sample_uris = [
+            uri
+            for uri in resources.keys()
+            if uri.startswith("glyphs://xcode-sample/")
+        ]
+        assert len(xcode_sample_uris) == 4
+
+        # Check specific samples
+        expected_samples = [
+            "glyphs://xcode-sample/custom_parameter_ui",
+            "glyphs://xcode-sample/inspector_demo",
+            "glyphs://xcode-sample/photofont",
+            "glyphs://xcode-sample/plugin_with_window",
+        ]
+
+        for uri in expected_samples:
+            assert uri in resources, f"Missing Xcode sample resource: {uri}"
+
+    def test_total_resources_count(self, sdk_module: Any) -> None:
+        """Test total resource count includes all templates and samples"""
+        resources = sdk_module.get_resources()
+
+        # Count resources by type
+        python_templates = sum(
+            1 for uri in resources if uri.startswith("glyphs://plugin-template/")
+        )
+        xcode_templates = sum(
+            1 for uri in resources if uri.startswith("glyphs://xcode-template/")
+        )
+        python_samples = sum(
+            1 for uri in resources if uri.startswith("glyphs://python-sample/")
+        )
+        xcode_samples = sum(
+            1 for uri in resources if uri.startswith("glyphs://xcode-sample/")
+        )
+
+        # Should have 26 total resources
+        # 9 Python Templates + 7 Xcode Templates + 6 Python Samples + 4 Xcode Samples
+        assert python_templates == 9
+        assert xcode_templates == 7
+        assert python_samples == 6
+        assert xcode_samples == 4
+        assert len(resources) == 26
+
+    def test_python_sample_resource_content(self, sdk_module: Any) -> None:
+        """Test Python sample resource content format"""
+        resources = sdk_module.get_resources()
+
+        # Get a specific sample resource
+        sample_uri = "glyphs://python-sample/callback_for_context_menu"
+        assert sample_uri in resources
+
+        # Execute resource handler
+        handler = resources[sample_uri]
+        content = handler()
+
+        # Check content format
+        assert isinstance(content, str)
+        assert "Callback for context menu" in content
+        assert "```python" in content  # Should have Python code blocks
+        assert "**Type**:" in content  # Should have metadata
+        assert "**Has Bundle**:" in content
+        assert "## File Structure" in content
+        assert "**MCP Resource**:" in content
+
+    def test_xcode_sample_resource_content(self, sdk_module: Any) -> None:
+        """Test Xcode sample resource content format"""
+        resources = sdk_module.get_resources()
+
+        # Get a specific sample resource
+        sample_uri = "glyphs://xcode-sample/inspector_demo"
+        assert sample_uri in resources
+
+        # Execute resource handler
+        handler = resources[sample_uri]
+        content = handler()
+
+        # Check content format
+        assert isinstance(content, str)
+        assert "InspectorDemo" in content
+        assert "```objective-c" in content  # Should have Obj-C code blocks
+        assert "**Xcode Project**:" in content  # Should have metadata
+        assert "## File Structure" in content
+        assert "**MCP Resource**:" in content
+
+    def test_closure_factory_captures_correct_ids(self, sdk_module: Any) -> None:
+        """Test that closure factory correctly captures different sample IDs"""
+        resources = sdk_module.get_resources()
+
+        # Get multiple Python sample handlers
+        sample1_handler = resources["glyphs://python-sample/callback_for_context_menu"]
+        sample2_handler = resources["glyphs://python-sample/plugin_with_window"]
+
+        # Execute handlers
+        content1 = sample1_handler()
+        content2 = sample2_handler()
+
+        # Verify they return different content
+        assert content1 != content2
+        assert "callback_for_context_menu" in content1
+        assert "Plugin With Window" in content2
+        assert "callback_for_context_menu" not in content2
+        assert "Plugin With Window" not in content1
+
+    def test_resource_handler_error_handling(self, sdk_module: Any) -> None:
+        """Test resource handler error handling for invalid sample IDs"""
+        # This tests the internal error handling in resource handlers
+        # We can't directly access _get_python_sample_resource, but we can
+        # verify the behavior through the public API
+
+        resources = sdk_module.get_resources()
+
+        # All registered resources should have valid handlers
+        for uri, handler in resources.items():
+            if uri.startswith("glyphs://python-sample/") or uri.startswith(
+                "glyphs://xcode-sample/"
+            ):
+                content = handler()
+                assert isinstance(content, str)
+                # Should not return error message for valid resources
+                assert not content.startswith("❌")

@@ -787,6 +787,7 @@ class SDKNativeAccessor:
         # Load all source code file contents
         template_path = Path(template["path"])
         source_files = {}
+        load_errors = []
 
         for file_info in template["files"]:
             file_path = template_path / file_info["path"]
@@ -796,11 +797,18 @@ class SDKNativeAccessor:
                         source_files[file_info["path"]] = f.read()
                 except Exception as e:
                     logger.error(f"Error reading {file_path}: {e}")
-                    source_files[file_info["path"]] = f"<Error reading file: {e}>"
+                    load_errors.append(
+                        {
+                            "file": file_info["path"],
+                            "error": str(e),
+                        }
+                    )
 
         return {
             **template,
             "source_files": source_files,
+            "load_errors": load_errors,
+            "partial_load": len(load_errors) > 0,
         }
 
     def search_xcode_templates(self, query: str) -> list[dict[str, Any]]:
@@ -944,6 +952,7 @@ class SDKNativeAccessor:
         # Load all source code file contents
         sample_path = Path(sample["path"])
         source_code = {}
+        load_errors = []
 
         for file_info in sample["source_files"]:
             file_path = sample_path / file_info["path"]
@@ -952,11 +961,18 @@ class SDKNativeAccessor:
                     source_code[file_info["path"]] = f.read()
             except Exception as e:
                 logger.error(f"Error reading {file_path}: {e}")
-                source_code[file_info["path"]] = f"<Error reading file: {e}>"
+                load_errors.append(
+                    {
+                        "file": file_info["path"],
+                        "error": str(e),
+                    }
+                )
 
         return {
             **sample,
             "source_code": source_code,
+            "load_errors": load_errors,
+            "partial_load": len(load_errors) > 0,
         }
 
     def search_xcode_samples(self, query: str) -> list[dict[str, Any]]:
@@ -1134,6 +1150,7 @@ class SDKNativeAccessor:
         # Load all source code file contents
         sample_path = Path(sample["path"])
         source_code = {}
+        load_errors = []
 
         for file_info in sample["source_files"]:
             file_path = sample_path / file_info["path"]
@@ -1142,11 +1159,18 @@ class SDKNativeAccessor:
                     source_code[file_info["path"]] = f.read()
             except Exception as e:
                 logger.error(f"Error reading {file_path}: {e}")
-                source_code[file_info["path"]] = f"<Error reading file: {e}>"
+                load_errors.append(
+                    {
+                        "file": file_info["path"],
+                        "error": str(e),
+                    }
+                )
 
         return {
             **sample,
             "source_code": source_code,
+            "load_errors": load_errors,
+            "partial_load": len(load_errors) > 0,
         }
 
     def search_python_samples(self, query: str) -> list[dict[str, Any]]:

@@ -116,36 +116,68 @@ class GlyphsSDKModule(BaseMCPModule):
             self.native_accessor = SDKNativeAccessor(self.sdk_path)
 
             # Initialize Plugin Templates Manager (Issue #33)
-            self.templates_manager = PluginTemplatesResourceManager(self.sdk_path)
-            template_count = len(self.templates_manager.get_templates())
-            print(
-                f"[{self.name}] Loaded {template_count} Python templates as resources",
-                file=sys.stderr,
-            )
+            try:
+                self.templates_manager = PluginTemplatesResourceManager(self.sdk_path)
+                template_count = len(self.templates_manager.get_templates())
+                print(
+                    f"[{self.name}] Loaded {template_count} Python templates as resources",
+                    file=sys.stderr,
+                )
+            except Exception as e:
+                print(
+                    f"[{self.name}] Warning: Failed to initialize Python templates manager: {e}",
+                    file=sys.stderr,
+                )
+                self.templates_manager = None
 
             # Initialize Xcode Templates Manager (Issue #34)
-            self.xcode_templates_manager = XcodeTemplatesResourceManager(self.sdk_path)
-            xcode_template_count = len(self.xcode_templates_manager.get_templates())
-            print(
-                f"[{self.name}] Loaded {xcode_template_count} Xcode templates as resources",
-                file=sys.stderr,
-            )
+            try:
+                self.xcode_templates_manager = XcodeTemplatesResourceManager(
+                    self.sdk_path
+                )
+                xcode_template_count = len(self.xcode_templates_manager.get_templates())
+                print(
+                    f"[{self.name}] Loaded {xcode_template_count} Xcode templates as resources",
+                    file=sys.stderr,
+                )
+            except Exception as e:
+                print(
+                    f"[{self.name}] Warning: Failed to initialize Xcode templates manager: {e}",
+                    file=sys.stderr,
+                )
+                self.xcode_templates_manager = None
 
             # Initialize Python Samples Manager (Issue #37)
-            self.python_samples_manager = PythonSamplesResourceManager(self.sdk_path)
-            python_sample_count = len(self.python_samples_manager.get_samples())
-            print(
-                f"[{self.name}] Loaded {python_sample_count} Python samples as resources",
-                file=sys.stderr,
-            )
+            try:
+                self.python_samples_manager = PythonSamplesResourceManager(
+                    self.sdk_path
+                )
+                python_sample_count = len(self.python_samples_manager.get_samples())
+                print(
+                    f"[{self.name}] Loaded {python_sample_count} Python samples as resources",
+                    file=sys.stderr,
+                )
+            except Exception as e:
+                print(
+                    f"[{self.name}] Warning: Failed to initialize Python samples manager: {e}",
+                    file=sys.stderr,
+                )
+                self.python_samples_manager = None
 
             # Initialize Xcode Samples Manager (Issue #37)
-            self.xcode_samples_manager = XcodeSamplesResourceManager(self.sdk_path)
-            xcode_sample_count = len(self.xcode_samples_manager.get_samples())
-            print(
-                f"[{self.name}] Loaded {xcode_sample_count} Xcode samples as resources",
-                file=sys.stderr,
-            )
+            try:
+                self.xcode_samples_manager = XcodeSamplesResourceManager(self.sdk_path)
+                xcode_sample_count = len(self.xcode_samples_manager.get_samples())
+                print(
+                    f"[{self.name}] Loaded {xcode_sample_count} Xcode samples as resources",
+                    file=sys.stderr,
+                )
+            except Exception as e:
+                print(
+                    f"[{self.name}] Warning: Failed to initialize Xcode samples manager: {e}",
+                    file=sys.stderr,
+                )
+                self.xcode_samples_manager = None
 
             print(
                 f"[{self.name}] Initialization complete - indexed {self._count_total_items()} SDK items",
@@ -1249,6 +1281,15 @@ class GlyphsSDKModule(BaseMCPModule):
             result += f"- `{file_info['path']}`\n"
         result += "\n"
 
+        # Load errors warning
+        if sample.get("partial_load"):
+            load_errors = sample.get("load_errors", [])
+            result += f"## ⚠️ Load Warnings\n\n"
+            result += f"Some files could not be loaded:\n\n"
+            for error in load_errors:
+                result += f"- `{error['file']}`: {error['error']}\n"
+            result += "\n"
+
         # Source code
         source_code = sample.get("source_code", {})
         if source_code:
@@ -1294,6 +1335,15 @@ class GlyphsSDKModule(BaseMCPModule):
         for file_info in sample.get("source_files", []):
             result += f"- `{file_info['path']}`\n"
         result += "\n"
+
+        # Load errors warning
+        if sample.get("partial_load"):
+            load_errors = sample.get("load_errors", [])
+            result += f"## ⚠️ Load Warnings\n\n"
+            result += f"Some files could not be loaded:\n\n"
+            for error in load_errors:
+                result += f"- `{error['file']}`: {error['error']}\n"
+            result += "\n"
 
         # Source code
         source_code = sample.get("source_code", {})

@@ -83,7 +83,11 @@ class PythonSamplesResourceManager:
         Returns:
             Sample ID
         """
-        return sample_name.lower().replace(" ", "_")
+        result = sample_name.lower().replace(" ", "_")
+        # Remove consecutive underscores
+        while "__" in result:
+            result = result.replace("__", "_")
+        return result
 
     def get_samples(self) -> dict[str, dict[str, Any]]:
         """Get all samples (with caching)
