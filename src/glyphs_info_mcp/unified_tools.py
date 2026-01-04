@@ -482,8 +482,10 @@ class UnifiedToolsRouter:
         action: str,
         query: str = "",
         file_path: str = "",
-        template_name: str = "",
-        sample_name: str = "",
+        template_name: str = "",  # For Xcode templates
+        sample_name: str = "",    # For Xcode samples
+        template_id: str = "",    # NEW: For Python templates
+        template_type: str = "",  # NEW: For filtering Python templates
         max_results: int = 5,
     ) -> str:
         """
@@ -496,6 +498,8 @@ class UnifiedToolsRouter:
         - get_template: Get Xcode template (template_name)
         - list_samples: List Xcode samples
         - get_sample: Get Xcode sample (sample_name)
+        - list_python_templates: List Python plugin templates (template_type)
+        - get_python_template: Get Python template details (template_id)
 
         Args:
             action: Operation to perform
@@ -503,11 +507,15 @@ class UnifiedToolsRouter:
             file_path: SDK file path
             template_name: Xcode template name
             sample_name: Xcode sample name
+            template_id: Python template ID (e.g., "filter_without_dialog")
+            template_type: Filter by template type (e.g., "filter", "reporter")
             max_results: Maximum results (default: 5)
 
         Examples:
             sdk(action="search", query="reporter plugin")
             sdk(action="get_template", template_name="Glyphs Reporter")
+            sdk(action="list_python_templates", template_type="filter")
+            sdk(action="get_python_template", template_id="filter_without_dialog")
         """
         module = self._modules.get("glyphs_sdk")
         if not module:
@@ -526,8 +534,12 @@ class UnifiedToolsRouter:
                 return module._list_xcode_samples_tool()
             elif action == "get_sample":
                 return module._get_xcode_sample_tool(sample_name=sample_name)
+            elif action == "list_python_templates":
+                return module._list_python_templates_tool(template_type=template_type if template_type else None)
+            elif action == "get_python_template":
+                return module._get_python_template_tool(template_id=template_id)
             else:
-                return f"## Invalid Action\n\nUnknown action: `{action}`\n\nAvailable actions: search, get, list_templates, get_template, list_samples, get_sample"
+                return f"## Invalid Action\n\nUnknown action: `{action}`\n\nAvailable actions: search, get, list_templates, get_template, list_samples, get_sample, list_python_templates, get_python_template"
 
         except Exception as e:
             logger.error(f"SDK action '{action}' failed: {e}")

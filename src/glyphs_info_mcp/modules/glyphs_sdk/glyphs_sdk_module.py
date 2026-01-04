@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, Callable
 
 # Add shared core module path
 shared_path = str(Path(__file__).parent.parent.parent / "src" / "shared")
@@ -19,6 +19,7 @@ import importlib.util
 
 from glyphs_info_mcp.shared.core.base_module import BaseMCPModule
 from glyphs_info_mcp.shared.core.sdk_native_accessor import SDKNativeAccessor
+from glyphs_info_mcp.shared.core.plugin_templates_resources import PluginTemplatesResourceManager
 
 
 def _import_sdk_module(module_name: str) -> ModuleType:
@@ -64,6 +65,9 @@ class GlyphsSDKModule(BaseMCPModule):
         # Native Accessor (for Xcode resource access)
         self.native_accessor: SDKNativeAccessor | None = None
 
+        # Plugin Templates Manager (Issue #33)
+        self.templates_manager: PluginTemplatesResourceManager | None = None
+
     def initialize(self) -> bool:
         """
         Initialize module, build or load index
@@ -90,6 +94,14 @@ class GlyphsSDKModule(BaseMCPModule):
 
             # Initialize Native Accessor (for Xcode resources)
             self.native_accessor = SDKNativeAccessor(self.sdk_path)
+
+            # Initialize Plugin Templates Manager (Issue #33)
+            self.templates_manager = PluginTemplatesResourceManager(self.sdk_path)
+            template_count = len(self.templates_manager.get_templates())
+            print(
+                f"[{self.name}] Loaded {template_count} Python templates as resources",
+                file=sys.stderr,
+            )
 
             print(
                 f"[{self.name}] Initialization complete - indexed {self._count_total_items()} SDK items",
@@ -133,6 +145,9 @@ class GlyphsSDKModule(BaseMCPModule):
             "sdk_get_xcode_template": self._get_xcode_template_tool,
             "sdk_list_xcode_samples": self._list_xcode_samples_tool,
             "sdk_get_xcode_sample": self._get_xcode_sample_tool,
+            # Python Templates Tools (Issue #33)
+            "sdk_list_python_templates": self._list_python_templates_tool,
+            "sdk_get_python_template": self._get_python_template_tool,
         }
 
     def _sdk_search_tool(self, query: str, max_results: int = 5) -> str:
@@ -587,3 +602,269 @@ class GlyphsSDKModule(BaseMCPModule):
 
         except Exception as e:
             return f"❌ Error getting Xcode sample: {e}"
+
+    # ============================================================================
+    # MCP Resources Implementation (Issue #33)
+    # ============================================================================
+
+    def get_resources(self) -> dict[str, Callable]:
+        """Get MCP resources provided by SDK module
+
+        Returns dictionary of resource URIs mapped to handler functions that
+        provide Python plugin templates as MCP resources.
+
+        Resource URI format: glyphs://plugin-template/{template_id}
+        Example: glyphs://plugin-template/filter_without_dialog
+
+        Returns:
+            Dictionary of resource URI -> callable mapping
+
+        Note:
+            - Each template gets its own resource URI
+            - Handlers are closures that capture template_id
+            - Returns empty dict if templates_manager not initialized
+        """
+        if not self.templates_manager:
+            print(
+                f"[{self.name}] Plugin Templates Manager not initialized",
+                file=sys.stderr,
+            )
+            return {}
+
+        resources = {}
+        templates = self.templates_manager.get_templates()
+
+        # Register each template as a resource
+        for template_id, template_info in templates.items():
+            uri = f"glyphs://plugin-template/{template_id}"
+
+            # Create closure to capture template_id (avoid late binding)
+            def make_resource_handler(tid: str) -> Callable[[], str]:
+                def resource_handler() -> str:
+                    return self._get_template_resource(tid)
+                resource_handler.__name__ = f"get_template_{tid}"
+                return resource_handler
+
+            resources[uri] = make_resource_handler(template_id)
+
+        print(
+            f"[{self.name}] Prepared {len(resources)} template resources",
+            file=sys.stderr,
+        )
+        return resources
+
+    def _get_template_resource(self, template_id: str) -> str:
+        """Internal handler to get template resource content
+
+        Formats template as Markdown with code block for MCP resource display.
+
+        Args:
+            template_id: Template identifier (e.g., "filter_without_dialog")
+
+        Returns:
+            Formatted template content with metadata and usage instructions
+        """
+        if not self.templates_manager:
+            return "❌ Templates manager not initialized"
+
+        template = self.templates_manager.get_template_by_id(template_id)
+        if not template:
+            return f"❌ Template not found: {template_id}"
+
+        # Format template as MCP resource (Markdown)
+        result = f"# {template['name']}\n\n"
+        result += f"**Type**: {template['type']}\n"
+        result += f"**Subtype**: {template['subtype']}\n\n"
+
+        if template.get('description'):
+            result += f"## Description\n\n{template['description']}\n\n"
+
+        usage = template.get('usage', {})
+        if usage:
+            result += f"## Usage Information\n\n"
+            result += f"- **Base Class**: `{usage.get('base_class', 'Unknown')}`\n"
+            result += f"- **Plugin Type**: {usage.get('plugin_type', 'Unknown')}\n\n"
+
+        result += f"## Template Code\n\n"
+        result += f"```python\n{template['content']}\n```\n\n"
+
+        result += f"---\n\n"
+        result += f"**Path**: `{template['relative_path']}`\n"
+        result += f"**Size**: {template['size']} bytes\n"
+
+        return result
+
+    # ============================================================================
+    # Python Templates Tool Methods (Issue #33)
+    # ============================================================================
+
+    def _list_python_templates_tool(self, template_type: str | None = None) -> str:
+        """
+        [SDK] List Python plugin templates for script conversion
+
+        Lists available plugin templates that can be used to convert Glyphs scripts
+        into proper plugins. These templates provide the standard structure and boilerplate
+        code for different plugin types.
+
+        Purpose: Help users discover available plugin templates for their conversion needs
+
+        Template types:
+        - filter: Filter plugins (with/without dialog)
+        - reporter: Reporter plugins (visualization helpers)
+        - palette: Palette plugins (sidebar panels)
+        - general: General plugins (custom functionality)
+        - file_format: File format plugins (import/export)
+        - selecttool: SelectTool plugins (custom selection tools)
+
+        Related workflow:
+        1. Use this tool to browse available templates
+        2. Use get_python_template to view template details
+        3. Access templates as MCP resources for conversion
+        4. Use PluginMaker.py utility for batch conversion (advanced)
+
+        Args:
+            template_type: Filter by plugin type (optional)
+
+        Returns:
+            List of available Python plugin templates with type and description
+        """
+        if not self.templates_manager:
+            return "❌ Plugin Templates Manager not initialized"
+
+        try:
+            if template_type:
+                templates = self.templates_manager.get_templates_by_type(template_type)
+            else:
+                templates = self.templates_manager.get_templates()
+
+            if not templates:
+                filter_msg = f" of type '{template_type}'" if template_type else ""
+                return f"No Python templates found{filter_msg}"
+
+            result = "## 🐍 Python Plugin Templates\n\n"
+            result += f"Found {len(templates)} template(s)\n\n"
+
+            # Group by type for better readability
+            by_type: dict[str, list] = {}
+            for tid, info in templates.items():
+                ttype = info['type']
+                if ttype not in by_type:
+                    by_type[ttype] = []
+                by_type[ttype].append((tid, info))
+
+            # Display grouped results
+            for ttype in sorted(by_type.keys()):
+                result += f"### {ttype.title()} Templates\n\n"
+                for tid, info in by_type[ttype]:
+                    result += f"#### `{tid}`\n"
+                    result += f"- **Name**: {info['name']}\n"
+                    result += f"- **Subtype**: {info['subtype']}\n"
+                    if info.get('description'):
+                        result += f"- **Description**: {info['description']}\n"
+                    result += f"- **MCP Resource**: `glyphs://plugin-template/{tid}`\n"
+                    result += "\n"
+
+            result += "\n💡 **Usage**:\n"
+            result += "- Use `sdk(action='get_python_template', template_id='...')` for details\n"
+            result += "- Access as MCP resource: `glyphs://plugin-template/{template_id}`\n"
+            result += "- Templates include placeholder replacement instructions\n"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error listing Python templates: {e}"
+
+    def _get_python_template_tool(self, template_id: str) -> str:
+        """
+        [SDK] Get detailed information about a Python plugin template
+
+        Retrieves complete template code and metadata for a specific plugin template.
+        This is the primary way to view template content before using it for conversion.
+
+        The template includes:
+        - Complete plugin.py source code with placeholders
+        - Base class and protocol information
+        - Required imports and dependencies
+        - Usage instructions and conversion notes
+
+        Placeholder format:
+        - ____PluginClassName____: Replace with your plugin class name
+        - ____PluginName____: Replace with your plugin name
+        - ____PluginMenuName____: Replace with menu display name
+
+        Conversion workflow:
+        1. Get template using this tool or MCP resource
+        2. Replace placeholders with your plugin details
+        3. Add your custom implementation code
+        4. Save as .glyphsFilter/.glyphsReporter/etc.
+        5. Install in ~/Library/Application Support/Glyphs 3/Plugins/
+        6. Restart Glyphs and test
+
+        Args:
+            template_id: Template identifier (from list_python_templates)
+
+        Returns:
+            Complete template code with metadata and usage instructions
+        """
+        if not self.templates_manager:
+            return "❌ Plugin Templates Manager not initialized"
+
+        if not template_id:
+            return "Please provide a template_id"
+
+        try:
+            template = self.templates_manager.get_template_by_id(template_id)
+
+            if not template:
+                available = self.templates_manager.get_templates()
+                ids = list(available.keys())
+                return f"❌ Template not found: {template_id}\n\nAvailable templates:\n" + "\n".join(
+                    f"- {tid}" for tid in sorted(ids)
+                )
+
+            result = f"## 🐍 {template['name']}\n\n"
+            result += f"**Type**: {template['type']}\n"
+            result += f"**Subtype**: {template['subtype']}\n"
+            result += f"**Template ID**: `{template_id}`\n\n"
+
+            if template.get('description'):
+                result += f"### Description\n\n{template['description']}\n\n"
+
+            usage = template.get('usage', {})
+            if usage:
+                result += f"### Usage Information\n\n"
+                result += f"- **Base Class**: `{usage.get('base_class', 'Unknown')}`\n"
+                result += f"- **Plugin Type**: {usage.get('plugin_type', 'Unknown')}\n"
+
+                requirements = usage.get('requirements', [])
+                if requirements:
+                    result += f"\n**Key Imports**:\n"
+                    for req in requirements[:5]:
+                        result += f"- `{req}`\n"
+                result += "\n"
+
+            result += f"### Template Code\n\n"
+            result += f"```python\n{template['content']}\n```\n\n"
+
+            result += f"### Placeholders to Replace\n\n"
+            result += "- `____PluginClassName____`: Your plugin class name (e.g., MyAwesomeFilter)\n"
+            result += "- `____PluginName____`: Your plugin name (e.g., My Awesome Filter)\n"
+            result += "- `____PluginMenuName____`: Menu display name (e.g., My Filter)\n\n"
+
+            result += f"### File Information\n\n"
+            result += f"- **Path**: `{template['relative_path']}`\n"
+            result += f"- **Size**: {template['size']} bytes\n"
+            result += f"- **MCP Resource**: `glyphs://plugin-template/{template_id}`\n\n"
+
+            result += "💡 **Next Steps**:\n"
+            result += "1. Copy template code above\n"
+            result += "2. Replace all placeholders (____*____)\n"
+            result += "3. Add your custom implementation\n"
+            result += "4. Save with appropriate extension (.glyphsFilter/.glyphsReporter/etc.)\n"
+            result += "5. Install in ~/Library/Application Support/Glyphs 3/Plugins/\n"
+            result += "6. Restart Glyphs and test your plugin!\n"
+
+            return result
+
+        except Exception as e:
+            return f"❌ Error getting Python template: {e}"

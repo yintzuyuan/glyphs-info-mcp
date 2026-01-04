@@ -176,6 +176,54 @@ mcp = FastMCP("Glyphs MCP - Modular Architecture")
 _modules: dict[str, BaseMCPModule] = {}
 
 
+def setup_resources(mcp_instance: FastMCP, modules: dict[str, BaseMCPModule]) -> None:
+    """Setup MCP resources from modules that implement ResourceInterface
+
+    Scans loaded modules for get_resources() method and registers all returned
+    resources with the MCP server instance. Uses duck typing for flexibility.
+
+    Args:
+        mcp_instance: FastMCP server instance to register resources
+        modules: Dictionary of loaded modules (filtered by is_module_enabled)
+
+    Note:
+        - Modules without get_resources() are silently skipped
+        - Individual module failures are isolated (won't crash server)
+        - Integrates with environment variable module filtering (Issue #29)
+    """
+    total_resources = 0
+
+    for module_name, module in modules.items():
+        # Check if module implements get_resources() method (duck typing)
+        if not hasattr(module, 'get_resources'):
+            logger.debug(f"Module {module_name} does not provide resources")
+            continue
+
+        try:
+            # Get resources from module
+            resources = module.get_resources()
+
+            if not resources:
+                logger.debug(f"Module {module_name} returned no resources")
+                continue
+
+            # Register each resource with MCP server
+            for resource_uri, resource_func in resources.items():
+                mcp_instance.resource(resource_uri)(resource_func)
+                total_resources += 1
+                logger.debug(f"Registered resource: {resource_uri}")
+
+            logger.info(f"✅ {module_name} module: {len(resources)} resources registered")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to setup resources for {module_name}: {e}")
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+
+    if total_resources > 0:
+        logger.info(f"✅ Total {total_resources} MCP resources registered")
+
+
 def main() -> None:
     """Initialize and start the unified MCP server"""
     try:
@@ -234,6 +282,9 @@ def main() -> None:
                 f"✅ Unified tools mode: {total_tools} entry points registered (60 tools consolidated)"
             )
             logger.info(f"📦 Enabled modules: {', '.join(router._modules.keys())}")
+
+        # Setup MCP Resources (Issue #33)
+        setup_resources(mcp, modules)
 
         mode_str = "unified" if USE_UNIFIED_TOOLS else "legacy"
         logger.info(f"✅ Glyphs MCP Server initialized ({mode_str} mode) with {len(modules)} modules and {total_tools} tools")
