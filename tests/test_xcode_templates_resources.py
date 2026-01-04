@@ -8,7 +8,7 @@ from glyphs_info_mcp.shared.core.xcode_templates_resources import (
 
 
 @pytest.fixture
-def sdk_path():
+def sdk_path() -> Path:
     """Get GlyphsSDK path"""
     project_root = Path(__file__).parent.parent
     return (
@@ -17,19 +17,19 @@ def sdk_path():
 
 
 @pytest.fixture
-def manager(sdk_path):
+def manager(sdk_path: Path) -> XcodeTemplatesResourceManager:
     """Create XcodeTemplatesResourceManager instance"""
     return XcodeTemplatesResourceManager(sdk_path)
 
 
-def test_initialization(manager):
+def test_initialization(manager: XcodeTemplatesResourceManager) -> None:
     """Test manager initialization"""
     assert manager is not None
     assert manager.sdk_path.exists()
     assert manager.native_accessor is not None
 
 
-def test_scan_xcode_templates(manager):
+def test_scan_xcode_templates(manager: XcodeTemplatesResourceManager) -> None:
     """Test scanning all Xcode templates"""
     templates = manager.scan_xcode_templates()
 
@@ -57,7 +57,7 @@ def test_scan_xcode_templates(manager):
         assert "file_count" in info
 
 
-def test_get_templates_with_cache(manager):
+def test_get_templates_with_cache(manager: XcodeTemplatesResourceManager) -> None:
     """Test template caching"""
     # First call - should scan
     templates1 = manager.get_templates()
@@ -68,7 +68,7 @@ def test_get_templates_with_cache(manager):
     assert templates1 is templates2  # Same object reference
 
 
-def test_get_template_by_id(manager):
+def test_get_template_by_id(manager: XcodeTemplatesResourceManager) -> None:
     """Test getting specific template with full content"""
     template = manager.get_template_by_id("reporter")
 
@@ -83,13 +83,13 @@ def test_get_template_by_id(manager):
     assert any(".m" in path for path in source_files.keys())
 
 
-def test_get_template_by_id_not_found(manager):
+def test_get_template_by_id_not_found(manager: XcodeTemplatesResourceManager) -> None:
     """Test getting non-existent template"""
     template = manager.get_template_by_id("nonexistent")
     assert template is None
 
 
-def test_get_templates_by_type(manager):
+def test_get_templates_by_type(manager: XcodeTemplatesResourceManager) -> None:
     """Test filtering templates by type"""
     reporter_templates = manager.get_templates_by_type("Reporter")
 
@@ -98,7 +98,7 @@ def test_get_templates_by_type(manager):
         assert info["type"] == "Reporter"
 
 
-def test_get_template_types(manager):
+def test_get_template_types(manager: XcodeTemplatesResourceManager) -> None:
     """Test getting all template types"""
     types = manager.get_template_types()
 
@@ -107,7 +107,7 @@ def test_get_template_types(manager):
     assert "Reporter" in types or "Filter" in types
 
 
-def test_get_resource_list(manager):
+def test_get_resource_list(manager: XcodeTemplatesResourceManager) -> None:
     """Test MCP resource list format"""
     resources = manager.get_resource_list()
 
@@ -128,7 +128,7 @@ def test_get_resource_list(manager):
         assert resource["mimeType"] == "text/x-objective-c"
 
 
-def test_template_id_generation(manager):
+def test_template_id_generation(manager: XcodeTemplatesResourceManager) -> None:
     """Test template ID generation logic"""
     # Test various template names
     assert manager._generate_template_id("Glyphs Reporter") == "reporter"
