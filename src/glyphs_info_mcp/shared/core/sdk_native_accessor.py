@@ -47,6 +47,9 @@ class SDKNativeAccessor:
         self.xcode_templates_path = self.sdk_root / "Xcode Templates"
         self.xcode_samples_path = self.sdk_root / "Xcode Samples"
 
+        # Add Python Samples path (Issue #37)
+        self.python_samples_path = self.sdk_root / "Python Samples"
+
         # Validate paths
         if not self.templates_path.exists():
             logger.warning(f"Python Templates not found: {self.templates_path}")
@@ -58,6 +61,8 @@ class SDKNativeAccessor:
             logger.warning(f"Xcode Templates not found: {self.xcode_templates_path}")
         if not self.xcode_samples_path.exists():
             logger.warning(f"Xcode Samples not found: {self.xcode_samples_path}")
+        if not self.python_samples_path.exists():
+            logger.warning(f"Python Samples not found: {self.python_samples_path}")
 
         # Cache
         self._plugin_templates_cache: list[dict[str, Any]] | None = None
@@ -65,6 +70,7 @@ class SDKNativeAccessor:
         self._drawing_tools_cache: list[dict[str, Any]] | None = None
         self._xcode_templates_cache: list[dict[str, Any]] | None = None
         self._xcode_samples_cache: list[dict[str, Any]] | None = None
+        self._python_samples_cache: list[dict[str, Any]] | None = None  # Issue #37
 
     # ============================================================================
     # Plugin Template Access Methods
@@ -781,6 +787,7 @@ class SDKNativeAccessor:
         # Load all source code file contents
         template_path = Path(template["path"])
         source_files = {}
+        load_errors = []
 
         for file_info in template["files"]:
             file_path = template_path / file_info["path"]
@@ -790,11 +797,18 @@ class SDKNativeAccessor:
                         source_files[file_info["path"]] = f.read()
                 except Exception as e:
                     logger.error(f"Error reading {file_path}: {e}")
-                    source_files[file_info["path"]] = f"<Error reading file: {e}>"
+                    load_errors.append(
+                        {
+                            "file": file_info["path"],
+                            "error": str(e),
+                        }
+                    )
 
         return {
             **template,
             "source_files": source_files,
+            "load_errors": load_errors,
+            "partial_load": len(load_errors) > 0,
         }
 
     def search_xcode_templates(self, query: str) -> list[dict[str, Any]]:
@@ -938,6 +952,7 @@ class SDKNativeAccessor:
         # Load all source code file contents
         sample_path = Path(sample["path"])
         source_code = {}
+        load_errors = []
 
         for file_info in sample["source_files"]:
             file_path = sample_path / file_info["path"]
@@ -946,11 +961,18 @@ class SDKNativeAccessor:
                     source_code[file_info["path"]] = f.read()
             except Exception as e:
                 logger.error(f"Error reading {file_path}: {e}")
-                source_code[file_info["path"]] = f"<Error reading file: {e}>"
+                load_errors.append(
+                    {
+                        "file": file_info["path"],
+                        "error": str(e),
+                    }
+                )
 
         return {
             **sample,
             "source_code": source_code,
+            "load_errors": load_errors,
+            "partial_load": len(load_errors) > 0,
         }
 
     def search_xcode_samples(self, query: str) -> list[dict[str, Any]]:
@@ -964,6 +986,204 @@ class SDKNativeAccessor:
         """
         query_lower = query.lower()
         samples = self.list_xcode_samples()
+
+        results = []
+        for sample in samples:
+            # Search name
+            if query_lower in sample["name"].lower():
+                results.append({**sample, "score": 1.0})
+                continue
+
+            # Search README content
+            if query_lower in sample.get("readme", "").lower():
+                results.append({**sample, "score": 0.7})
+
+        # Sort by score
+        results.sort(key=lambda x: x.get("score", 0), reverse=True)
+        return results
+
+    # ============================================================================
+    # Python Samples Access Methods (Issue #37)
+    # ============================================================================
+
+    def list_python_samples(self) -> list[dict[str, Any]]:
+        """List all Python sample projects.
+
+        Scans Python Samples/ directory, returns all sample project info.
+
+        Returns:
+            Sample project info list, each containing:
+            - name: Sample name
+            - type: Sample type (script, plugin, palette, tool, filter, reporter)
+            - path: Project directory path
+            - has_bundle: Whether it's a bundle structure
+            - readme: README content (if available)
+            - source_files: List of source files
+            - source_file_count: Number of source files
+        """
+        # Return cached results
+        if self._python_samples_cache is not None:
+            return self._python_samples_cache
+
+        if not self.python_samples_path.exists():
+            logger.warning("Python Samples path not found, returning empty list")
+            return []
+
+        samples = []
+
+        # Scan all sample project directories (one level subdirectory)
+        for sample_dir in self.python_samples_path.iterdir():
+            if sample_dir.is_dir() and not sample_dir.name.startswith("."):
+                try:
+                    sample_info = self._parse_python_sample(sample_dir)
+                    samples.append(sample_info)
+                except Exception as e:
+                    logger.error(f"Error parsing Python sample {sample_dir}: {e}")
+                    continue
+
+        # Cache results
+        self._python_samples_cache = samples
+        logger.info(f"Loaded {len(samples)} Python samples")
+
+        return samples
+
+    def _parse_python_sample(self, sample_dir: Path) -> dict[str, Any]:
+        """Parse a single Python sample project.
+
+        Python Samples have two structures:
+        1. Bundle structure: `SampleName.glyphsPlugin/Contents/Resources/plugin.py`
+        2. Standalone Script: direct `.py` files
+
+        Args:
+            sample_dir: Sample project directory path
+
+        Returns:
+            Sample project info dictionary
+        """
+        sample_name = sample_dir.name
+
+        # Detect bundle structure
+        has_bundle = False
+        bundle_types = [
+            ".glyphsPlugin",
+            ".glyphsPalette",
+            ".glyphsFilter",
+            ".glyphsReporter",
+            ".glyphsTool",
+        ]
+
+        bundle_path = None
+        for bundle_type in bundle_types:
+            potential_bundle = list(sample_dir.glob(f"*{bundle_type}"))
+            if potential_bundle:
+                has_bundle = True
+                bundle_path = potential_bundle[0]
+                break
+
+        # Read README
+        readme_content = ""
+        for readme_file in ["readme.md", "README.md", "Readme.md"]:
+            readme_path = sample_dir / readme_file
+            if readme_path.exists():
+                try:
+                    with open(readme_path, encoding="utf-8") as f:
+                        readme_content = f.read()
+                    break
+                except Exception as e:
+                    logger.debug(f"Could not read {readme_file}: {e}")
+
+        # Collect source files
+        source_files = []
+
+        if has_bundle and bundle_path:
+            # Bundle structure: scan Contents/Resources/
+            resources_path = bundle_path / "Contents" / "Resources"
+            if resources_path.exists():
+                for file_path in resources_path.rglob("*.py"):
+                    relative_path = file_path.relative_to(sample_dir)
+                    source_files.append(
+                        {
+                            "name": file_path.name,
+                            "path": str(relative_path),
+                            "type": ".py",
+                        }
+                    )
+        else:
+            # Standalone script: directly scan .py files
+            for file_path in sample_dir.rglob("*.py"):
+                relative_path = file_path.relative_to(sample_dir)
+                source_files.append(
+                    {"name": file_path.name, "path": str(relative_path), "type": ".py"}
+                )
+
+        # Infer sample type
+        sample_type = "script"
+        if has_bundle and bundle_path:
+            suffix = bundle_path.suffix
+            sample_type = suffix.replace(".glyphs", "").lower()
+
+        return {
+            "name": sample_name,
+            "type": sample_type,
+            "path": str(sample_dir),
+            "has_bundle": has_bundle,
+            "readme": readme_content,
+            "source_files": source_files,
+            "source_file_count": len(source_files),
+        }
+
+    def get_python_sample(self, sample_name: str) -> dict[str, Any] | None:
+        """Get complete content of a specific Python sample.
+
+        Args:
+            sample_name: Sample name
+
+        Returns:
+            Sample info including complete source code, or None
+        """
+        samples = self.list_python_samples()
+        sample = next((s for s in samples if s["name"] == sample_name), None)
+
+        if not sample:
+            return None
+
+        # Load all source code file contents
+        sample_path = Path(sample["path"])
+        source_code = {}
+        load_errors = []
+
+        for file_info in sample["source_files"]:
+            file_path = sample_path / file_info["path"]
+            try:
+                with open(file_path, encoding="utf-8") as f:
+                    source_code[file_info["path"]] = f.read()
+            except Exception as e:
+                logger.error(f"Error reading {file_path}: {e}")
+                load_errors.append(
+                    {
+                        "file": file_info["path"],
+                        "error": str(e),
+                    }
+                )
+
+        return {
+            **sample,
+            "source_code": source_code,
+            "load_errors": load_errors,
+            "partial_load": len(load_errors) > 0,
+        }
+
+    def search_python_samples(self, query: str) -> list[dict[str, Any]]:
+        """Search Python sample projects.
+
+        Args:
+            query: Search keyword
+
+        Returns:
+            List of matching samples
+        """
+        query_lower = query.lower()
+        samples = self.list_python_samples()
 
         results = []
         for sample in samples:

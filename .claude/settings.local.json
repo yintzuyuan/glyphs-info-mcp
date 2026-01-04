@@ -11,7 +11,13 @@
       "Bash(pytest:*)",
       "Bash(uv run pytest:*)",
       "Bash(git add:*)",
-      "Bash(uv run mypy:*)"
+      "Bash(uv run mypy:*)",
+      "Bash(uv run ruff check:*)",
+      "Bash(gh run list:*)",
+      "Bash(xargs:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr checks:*)"
     ]
   }
 }
