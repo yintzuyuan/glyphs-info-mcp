@@ -536,9 +536,9 @@ class UnifiedToolsRouter:
                 return module._get_xcode_template_tool(template_id=template_id)
             # Xcode Templates (old style - deprecated but kept for compatibility)
             elif action == "list_templates":
-                return module._list_xcode_templates_tool()
+                return module._list_xcode_templates_by_native_tool()
             elif action == "get_template":
-                return module._get_xcode_template_tool(template_name=template_name)
+                return module._get_xcode_template_by_name_tool(template_name=template_name)
             # Xcode Samples
             elif action == "list_samples":
                 return module._list_xcode_samples_tool()

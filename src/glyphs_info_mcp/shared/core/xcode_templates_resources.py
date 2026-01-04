@@ -23,6 +23,10 @@ class XcodeTemplatesResourceManager:
 
         Args:
             sdk_path: GlyphsSDK root directory path
+
+        Raises:
+            FileNotFoundError: If SDK path does not exist
+            ValueError: If SDK path is not a directory
         """
         if sdk_path is None:
             # Default path: read from project root's data/official/
@@ -32,6 +36,13 @@ class XcodeTemplatesResourceManager:
             )
 
         self.sdk_path = Path(sdk_path)
+
+        # Validate SDK path exists and is a directory
+        if not self.sdk_path.exists():
+            raise FileNotFoundError(f"SDK path does not exist: {self.sdk_path}")
+        if not self.sdk_path.is_dir():
+            raise ValueError(f"SDK path is not a directory: {self.sdk_path}")
+
         self.native_accessor = SDKNativeAccessor(self.sdk_path)
         self._templates_cache: dict[str, dict[str, Any]] | None = None
 

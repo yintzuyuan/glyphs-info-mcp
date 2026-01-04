@@ -394,9 +394,12 @@ class GlyphsSDKModule(BaseMCPModule):
     # Xcode resource tool methods
     # ============================================================================
 
-    def _list_xcode_templates_tool(self) -> str:
+    def _list_xcode_templates_by_native_tool(self) -> str:
         """
-        [SDK] List all Xcode plugin templates
+        [SDK] List all Xcode plugin templates (legacy native API)
+
+        DEPRECATED: Use _list_xcode_templates_tool for the new resource-based API.
+        This method is kept for backward compatibility with the old API.
 
         Display available Objective-C plugin development templates for advanced developers using Xcode.
         These templates use Objective-C language and require Xcode development environment.
@@ -446,9 +449,12 @@ class GlyphsSDKModule(BaseMCPModule):
         except Exception as e:
             return f"❌ Error listing Xcode templates: {e}"
 
-    def _get_xcode_template_tool(self, template_name: str) -> str:
+    def _get_xcode_template_by_name_tool(self, template_name: str) -> str:
         """
-        [SDK] Get complete content of a specific Xcode template
+        [SDK] Get complete content of a specific Xcode template (legacy API)
+
+        DEPRECATED: Use _get_xcode_template_tool with template_id instead.
+        This method is kept for backward compatibility with the old API.
 
         Retrieve Xcode template file structure and source code, including:
         - .h header files
@@ -650,7 +656,7 @@ class GlyphsSDKModule(BaseMCPModule):
         # Python Templates Resources (Issue #33)
         if self.templates_manager:
             python_templates = self.templates_manager.get_templates()
-            for template_id, template_info in python_templates.items():
+            for template_id in python_templates:
                 uri = f"glyphs://plugin-template/{template_id}"
 
                 # Create closure to capture template_id (avoid late binding)
@@ -665,7 +671,7 @@ class GlyphsSDKModule(BaseMCPModule):
         # Xcode Templates Resources (Issue #34)
         if self.xcode_templates_manager:
             xcode_templates = self.xcode_templates_manager.get_templates()
-            for template_id, template_info in xcode_templates.items():
+            for template_id in xcode_templates:
                 uri = f"glyphs://xcode-template/{template_id}"
 
                 # Create closure to capture template_id (avoid late binding)
