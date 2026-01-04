@@ -8,6 +8,7 @@ Issue #33: Test setup_resources() function and resource registration
 import pytest
 from unittest.mock import MagicMock, patch
 from pathlib import Path
+from typing import Any
 
 
 class TestSetupResources:
@@ -30,10 +31,10 @@ class TestSetupResources:
             "glyphs://test/resource2": mock_resource_func,
         }
 
-        modules = {"test_module": mock_module}
+        modules: dict[str, Any] = {"test_module": mock_module}
 
         # Execute
-        setup_resources(mock_mcp, modules)
+        setup_resources(mock_mcp, modules)  # type: ignore[arg-type]
 
         # Verify resource registration
         assert mock_mcp.resource.call_count == 2
@@ -50,10 +51,10 @@ class TestSetupResources:
         mock_mcp = MagicMock()
         mock_module = MagicMock(spec=[])  # No get_resources method
 
-        modules = {"test_module": mock_module}
+        modules: dict[str, Any] = {"test_module": mock_module}
 
         # Execute (should not raise error)
-        setup_resources(mock_mcp, modules)
+        setup_resources(mock_mcp, modules)  # type: ignore
 
         # Verify no registration occurred
         mock_mcp.resource.assert_not_called()
@@ -66,10 +67,10 @@ class TestSetupResources:
         mock_module = MagicMock()
         mock_module.get_resources.return_value = {}
 
-        modules = {"test_module": mock_module}
+        modules: dict[str, Any] = {"test_module": mock_module}
 
         # Execute
-        setup_resources(mock_mcp, modules)
+        setup_resources(mock_mcp, modules)  # type: ignore[arg-type]
 
         # Verify no registration occurred
         mock_mcp.resource.assert_not_called()
@@ -91,13 +92,13 @@ class TestSetupResources:
             "glyphs://test/resource": mock_resource_func
         }
 
-        modules = {
+        modules: dict[str, Any] = {
             "failing_module": mock_module1,
             "working_module": mock_module2,
         }
 
         # Execute (should not raise error)
-        setup_resources(mock_mcp, modules)
+        setup_resources(mock_mcp, modules)  # type: ignore[arg-type]
 
         # Verify working module's resources were registered
         mock_mcp.resource.assert_called_once_with("glyphs://test/resource")
@@ -123,13 +124,13 @@ class TestSetupResources:
             "glyphs://module2/resource1": MagicMock(),
         }
 
-        modules = {
+        modules: dict[str, Any] = {
             "module1": mock_module1,
             "module2": mock_module2,
         }
 
         # Execute
-        setup_resources(mock_mcp, modules)
+        setup_resources(mock_mcp, modules)  # type: ignore[arg-type]
 
         # Verify total registrations
         assert mock_mcp.resource.call_count == 3

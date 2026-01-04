@@ -639,7 +639,7 @@ class GlyphsSDKModule(BaseMCPModule):
             uri = f"glyphs://plugin-template/{template_id}"
 
             # Create closure to capture template_id (avoid late binding)
-            def make_resource_handler(tid: str):
+            def make_resource_handler(tid: str) -> Callable[[], str]:
                 def resource_handler() -> str:
                     return self._get_template_resource(tid)
                 resource_handler.__name__ = f"get_template_{tid}"
