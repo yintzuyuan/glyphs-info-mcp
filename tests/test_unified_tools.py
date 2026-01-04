@@ -184,6 +184,62 @@ class TestUnifiedToolsRouter:
         mock_module._sdk_search_tool.assert_called_once()
         assert result == "sdk results"
 
+    def test_sdk_router_list_python_templates_action(self) -> None:
+        """Test sdk router dispatches list_python_templates action correctly (Issue #33)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module._list_python_templates_tool.return_value = "template list"
+
+        router = UnifiedToolsRouter()
+        router.set_module("glyphs_sdk", mock_module)
+
+        result = router.sdk(action="list_python_templates")
+
+        mock_module._list_python_templates_tool.assert_called_once_with(template_type=None)
+        assert result == "template list"
+
+    def test_sdk_router_list_python_templates_with_type(self) -> None:
+        """Test sdk router dispatches list_python_templates with type filter (Issue #33)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module._list_python_templates_tool.return_value = "filtered templates"
+
+        router = UnifiedToolsRouter()
+        router.set_module("glyphs_sdk", mock_module)
+
+        result = router.sdk(action="list_python_templates", template_type="filter")
+
+        mock_module._list_python_templates_tool.assert_called_once_with(template_type="filter")
+        assert result == "filtered templates"
+
+    def test_sdk_router_get_python_template_action(self) -> None:
+        """Test sdk router dispatches get_python_template action correctly (Issue #33)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module._get_python_template_tool.return_value = "template details"
+
+        router = UnifiedToolsRouter()
+        router.set_module("glyphs_sdk", mock_module)
+
+        result = router.sdk(action="get_python_template", template_id="filter_without_dialog")
+
+        mock_module._get_python_template_tool.assert_called_once_with(template_id="filter_without_dialog")
+        assert result == "template details"
+
+    def test_sdk_router_invalid_action(self) -> None:
+        """Test sdk router returns error for invalid action"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        router = UnifiedToolsRouter()
+        router.set_module("glyphs_sdk", MagicMock())
+
+        result = router.sdk(action="invalid_action")
+
+        assert "Invalid" in result or "invalid" in result.lower()
+
     @pytest.mark.asyncio
     async def test_news_router_search_forum_action(self) -> None:
         """Test news router dispatches search_forum action correctly"""
