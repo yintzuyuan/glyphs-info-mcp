@@ -98,6 +98,48 @@ uv run glyphs-info-mcp
 - 🔌 **全面 API 參考** - Python 和 Objective-C API 完整文件
 - 🧠 **智慧交叉引用** - 自動關聯相關內容
 - 🛠️ **MCP 協議相容** - 標準化工具介面
+- 📦 **外掛範本資源** - Python 和 Xcode 外掛開發範本
+
+## 🎁 MCP 資源
+
+MCP 資源透過 Claude Desktop 提供外掛開發範本的直接存取。
+
+### Python 外掛範本（Issue #33）
+
+8 個 Python 範本，用於將腳本轉換為外掛：
+
+- `glyphs://plugin-template/filter_without_dialog` - 無介面的濾鏡
+- `glyphs://plugin-template/filter_dialog_with_vanilla` - 使用 Vanilla 介面的濾鏡
+- `glyphs://plugin-template/filter_dialog_with_xib` - 使用 XIB 介面的濾鏡
+- `glyphs://plugin-template/reporter_without_dialog` - Reporter 外掛
+- `glyphs://plugin-template/palette_with_vanilla` - 使用 Vanilla 的面板
+- `glyphs://plugin-template/general_without_dialog` - 一般外掛
+- `glyphs://plugin-template/fileformat` - 檔案格式外掛
+- `glyphs://plugin-template/selecttool` - SelectTool 外掛
+
+### Xcode 外掛範本（Issue #34）
+
+7 個 Xcode 範本，用於原生 Objective-C 外掛開發：
+
+- `glyphs://xcode-template/reporter` - Reporter 外掛（.glyphsReporter）
+- `glyphs://xcode-template/filter` - Filter 外掛（.glyphsFilter）
+- `glyphs://xcode-template/palette` - Palette 外掛（.glyphsPalette）
+- `glyphs://xcode-template/tool` - Tool 外掛（.glyphsTool）
+- `glyphs://xcode-template/file_format` - 檔案格式外掛
+- `glyphs://xcode-template/plugin` - 一般外掛
+- `glyphs://xcode-template/plugin_base` - 基礎範本
+
+**存取方式**：
+
+- **透過 Claude Desktop**：資源自動顯示在 MCP 資源清單中
+- **透過工具**：
+  - Python：`sdk(action='list_python_templates')` 和 `sdk(action='get_python_template', template_id='...')`
+  - Xcode：`sdk(action='list_xcode_templates')` 和 `sdk(action='get_xcode_template', template_id='...')`
+
+**佔位符格式**：
+
+- Python：`____PluginClassName____`、`____PluginName____`、`____PluginMenuName____`
+- Xcode：`___PACKAGENAMEASIDENTIFIER___`、`___FILENAME___`、`___PACKAGENAME___`、`___FULLUSERNAME___`
 
 ## 📋 功能總覽
 

@@ -137,3 +137,72 @@ class TestSetupResources:
         mock_mcp.resource.assert_any_call("glyphs://module1/resource1")
         mock_mcp.resource.assert_any_call("glyphs://module1/resource2")
         mock_mcp.resource.assert_any_call("glyphs://module2/resource1")
+
+
+@pytest.mark.requires_glyphs_app
+def test_xcode_templates_resources_registered():
+    """Test that Xcode templates are registered as MCP resources (Issue #34)"""
+    from glyphs_info_mcp.server import create_mcp_server
+    from glyphs_info_mcp.config import get_sdk_path
+
+    # Create server instance
+    server = create_mcp_server()
+
+    # Get resources from glyphs_sdk module
+    sdk_module = server._modules.get("glyphs_sdk")  # type: ignore[attr-defined]
+    if not sdk_module or not hasattr(sdk_module, "get_resources"):
+        pytest.skip("SDK module not available or doesn't support resources")
+
+    resources = sdk_module.get_resources()
+
+    # Should have 7 Xcode template resources
+    xcode_template_uris = [
+        uri for uri in resources.keys() if uri.startswith("glyphs://xcode-template/")
+    ]
+    assert len(xcode_template_uris) == 7
+
+    # Check specific templates
+    expected_templates = [
+        "glyphs://xcode-template/reporter",
+        "glyphs://xcode-template/filter",
+        "glyphs://xcode-template/palette",
+        "glyphs://xcode-template/tool",
+        "glyphs://xcode-template/file_format",
+        "glyphs://xcode-template/plugin",
+        "glyphs://xcode-template/plugin_base",
+    ]
+
+    for uri in expected_templates:
+        assert uri in resources, f"Missing Xcode template resource: {uri}"
+
+
+@pytest.mark.requires_glyphs_app
+def test_xcode_template_resource_content():
+    """Test Xcode template resource content format (Issue #34)"""
+    from glyphs_info_mcp.server import create_mcp_server
+
+    # Create server instance
+    server = create_mcp_server()
+
+    # Get resources from glyphs_sdk module
+    sdk_module = server._modules.get("glyphs_sdk")  # type: ignore[attr-defined]
+    if not sdk_module or not hasattr(sdk_module, "get_resources"):
+        pytest.skip("SDK module not available or doesn't support resources")
+
+    resources = sdk_module.get_resources()
+
+    # Get a specific template resource
+    reporter_uri = "glyphs://xcode-template/reporter"
+    assert reporter_uri in resources
+
+    # Execute resource handler
+    handler = resources[reporter_uri]
+    content = handler()
+
+    # Check content format
+    assert isinstance(content, str)
+    assert "Glyphs Reporter" in content or "Reporter" in content
+    assert "```objective-c" in content  # Should have Obj-C code blocks
+    assert (
+        "___PACKAGENAMEASIDENTIFIER___" in content
+    )  # Should have Xcode placeholders
