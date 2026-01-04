@@ -25,6 +25,12 @@ from glyphs_info_mcp.shared.core.plugin_templates_resources import (
 from glyphs_info_mcp.shared.core.xcode_templates_resources import (
     XcodeTemplatesResourceManager,
 )
+from glyphs_info_mcp.shared.core.python_samples_resources import (
+    PythonSamplesResourceManager,
+)
+from glyphs_info_mcp.shared.core.xcode_samples_resources import (
+    XcodeSamplesResourceManager,
+)
 
 
 def _import_sdk_module(module_name: str) -> ModuleType:
@@ -76,6 +82,12 @@ class GlyphsSDKModule(BaseMCPModule):
         # Xcode Templates Manager (Issue #34)
         self.xcode_templates_manager: XcodeTemplatesResourceManager | None = None
 
+        # Python Samples Manager (Issue #37)
+        self.python_samples_manager: PythonSamplesResourceManager | None = None
+
+        # Xcode Samples Manager (Issue #37)
+        self.xcode_samples_manager: XcodeSamplesResourceManager | None = None
+
     def initialize(self) -> bool:
         """
         Initialize module, build or load index
@@ -116,6 +128,22 @@ class GlyphsSDKModule(BaseMCPModule):
             xcode_template_count = len(self.xcode_templates_manager.get_templates())
             print(
                 f"[{self.name}] Loaded {xcode_template_count} Xcode templates as resources",
+                file=sys.stderr,
+            )
+
+            # Initialize Python Samples Manager (Issue #37)
+            self.python_samples_manager = PythonSamplesResourceManager(self.sdk_path)
+            python_sample_count = len(self.python_samples_manager.get_samples())
+            print(
+                f"[{self.name}] Loaded {python_sample_count} Python samples as resources",
+                file=sys.stderr,
+            )
+
+            # Initialize Xcode Samples Manager (Issue #37)
+            self.xcode_samples_manager = XcodeSamplesResourceManager(self.sdk_path)
+            xcode_sample_count = len(self.xcode_samples_manager.get_samples())
+            print(
+                f"[{self.name}] Loaded {xcode_sample_count} Xcode samples as resources",
                 file=sys.stderr,
             )
 
@@ -683,8 +711,38 @@ class GlyphsSDKModule(BaseMCPModule):
 
                 resources[uri] = make_xcode_resource_handler(template_id)
 
+        # Python Samples Resources (Issue #37)
+        if self.python_samples_manager:
+            python_samples = self.python_samples_manager.get_samples()
+            for sample_id in python_samples:
+                uri = f"glyphs://python-sample/{sample_id}"
+
+                # Create closure to capture sample_id (avoid late binding)
+                def make_python_sample_handler(sid: str) -> Callable[[], str]:
+                    def resource_handler() -> str:
+                        return self._get_python_sample_resource(sid)
+                    resource_handler.__name__ = f"get_python_sample_{sid}"
+                    return resource_handler
+
+                resources[uri] = make_python_sample_handler(sample_id)
+
+        # Xcode Samples Resources (Issue #37)
+        if self.xcode_samples_manager:
+            xcode_samples = self.xcode_samples_manager.get_samples()
+            for sample_id in xcode_samples:
+                uri = f"glyphs://xcode-sample/{sample_id}"
+
+                # Create closure to capture sample_id (avoid late binding)
+                def make_xcode_sample_handler(sid: str) -> Callable[[], str]:
+                    def resource_handler() -> str:
+                        return self._get_xcode_sample_resource(sid)
+                    resource_handler.__name__ = f"get_xcode_sample_{sid}"
+                    return resource_handler
+
+                resources[uri] = make_xcode_sample_handler(sample_id)
+
         print(
-            f"[{self.name}] Prepared {len(resources)} template resources",
+            f"[{self.name}] Prepared {len(resources)} resources (templates + samples)",
             file=sys.stderr,
         )
         return resources
@@ -1153,3 +1211,102 @@ class GlyphsSDKModule(BaseMCPModule):
 
         except Exception as e:
             return f"❌ Error getting Xcode template: {e}"
+
+    # ============================================================================
+    # Samples Resource Handlers (Issue #37)
+    # ============================================================================
+
+    def _get_python_sample_resource(self, sample_id: str) -> str:
+        """Internal handler to get Python sample resource content
+
+        Formats sample as Markdown with code blocks for MCP resource display.
+
+        Args:
+            sample_id: Sample identifier (e.g., "callback_for_context_menu")
+
+        Returns:
+            Formatted sample content with metadata and source code
+        """
+        if not self.python_samples_manager:
+            return "❌ Python Samples manager not initialized"
+
+        sample = self.python_samples_manager.get_sample_by_id(sample_id)
+        if not sample:
+            return f"❌ Sample not found: {sample_id}"
+
+        # Format sample as MCP resource (Markdown)
+        result = f"# {sample['name']}\n\n"
+        result += f"**Type**: {sample['type']}\n"
+        result += f"**Has Bundle**: {'Yes' if sample.get('has_bundle') else 'No'}\n\n"
+
+        # README section
+        if sample.get("readme"):
+            result += f"## README\n\n{sample['readme']}\n\n"
+
+        # File structure
+        result += f"## File Structure ({sample['source_file_count']} files)\n\n"
+        for file_info in sample.get("source_files", []):
+            result += f"- `{file_info['path']}`\n"
+        result += "\n"
+
+        # Source code
+        source_code = sample.get("source_code", {})
+        if source_code:
+            result += f"## Source Code\n\n"
+            for file_path, content in source_code.items():
+                result += f"### `{file_path}`\n\n"
+                result += f"```python\n{content}\n```\n\n"
+
+        result += f"---\n\n"
+        result += f"**Sample ID**: `{sample_id}`\n"
+        result += f"**MCP Resource**: `glyphs://python-sample/{sample_id}`\n"
+
+        return result
+
+    def _get_xcode_sample_resource(self, sample_id: str) -> str:
+        """Internal handler to get Xcode sample resource content
+
+        Formats sample as Markdown with code blocks for MCP resource display.
+
+        Args:
+            sample_id: Sample identifier (e.g., "inspector_demo")
+
+        Returns:
+            Formatted sample content with metadata and source code
+        """
+        if not self.xcode_samples_manager:
+            return "❌ Xcode Samples manager not initialized"
+
+        sample = self.xcode_samples_manager.get_sample_by_id(sample_id)
+        if not sample:
+            return f"❌ Sample not found: {sample_id}"
+
+        # Format sample as MCP resource (Markdown)
+        result = f"# {sample['name']}\n\n"
+        result += f"**Xcode Project**: {'✅ Yes' if sample.get('has_xcode_project') else '❌ No'}\n\n"
+
+        # README section
+        if sample.get("readme"):
+            result += f"## README\n\n{sample['readme']}\n\n"
+
+        # File structure
+        result += f"## File Structure ({sample['source_file_count']} files)\n\n"
+        for file_info in sample.get("source_files", []):
+            result += f"- `{file_info['path']}`\n"
+        result += "\n"
+
+        # Source code
+        source_code = sample.get("source_code", {})
+        if source_code:
+            result += f"## Source Code\n\n"
+            for file_path, content in source_code.items():
+                ext = Path(file_path).suffix
+                lang = "objective-c" if ext in [".h", ".m"] else "text"
+                result += f"### `{file_path}`\n\n"
+                result += f"```{lang}\n{content}\n```\n\n"
+
+        result += f"---\n\n"
+        result += f"**Sample ID**: `{sample_id}`\n"
+        result += f"**MCP Resource**: `glyphs://xcode-sample/{sample_id}`\n"
+
+        return result
