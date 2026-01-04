@@ -157,8 +157,8 @@ class GlyphsSDKModule(BaseMCPModule):
         return {
             "sdk_search_content": self._sdk_search_tool,
             "sdk_get_content": self._fetch_sdk_content_tool,
-            "sdk_list_xcode_templates": self._list_xcode_templates_tool,
-            "sdk_get_xcode_template": self._get_xcode_template_tool,
+            "sdk_list_xcode_templates": self._list_xcode_templates_by_native_tool,
+            "sdk_get_xcode_template": self._get_xcode_template_by_name_tool,
             "sdk_list_xcode_samples": self._list_xcode_samples_tool,
             "sdk_get_xcode_sample": self._get_xcode_sample_tool,
             # Python Templates Tools (Issue #33)
