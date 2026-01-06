@@ -216,10 +216,13 @@ class VanillaLocalAccessor:
                 logger.warning(f"Class definition not found: {class_name}")
                 return None
 
+            # Extract only the requested class source (not entire file)
+            class_source = self._extract_single_class_source(source, class_name)
+
             # Extract information
             class_info = {
                 "class_name": class_name,
-                "source": source,
+                "source": class_source,
                 "docstring": ast.get_docstring(class_node) or "",
                 "methods": self._extract_methods(class_node),
                 "file_path": str(class_file),
@@ -233,6 +236,59 @@ class VanillaLocalAccessor:
         except Exception as e:
             logger.error(f"Error parsing class {class_name}: {e}")
             return None
+
+    def _extract_single_class_source(self, source: str, class_name: str) -> str:
+        """Extract only the requested class from source code.
+
+        Uses AST to find class boundaries and extract just that class,
+        reducing token consumption for multi-class files.
+
+        Args:
+            source: Full source code of the file
+            class_name: Name of the class to extract
+
+        Returns:
+            Source code containing only the requested class
+        """
+        try:
+            tree = ast.parse(source)
+        except SyntaxError as e:
+            # Log and fallback to full source if parsing fails
+            logger.warning(
+                f"Failed to parse source for class {class_name}, "
+                f"returning full source: {e}"
+            )
+            return source
+
+        lines = source.splitlines(keepends=True)
+
+        # Find the target class and next top-level definition
+        target_class: ast.ClassDef | None = None
+        next_start = len(lines)
+
+        for node in ast.iter_child_nodes(tree):
+            if isinstance(node, ast.ClassDef):
+                if node.name == class_name:
+                    target_class = node
+                elif target_class is not None:
+                    # Found the next class after target
+                    next_start = node.lineno - 1
+                    break
+            elif target_class is not None and isinstance(node, ast.stmt):
+                # Any top-level statement after target class ends the extraction
+                # This handles FunctionDef, Assign, Import, etc.
+                next_start = node.lineno - 1
+                break
+
+        if target_class is None:
+            # Log and fallback to full source if class not found
+            logger.warning(
+                f"Class {class_name} not found in AST, returning full source"
+            )
+            return source
+
+        start_line = target_class.lineno - 1
+        return "".join(lines[start_line:next_start]).rstrip()
 
     def _find_class_file(self, class_name: str) -> Path | None:
         """Find the file corresponding to a class
