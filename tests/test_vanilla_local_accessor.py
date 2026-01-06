@@ -245,6 +245,185 @@ class Window:
         assert classes1 == classes2
 
 
+class TestExtractSingleClassSource:
+    """Test _extract_single_class_source() method - Issue #45"""
+
+    @pytest.fixture
+    def multi_class_module(self) -> Generator[Path, None, None]:
+        """Create a mock vanilla module with multi-class files"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_path = Path(tmpdir) / "Repositories"
+            vanilla_path = repo_path / "vanilla" / "Lib" / "vanilla"
+            vanilla_path.mkdir(parents=True)
+
+            # Create __init__.py
+            init_content = """
+from vanilla.vanillaButton import Button, SquareButton, ImageButton, HelpButton
+from vanilla.vanillaTextBox import TextBox
+
+__all__ = ["Button", "SquareButton", "ImageButton", "HelpButton", "TextBox"]
+"""
+            (vanilla_path / "__init__.py").write_text(init_content)
+
+            # Create vanillaButton.py with multiple classes (like real vanilla)
+            button_content = '''
+from AppKit import NSButton
+
+_buttonMap = {"regular": 1, "small": 2}
+
+
+class Button:
+    """A standard button widget.
+
+    posSize: Tuple of form (left, top, width, height)
+    title: The text to be displayed
+    """
+
+    def __init__(self, posSize, title, callback=None):
+        self.posSize = posSize
+        self.title = title
+
+    def setTitle(self, title):
+        """Set the button title."""
+        self.title = title
+
+
+class SquareButton(Button):
+    """A square button widget.
+
+    Similar to Button but with square appearance.
+    """
+
+    def __init__(self, posSize, title, callback=None):
+        super().__init__(posSize, title, callback)
+
+
+class ImageButton(Button):
+    """A button with an image.
+
+    imagePath: Path to the image file
+    """
+
+    def __init__(self, posSize, imagePath=None, callback=None):
+        super().__init__(posSize, "", callback)
+        self.imagePath = imagePath
+
+
+class HelpButton(Button):
+    """A standard help button.
+
+    Shows a question mark icon.
+    """
+
+    def __init__(self, posSize, callback=None):
+        super().__init__(posSize, "?", callback)
+
+
+def _createButtonCell():
+    """Helper function at module level."""
+    pass
+'''
+            (vanilla_path / "vanillaButton.py").write_text(button_content)
+
+            # Create vanillaTextBox.py with single class
+            textbox_content = '''
+class TextBox:
+    """A text display widget.
+
+    posSize: Tuple of form (left, top, width, height)
+    text: The text to display
+    """
+
+    def __init__(self, posSize, text=""):
+        self.posSize = posSize
+        self.text = text
+
+    def set(self, text):
+        """Set the text."""
+        self.text = text
+
+    def get(self):
+        """Get the text."""
+        return self.text
+'''
+            (vanilla_path / "vanillaTextBox.py").write_text(textbox_content)
+
+            yield repo_path
+
+    @pytest.fixture
+    def multi_class_accessor(self, multi_class_module: Path) -> VanillaLocalAccessor:
+        """Create VanillaLocalAccessor with multi-class module"""
+        scanner = RepositoryScanner(multi_class_module)
+        scanner.scan_repositories()
+        accessor = VanillaLocalAccessor(scanner)
+        return accessor
+
+    def test_extract_button_only(self, multi_class_accessor: VanillaLocalAccessor) -> None:
+        """Should extract only Button class, not SquareButton, ImageButton, HelpButton"""
+        button_info = multi_class_accessor.get_vanilla_class("Button")
+
+        assert button_info is not None
+        source = button_info["source"]
+
+        # Should contain Button class
+        assert "class Button:" in source
+        assert "A standard button widget" in source
+
+        # Should NOT contain other classes
+        assert "class SquareButton" not in source
+        assert "class ImageButton" not in source
+        assert "class HelpButton" not in source
+
+        # Should NOT contain module-level function
+        assert "def _createButtonCell" not in source
+
+    def test_extract_square_button_only(self, multi_class_accessor: VanillaLocalAccessor) -> None:
+        """Should extract only SquareButton class"""
+        info = multi_class_accessor.get_vanilla_class("SquareButton")
+
+        assert info is not None
+        source = info["source"]
+
+        # Should contain SquareButton class
+        assert "class SquareButton" in source
+        assert "A square button widget" in source
+
+        # Should NOT contain other classes
+        assert "class Button:" not in source
+        assert "class ImageButton" not in source
+        assert "class HelpButton" not in source
+
+    def test_extract_last_class_in_file(self, multi_class_accessor: VanillaLocalAccessor) -> None:
+        """Should correctly extract the last class in a file (HelpButton)"""
+        info = multi_class_accessor.get_vanilla_class("HelpButton")
+
+        assert info is not None
+        source = info["source"]
+
+        # Should contain HelpButton class
+        assert "class HelpButton" in source
+        assert "A standard help button" in source
+
+        # Should NOT contain other classes
+        assert "class Button:" not in source
+        assert "class SquareButton" not in source
+        assert "class ImageButton" not in source
+
+        # Should NOT contain module-level function (comes after HelpButton)
+        assert "def _createButtonCell" not in source
+
+    def test_single_class_file_unchanged(self, multi_class_accessor: VanillaLocalAccessor) -> None:
+        """Single-class files should return full source (minus imports)"""
+        info = multi_class_accessor.get_vanilla_class("TextBox")
+
+        assert info is not None
+        source = info["source"]
+
+        # Should contain TextBox class
+        assert "class TextBox:" in source
+        assert "A text display widget" in source
+
+
 class TestVanillaLocalAccessorEdgeCases:
     """測試邊界情況"""
 
