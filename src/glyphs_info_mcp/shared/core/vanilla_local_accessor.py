@@ -274,8 +274,8 @@ class VanillaLocalAccessor:
                     # Found the next class after target
                     next_start = node.lineno - 1
                     break
-            elif target_class is not None:
-                # Any top-level node after target class ends the extraction
+            elif target_class is not None and isinstance(node, ast.stmt):
+                # Any top-level statement after target class ends the extraction
                 # This handles FunctionDef, Assign, Import, etc.
                 next_start = node.lineno - 1
                 break
