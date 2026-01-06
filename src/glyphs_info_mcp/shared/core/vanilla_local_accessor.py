@@ -252,8 +252,12 @@ class VanillaLocalAccessor:
         """
         try:
             tree = ast.parse(source)
-        except SyntaxError:
-            # If parsing fails, return full source as fallback
+        except SyntaxError as e:
+            # Log and fallback to full source if parsing fails
+            logger.warning(
+                f"Failed to parse source for class {class_name}, "
+                f"returning full source: {e}"
+            )
             return source
 
         lines = source.splitlines(keepends=True)
@@ -270,13 +274,18 @@ class VanillaLocalAccessor:
                     # Found the next class after target
                     next_start = node.lineno - 1
                     break
-            elif isinstance(node, ast.FunctionDef) and target_class is not None:
-                # Found a function after target class
+            elif target_class is not None:
+                # Any top-level node after target class ends the extraction
+                # This handles FunctionDef, Assign, Import, etc.
                 next_start = node.lineno - 1
                 break
 
         if target_class is None:
-            return source  # Fallback to full source if class not found
+            # Log and fallback to full source if class not found
+            logger.warning(
+                f"Class {class_name} not found in AST, returning full source"
+            )
+            return source
 
         start_line = target_class.lineno - 1
         return "".join(lines[start_line:next_start]).rstrip()

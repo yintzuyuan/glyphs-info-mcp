@@ -423,6 +423,24 @@ class TextBox:
         assert "class TextBox:" in source
         assert "A text display widget" in source
 
+    def test_exclude_module_level_statements_between_classes(
+        self, multi_class_accessor: VanillaLocalAccessor
+    ) -> None:
+        """Should NOT include module-level statements (like _buttonMap) in class extraction"""
+        button_info = multi_class_accessor.get_vanilla_class("Button")
+
+        assert button_info is not None
+        source = button_info["source"]
+
+        # Should contain Button class
+        assert "class Button:" in source
+
+        # Should NOT contain module-level constant defined before classes
+        assert "_buttonMap" not in source
+
+        # Should NOT contain next class
+        assert "class SquareButton" not in source
+
 
 class TestVanillaLocalAccessorEdgeCases:
     """測試邊界情況"""
