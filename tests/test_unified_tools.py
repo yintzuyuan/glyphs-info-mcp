@@ -139,6 +139,148 @@ class TestUnifiedToolsRouter:
         )
         assert result == "api results"
 
+    # Issue #43: Objective-C API proxy methods tests
+    def test_api_router_search_objc_action(self) -> None:
+        """Test api router dispatches search_objc action correctly (Issue #43)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module.search_objc_headers.return_value = "objc search results"
+
+        router = UnifiedToolsRouter()
+        router.set_module("api", mock_module)
+
+        result = router.api(action="search_objc", query="insertText", max_results=10)
+
+        mock_module.search_objc_headers.assert_called_once_with(
+            query="insertText", max_results=10
+        )
+        assert result == "objc search results"
+
+    def test_api_router_get_header_action(self) -> None:
+        """Test api router dispatches get_header action correctly (Issue #43)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module.get_objc_header.return_value = "header content"
+
+        router = UnifiedToolsRouter()
+        router.set_module("api", mock_module)
+
+        result = router.api(action="get_header", header_query="GSLayer")
+
+        mock_module.get_objc_header.assert_called_once_with(header_query="GSLayer")
+        assert result == "header content"
+
+    def test_api_router_list_protocols_action(self) -> None:
+        """Test api router dispatches list_protocols action correctly (Issue #43)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module.list_plugin_protocols.return_value = "protocol list"
+
+        router = UnifiedToolsRouter()
+        router.set_module("api", mock_module)
+
+        result = router.api(action="list_protocols", show_details=True)
+
+        mock_module.list_plugin_protocols.assert_called_once_with(show_details=True)
+        assert result == "protocol list"
+
+    def test_api_router_get_protocol_action(self) -> None:
+        """Test api router dispatches get_protocol action correctly (Issue #43)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module.get_protocol_methods.return_value = "protocol methods"
+
+        router = UnifiedToolsRouter()
+        router.set_module("api", mock_module)
+
+        result = router.api(
+            action="get_protocol",
+            protocol_name="GlyphsReporter",
+            show_deprecated=False,
+            show_optional_only=True,
+        )
+
+        mock_module.get_protocol_methods.assert_called_once_with(
+            protocol_name="GlyphsReporter",
+            show_deprecated=False,
+            show_optional_only=True,
+        )
+        assert result == "protocol methods"
+
+    def test_api_router_convert_objc_action(self) -> None:
+        """Test api router dispatches convert_objc action correctly (Issue #43)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module.convert_objc_to_python.return_value = "python_name"
+
+        router = UnifiedToolsRouter()
+        router.set_module("api", mock_module)
+
+        result = router.api(action="convert_objc", objc_signature="setWidth:")
+
+        mock_module.convert_objc_to_python.assert_called_once_with(
+            objc_signature="setWidth:"
+        )
+        assert result == "python_name"
+
+    def test_api_router_convert_python_action(self) -> None:
+        """Test api router dispatches convert_python action correctly (Issue #43)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module.convert_python_to_objc.return_value = "objc_signature"
+
+        router = UnifiedToolsRouter()
+        router.set_module("api", mock_module)
+
+        result = router.api(action="convert_python", python_name="width")
+
+        mock_module.convert_python_to_objc.assert_called_once_with(python_name="width")
+        assert result == "objc_signature"
+
+    def test_api_router_identify_method_action(self) -> None:
+        """Test api router dispatches identify_method action correctly (Issue #43)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module.identify_method_type.return_value = "method info"
+
+        router = UnifiedToolsRouter()
+        router.set_module("api", mock_module)
+
+        result = router.api(
+            action="identify_method", method_name="drawBackground", plugin_type="filter"
+        )
+
+        mock_module.identify_method_type.assert_called_once_with(
+            method_name="drawBackground", plugin_type="filter"
+        )
+        assert result == "method info"
+
+    def test_api_router_get_template_action(self) -> None:
+        """Test api router dispatches get_template action correctly (Issue #43)"""
+        from glyphs_info_mcp.unified_tools import UnifiedToolsRouter
+
+        mock_module = MagicMock()
+        mock_module.get_method_template.return_value = "template code"
+
+        router = UnifiedToolsRouter()
+        router.set_module("api", mock_module)
+
+        result = router.api(
+            action="get_template", method_name="foreground", plugin_type="reporter"
+        )
+
+        mock_module.get_method_template.assert_called_once_with(
+            method_name="foreground", plugin_type="reporter"
+        )
+        assert result == "template code"
+
     def test_plugins_router_search_local_action(self) -> None:
         """Test plugins router dispatches search_local action correctly"""
         from glyphs_info_mcp.unified_tools import UnifiedToolsRouter

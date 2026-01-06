@@ -1482,6 +1482,155 @@ class UnifiedAPIModule(BaseMCPModule):
         return cross_ref
 
     # ============================================================================
+    # Objective-C API Proxy Methods (Issue #43)
+    # Delegates to ObjectiveCAPIModule
+    # ============================================================================
+
+    def search_objc_headers(self, query: str, max_results: int = 5) -> str:
+        """
+        [OBJECTIVE-C HEADERS] Search Objective-C Header files
+
+        Delegates to ObjectiveCAPIModule.search_objc_headers()
+
+        Args:
+            query: Search keyword (class name, method name, protocol name)
+            max_results: Maximum number of results (default: 5)
+
+        Returns:
+            List of matching Header files and related content
+        """
+        if not self.objc_api_module or not self.objc_api_module.is_initialized:
+            return "Objective-C API module not initialized"
+        return self.objc_api_module.search_objc_headers(query, max_results)
+
+    def get_objc_header(self, header_query: str) -> str:
+        """
+        [OBJECTIVE-C HEADERS] Get Objective-C Header file content
+
+        Delegates to ObjectiveCAPIModule.get_objc_header()
+
+        Args:
+            header_query: Header file name or class name (e.g., "GSFont", "GSFont.h")
+
+        Returns:
+            Complete Header file content
+        """
+        if not self.objc_api_module or not self.objc_api_module.is_initialized:
+            return "Objective-C API module not initialized"
+        return self.objc_api_module.get_objc_header(header_query)
+
+    def list_plugin_protocols(self, show_details: bool = False) -> str:
+        """
+        [PROTOCOL QUERY] List all Glyphs plugin Protocols
+
+        Delegates to ObjectiveCAPIModule.list_plugin_protocols()
+
+        Args:
+            show_details: Whether to show detailed information (default: False)
+
+        Returns:
+            List of all plugin protocols with basic information
+        """
+        if not self.objc_api_module or not self.objc_api_module.is_initialized:
+            return "Objective-C API module not initialized"
+        return self.objc_api_module.list_plugin_protocols(show_details)
+
+    def get_protocol_methods(
+        self,
+        protocol_name: str,
+        show_deprecated: bool = True,
+        show_optional_only: bool = False,
+    ) -> str:
+        """
+        [PROTOCOL QUERY] Get detailed method information for specific Protocol
+
+        Delegates to ObjectiveCAPIModule.get_protocol_methods()
+
+        Args:
+            protocol_name: Protocol name (e.g., "GlyphsReporter", "GlyphsFilter")
+            show_deprecated: Whether to show deprecated methods (default: True)
+            show_optional_only: Show only optional methods (default: False)
+
+        Returns:
+            Detailed method information for Protocol
+        """
+        if not self.objc_api_module or not self.objc_api_module.is_initialized:
+            return "Objective-C API module not initialized"
+        return self.objc_api_module.get_protocol_methods(
+            protocol_name, show_deprecated, show_optional_only
+        )
+
+    def convert_objc_to_python(self, objc_signature: str) -> str:
+        """
+        [NAMING CONVERSION] Convert Objective-C method signature to Python method name
+
+        Delegates to ObjectiveCAPIModule.convert_objc_to_python()
+
+        Args:
+            objc_signature: Objective-C method signature
+
+        Returns:
+            Python method name
+        """
+        if not self.objc_api_module or not self.objc_api_module.is_initialized:
+            return "Objective-C API module not initialized"
+        return self.objc_api_module.convert_objc_to_python(objc_signature)
+
+    def convert_python_to_objc(self, python_name: str) -> str:
+        """
+        [NAMING CONVERSION] Convert Python method name to Objective-C method signature
+
+        Delegates to ObjectiveCAPIModule.convert_python_to_objc()
+
+        Args:
+            python_name: Python method name
+
+        Returns:
+            Objective-C method signature
+        """
+        if not self.objc_api_module or not self.objc_api_module.is_initialized:
+            return "Objective-C API module not initialized"
+        return self.objc_api_module.convert_python_to_objc(python_name)
+
+    def identify_method_type(
+        self, method_name: str, plugin_type: str = "reporter"
+    ) -> str:
+        """
+        [SDK METHOD ANALYSIS] Identify Glyphs SDK method type
+
+        Delegates to ObjectiveCAPIModule.identify_method_type()
+
+        Args:
+            method_name: Method name
+            plugin_type: Plugin type (default: "reporter")
+
+        Returns:
+            Method type and detailed description
+        """
+        if not self.objc_api_module or not self.objc_api_module.is_initialized:
+            return "Objective-C API module not initialized"
+        return self.objc_api_module.identify_method_type(method_name, plugin_type)
+
+    def get_method_template(
+        self, method_name: str, plugin_type: str = "reporter"
+    ) -> str:
+        """
+        [SDK CODE GENERATION] Get method implementation template
+
+        Delegates to ObjectiveCAPIModule.get_method_template()
+
+        Args:
+            method_name: Method name
+            plugin_type: Plugin type (default: "reporter")
+
+        Returns:
+            Python implementation template code
+        """
+        if not self.objc_api_module or not self.objc_api_module.is_initialized:
+            return "Objective-C API module not initialized"
+        return self.objc_api_module.get_method_template(method_name, plugin_type)
+
+    # ============================================================================
     # Vanilla Tools Methods (Local Accessor)
     # ============================================================================
 
