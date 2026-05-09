@@ -2,6 +2,22 @@
 
 # Glyphs info MCP
 
+> ## ⚠️ 維護模式 — 新使用者請改用 Plugin
+>
+> 本 MCP server 從 2026-05 起進入**維護模式**。同樣的 Glyphs 手冊與
+> API 查詢功能已搬到更輕量、更快的 Claude Code plugin：
+> [`glyphs-reference`](https://github.com/yintzuyuan/glyphs-reference)。
+>
+> **為什麼遷移？** Plugin 採用 Claude 的 Skills 系統與 progressive
+> disclosure，token 使用量降低約 98%，查詢回應比 MCP 的 eager-loaded
+> 方式更即時。詳見
+> [Why Skills over MCP?](https://github.com/yintzuyuan/glyphs-reference#why-skills-over-mcp)
+>
+> **既有使用者**：本 MCP 仍可正常運作。**僅做 bug fix，不新增功能**。
+> PyPI 釋出版本至少維持到 2027-05。
+>
+> [遷移步驟 →](https://github.com/yintzuyuan/glyphs-reference#migration-from-glyphs-info-mcp)
+
 整合 [Glyphs](https://glyphsapp.com/) 手冊查詢和 API 查詢功能的統一 MCP 伺服器。
 
 ## 🚀 快速開始

@@ -2,6 +2,23 @@
 
 # Glyphs info MCP
 
+> ## ⚠️ Maintenance Mode — New Users Please Use the Plugin
+>
+> This MCP server is in **maintenance mode** as of 2026-05. The same
+> Glyphs documentation and API queries are available as a faster,
+> lighter Claude Code plugin:
+> [`glyphs-reference`](https://github.com/yintzuyuan/glyphs-reference).
+>
+> **Why migrate?** The plugin uses Claude's Skills system with progressive
+> disclosure — token usage drops by ~98%, and queries feel instant
+> compared to the MCP's eager-loaded approach. See
+> [Why Skills over MCP?](https://github.com/yintzuyuan/glyphs-reference#why-skills-over-mcp)
+>
+> **Existing users**: This MCP will keep working. Bug fixes only, no new
+> features. PyPI live for at least 12 months from this notice.
+>
+> [Migration steps →](https://github.com/yintzuyuan/glyphs-reference#migration-from-glyphs-info-mcp)
+
 A unified MCP server integrating Glyphs handbook queries and API reference lookups for [Glyphs](https://glyphsapp.com/) font design software.
 
 ## 🚀 Quick Start
